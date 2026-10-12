@@ -783,7 +783,7 @@ if(a.hasContribution){const contribEGP=toEGP(Number(a.monthlyContribution)||0,a.
 filteredAssets.forEach(a=>{if(!isContainer(a))return;const children=filteredAssets.filter(c=>c.parentId===a.id);balancesEGP[a.id]=children.reduce((s,c)=>s+balancesEGP[c.id],0)+containerOwnCash[a.id];yieldEarned[a.id]=children.reduce((s,c)=>s+yieldEarned[c.id],0);});let total=0;let monthlyYieldTotal=0;filteredAssets.forEach(a=>{row[`asset_${a.id}`]=Math.round(balancesEGP[a.id]);row[`yield_${a.id}`]=Math.round(yieldEarned[a.id]);// تجنب العد المزدوج: لا نحسب الفرعيات في الإجمالي (الحاوية تمثلهم)، ولا الحاوية الفارغة
 const isChild=a.parentId!=null;if(!isChild){monthlyYieldTotal+=yieldEarned[a.id]-(i>0?(months[i-1][`yield_${a.id}`]||0):0);total+=balancesEGP[a.id];}});row.total=Math.round(total);row.contributions=Math.round(totalContributionsEGP);row.gain=Math.round(total-initialTotalEGP-totalContributionsEGP);row.cumulativeYield=Math.round(totalCumulativeYield);row.monthlyYield=Math.round(monthlyYieldTotal);months.push(row);currentM++;if(currentM>12){currentM=1;currentY++;}}return months;},[filteredAssets,startYear,startMonth,endYear,endMonth,exchangeRates]);const summary=useMemo(()=>{if(projection.length===0)return null;const last=projection[projection.length-1];// استبعاد الحاويات (الأصول التي لها أصول فرعية) لتجنب العد المزدوج
 const initialTotalEGP=filteredAssets.reduce((sum,a)=>sum+(a.hasSubAssets?0:toEGP(Number(a.value)||0,a.currency)),0);const totalContrib=last.contributions;const finalValue=last.total;const totalGain=finalValue-initialTotalEGP-totalContrib;// متوسط الدخل الشهري = العائد التراكمي ÷ عدد الأشهر
-const avgMonthlyYield=projection.length>0?last.cumulativeYield/projection.length:0;return{initialTotalEGP,totalContrib,finalValue,totalGain,avgMonthlyYield,totalMonths:projection.length};},[projection,filteredAssets]);// محرك توصيات نماء — يحلل المحفظة ويولّد نصائح
+const _td=new Date();const _f=projection[0];const _part=projection.length>1&&_f&&_f.year===_td.getFullYear()&&_f.month===_td.getMonth()+1;const avgMonthlyYield=projection.length>0?(_part?(last.cumulativeYield-(_f.monthlyYield||0))/(projection.length-1):last.cumulativeYield/projection.length):0;return{initialTotalEGP,totalContrib,finalValue,totalGain,avgMonthlyYield,totalMonths:projection.length};},[projection,filteredAssets]);// محرك توصيات نماء — يحلل المحفظة ويولّد نصائح
 const recommendations=useMemo(()=>{const recs=[];// الأصول الفعلية (بدون الحاويات)
 const realAssets=filteredAssets.filter(a=>!a.hasSubAssets);if(realAssets.length===0||!summary)return recs;const totalValue=summary.initialTotalEGP;if(totalValue<=0)return recs;// 1. تركيز المخاطر — أصل واحد يمثل نسبة كبيرة
 const assetShares=realAssets.map(a=>({name:a.name,share:toEGP(Number(a.value)||0,a.currency)/totalValue})).sort((x,y)=>y.share-x.share);if(assetShares[0]&&assetShares[0].share>0.6){recs.push({type:'warning',icon:'⚠️',title:'تركيز عالٍ في أصل واحد',text:`أصل "${assetShares[0].name}" يمثل ${Math.round(assetShares[0].share*100)}% من محفظتك. التركيز العالي يزيد المخاطر — فكّر في توزيع أوسع.`});}else if(realAssets.length>=3&&assetShares[0].share<0.4){recs.push({type:'good',icon:'✅',title:'توزيع متوازن',text:`محفظتك موزّعة بشكل جيد عبر ${realAssets.length} أصول، أكبرها ${Math.round(assetShares[0].share*100)}% فقط.`});}// 2. تنوّع العملات
@@ -1942,7 +1942,9 @@ var C={
   ['مش لاقي سهم هنا؟','غالباً توزيعه بعد أكتر من 3 شهور، أو متسجل «تقدير بالنسبة» من غير مواعيد. افتح السهم وضيف مواعيد التوزيع.']]},
  avgProj:{t:'متوسط الدخل الشهري المتوقع',s:[
   ['ده إيه؟','متوسط دخلك في الشهر على طول فترة الحساب كلها، مش النهارده.'],
-  ['ليه أعلى من الحالي؟',['الأرصدة اللي ليها فايدة بتكبر مع الوقت.','الإيجارات اللي ليها زيادة سنوية بتزيد.','الأصول اللي دخلها بيبدأ بعدين بتدخل في الحساب من ساعة ما تبدأ.']],
+  ['بيتحسب إزاي؟','مجموع الدخل المتوقع في كل شهور الفترة ÷ عدد الشهور. الشهر الحالي مش داخل في المتوسط، لأن فيه بس الدفعات اللي لسه جاية.'],
+  ['ممكن يطلع أعلى من الحالي لو…',['الأرصدة اللي ليها فايدة بتكبر مع الوقت.','الإيجارات اللي ليها زيادة سنوية بتزيد.','فيه أصول دخلها بيبدأ بعدين.']],
+  ['وممكن يطلع أقل لو…',['فيه دخل ليه تاريخ نهاية، زي شهادة بتخلص أو عقد إيجار بينتهي.','فيه توزيعات متوقعة بتبدأ السنة الجاية، بس «الدخل الحالي» بيحسبها من النهارده كمتوسط.','فيه فايدة بنسبة ثابتة على رصيد بتسحب منه.']],
   ['خلي بالك','ده تقدير مبني على النسب اللي إنت حاططها.']]},
  heat:{t:'خريطة الدخل بالشهر',s:[
   ['ده إيه؟','كل خانة فيها الدخل المتوقع في الشهر ده. كل ما اللون يغمق، يبقى الدخل أكتر.'],
@@ -1989,7 +1991,7 @@ window.NamaaInfo={open:open,scan:scan};
 })();
 </script>
 <script>
-window.NM_BUILD=57;window.NM_VERSION='5.7';
+window.NM_BUILD=58;window.NM_VERSION='5.8';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
