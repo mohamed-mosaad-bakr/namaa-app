@@ -1661,7 +1661,42 @@ window.addEventListener('online',function(){if(auth)pull(false);});
 })();
 </script>
 <script>
-window.NM_BUILD=43;window.NM_VERSION='4.3';
+/* NAMAA_PATCH v1 — "تحديث من Claude": paste a small JSON patch, preview, apply */
+(function(){
+var KEY='portfolioData';
+function fmt(n){return Math.round(Number(n)||0).toLocaleString('en-US');}
+function parse(t){t=String(t||'');var a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<a)throw new Error('مش لاقي كود التحديث في النص');var j=JSON.parse(t.slice(a,b+1));if(j.t!=='namaa-patch'||!Array.isArray(j.items))throw new Error('ده مش كود تحديث نماء');return j;}
+function find(assets,m){return assets.find(function(a){if(m.id!=null&&a.id===m.id)return true;if(m.stockSymbol&&a.stockSymbol&&String(a.stockSymbol).toUpperCase()===String(m.stockSymbol).toUpperCase())return true;if(m.name&&String(a.name).trim()===String(m.name).trim())return true;return false;});}
+function curVal(a){return (a.useShares&&Number(a.shareCount)>0&&Number(a.pricePerShare)>0)?Number(a.shareCount)*Number(a.pricePerShare):Number(a.value)||0;}
+function plan(p){var d=JSON.parse(localStorage.getItem(KEY)||'null');if(!d||!d.assets)throw new Error('مفيش بيانات في التطبيق');return p.items.map(function(it){var a=find(d.assets,it.match||{});if(!a)return{it:it,missing:true,label:(it.match&&(it.match.stockSymbol||it.match.name))||'?'};var set={};var s=it.set||{};
+ if(s.value!=null){set.value=Number(s.value);if(a.useShares&&Number(a.shareCount)>0)set.pricePerShare=Math.round(Number(s.value)/Number(a.shareCount)*10000)/10000;}
+ if(s.pricePerShare!=null){set.pricePerShare=Number(s.pricePerShare);if(a.useShares&&Number(a.shareCount)>0)set.value=Math.round(Number(s.pricePerShare)*Number(a.shareCount)*100)/100;}
+ ['shareCount','avgBuyPrice','fixedYieldAmount','yieldRate','purchaseValue','monthlyContribution'].forEach(function(k){if(s[k]!=null)set[k]=Number(s[k]);});
+ return{it:it,a:a,set:set,from:curVal(a),to:set.value!=null?set.value:curVal(Object.assign({},a,set)),label:a.name+(a.stockSymbol?' ('+a.stockSymbol+')':''),note:it.note||''};});}
+function apply(rows){var d=JSON.parse(localStorage.getItem(KEY));rows.forEach(function(r){var a=d.assets.find(function(x){return x.id===r.a.id;});if(a)Object.assign(a,r.set);});localStorage.setItem(KEY,JSON.stringify(d));if(typeof window.__nmApply==='function'){try{window.__nmApply(d);}catch(e){}}}
+function el(h){var d=document.createElement('div');d.innerHTML=h.trim();return d.firstChild;}
+function close(){var s=document.getElementById('nmp-scrim');if(s)s.remove();}
+function sheet(box){close();var s=el('<div class="nms-scrim" id="nmp-scrim"><div class="nms-sheet" role="dialog" aria-modal="true"></div></div>');s.onclick=function(e){if(e.target===s)close();};s.firstChild.appendChild(box);document.body.appendChild(s);}
+var css=document.createElement('style');css.textContent='.nmp-ta{width:100%;box-sizing:border-box;min-height:120px;border:1px solid #dddddd;border-radius:12px;padding:12px;font:13px/1.5 monospace;direction:ltr}.nmp-ta:focus{outline:none;border:2px solid #222}.nmp-row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #f2f2f2}.nmp-row input{width:20px;height:20px;accent-color:#222}.nmp-name{font-size:14px;font-weight:600;color:#222}.nmp-note{font-size:12px;color:#B45309;margin-top:2px}.nmp-ch{text-align:end;font-size:13px;color:#6a6a6a;white-space:nowrap;direction:ltr}.nmp-ch b{color:#222}.nmp-up{color:#0A7B24}.nmp-dn{color:#B42318}.nmp-miss{font-size:13px;color:#929292;padding:8px 0}';document.head.appendChild(css);
+function open(){var box=document.createElement('div');box.innerHTML='<h3>تحديث من Claude</h3><p class="nms-sub">الزق هنا كود التحديث اللي Claude بعتهولك. هتشوف التغييرات قبل ما تتطبّق، وباقي بياناتك مش هتتلمس.</p><textarea class="nmp-ta" id="nmp-t" placeholder=\'{"t":"namaa-patch", ...}\'></textarea><div class="nms-err" id="nmp-e" style="display:none;margin-top:12px"></div><button class="nms-p" id="nmp-go" style="margin-top:14px">شوف التغييرات</button><button class="nms-s" id="nmp-x">إلغاء</button>';
+ sheet(box);var ta=box.querySelector('#nmp-t');try{if(navigator.clipboard&&navigator.clipboard.readText)navigator.clipboard.readText().then(function(t){if(t&&t.indexOf('namaa-patch')>=0&&!ta.value)ta.value=t;}).catch(function(){});}catch(e){}
+ box.querySelector('#nmp-x').onclick=close;
+ box.querySelector('#nmp-go').onclick=function(){var e=box.querySelector('#nmp-e');try{var p=parse(ta.value);review(p,plan(p));}catch(x){e.style.display='block';e.textContent=x.message||String(x);}};}
+function review(p,rows){var box=document.createElement('div');var ok=rows.filter(function(r){return !r.missing;});var miss=rows.filter(function(r){return r.missing;});
+ box.innerHTML='<h3>هيتغير إيه</h3><p class="nms-sub">'+(p.title||'تحديث')+(p.date?' · '+p.date:'')+'. شيل العلامة من أي سطر مش عايزه.</p><div id="nmp-list"></div>'+(miss.length?'<div class="nmp-miss">مش لاقي في التطبيق: '+miss.map(function(r){return r.label;}).join('، ')+'</div>':'')+'<button class="nms-p" id="nmp-ap" style="margin-top:16px"></button><button class="nms-s" id="nmp-bk">رجوع</button>';
+ var list=box.querySelector('#nmp-list');ok.forEach(function(r,i){var diff=r.to-r.from;var row=el('<label class="nmp-row"><input type="checkbox" checked data-i="'+i+'"><div><div class="nmp-name"></div>'+(r.note?'<div class="nmp-note"></div>':'')+'</div><div class="nmp-ch">'+fmt(r.from)+' → <b>'+fmt(r.to)+'</b><div class="'+(diff>=0?'nmp-up':'nmp-dn')+'">'+(diff>=0?'+':'')+fmt(diff)+'</div></div></label>');row.querySelector('.nmp-name').textContent=r.label;if(r.note)row.querySelector('.nmp-note').textContent=r.note;list.appendChild(row);});
+ var btn=box.querySelector('#nmp-ap');function cnt(){var n=box.querySelectorAll('#nmp-list input:checked').length;btn.textContent=n?'طبّق '+n+' تغيير':'اختار تغيير واحد على الأقل';btn.disabled=!n;}cnt();box.querySelectorAll('#nmp-list input').forEach(function(c){c.onchange=cnt;});
+ box.querySelector('#nmp-bk').onclick=open;
+ btn.onclick=function(){var sel=[];box.querySelectorAll('#nmp-list input:checked').forEach(function(c){sel.push(ok[Number(c.getAttribute('data-i'))]);});apply(sel);close();var t=el('<div class="nms-toast" role="status"></div>');t.textContent='✓ اتطبّق '+sel.length+' تغيير'+(window.NamaaSync&&NamaaSync.status().auth?' وهيتزامن مع أجهزتك':'');document.body.appendChild(t);setTimeout(function(){t.remove();},3500);};
+ sheet(box);}
+window.NamaaPatch={open:open};
+/* entry chip next to sync */
+function mount(){var b=document.getElementById('nms-btn');if(!b||document.getElementById('nmp-btn'))return;var c=el('<button id="nmp-btn" class="nms-btn" aria-label="تحديث من Claude">✦ Claude</button>');c.onclick=open;b.parentNode.insertBefore(c,b);}
+new MutationObserver(mount).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+<script>
+window.NM_BUILD=44;window.NM_VERSION='4.4';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
