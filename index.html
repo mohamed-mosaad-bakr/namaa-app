@@ -1909,7 +1909,87 @@ window.NamaaTransfer={open:open,undo:undoLast};
 })();
 </script>
 <script>
-window.NM_BUILD=56;window.NM_VERSION='5.6';
+/* NAMAA_INFO v1 — (i) buttons next to unclear labels + explanatory bottom sheet */
+(function(){
+var C={
+ curInc:{t:'الدخل الشهري الحالي',s:[
+  ['ده إيه؟','متوسط اللي بيدخلّك في الشهر من الأصول اللي دخلها شغال النهارده. هو مش الفلوس اللي وصلتك فعلاً الشهر ده، ومش شهر معيّن، هو «الشهر العادي» في المتوسط.'],
+  ['بيتحسب إزاي؟',['<b>الإيجار:</b> بمبلغه الشهري زي ما كاتبه.','<b>الفايدة:</b> الرصيد × النسبة السنوية ÷ 12.','<b>التوزيعات:</b> صافي توزيعات السنة بعد الضريبة ÷ 12، حتى لو الشركة بتصرف مرة أو مرتين في السنة.','الأصول اللي دخلها بيبدأ بعدين مش داخلة هنا، وبتظهر لوحدها تحت «+… تبدأ من».']],
+  ['مؤكد ومتوقع','الشريط تحت الرقم بيفصل الدخل المؤكد (إيجار، فايدة، توزيعات معلنة) عن المتوقع (توزيعات لسه ما اتعلنتش، أو متقدّرة بالنسبة). الرقم الكبير هو مجموعهم.'],
+  ['عايز تعرف هيوصلك كام في شهر معيّن؟','شوف «جاي في الطريق» في صفحة الدخل، أو «خريطة الدخل بالشهر» في «العوائد والتوقعات».']]},
+ contrib:{t:'تضيف كل شهر',s:[
+  ['ده إيه؟','مجموع «الإضافة الشهرية» اللي حاططها على أصولك: أقساط، تحويش، أو شراء أسهم كل شهر.'],
+  ['بيتحسب إزاي؟','كل إضافة بتتحوّل للجنيه بسعر الصرف اللي في التطبيق وتتجمع.'],
+  ['ليه مهم؟','ده مش دخل، دي فلوس من جيبك. بس بتدخل في توقع ثروتك: كل شهر المبلغ ده بيتضاف للأصل بتاعه.']]},
+ net:{t:'صافي ثروتك',s:[
+  ['ده إيه؟','مجموع قيمة كل أصولك النهارده بالجنيه المصري.'],
+  ['بيتحسب إزاي؟',['<b>الأسهم:</b> عدد الأسهم × آخر سعر متسجل.','<b>الدولار والعملات:</b> بسعر الصرف اللي في التطبيق.','<b>الدهب:</b> الجرامات × سعر الجرام.','<b>العقارات والحسابات:</b> بالقيمة اللي إنت كاتبها لكل أصل.']],
+  ['ملحوظة','الرقم بيتغير لما تحدّث الأسعار أو قيمة أي أصل، أو لما سعر الصرف يتغير.']]},
+ goal:{t:'هدف الدخل السلبي',s:[
+  ['ده إيه؟','الدخل الشهري اللي عايز توصله من أصولك من غير ما تشتغل.'],
+  ['النسبة بتتحسب إزاي؟','الدخل الشهري الحالي ÷ الهدف. والدخل المتوقع داخل في الحساب.'],
+  ['تغيّره منين؟','من «تعديل الهدف» في صفحة الدخل.']]},
+ proj:{t:'التوقع',s:[
+  ['ده إيه؟','تقدير لثروتك في آخر «فترة الحساب»، لو كل حاجة مشيت بالنسب اللي إنت حاططها.'],
+  ['بيتحسب إزاي؟',['بيبدأ من قيمة كل أصل النهارده.','كل شهر الأصل بيكبر بنسبة النمو بتاعته.','بيتضاف عليه الإضافة الشهرية بتاعته.','وبيتضاف الدخل (إيجار، فايدة، توزيعات) حسب إعدادات كل أصل.']],
+  ['خلي بالك','ده تقدير مش ضمان. لو غيّرت نسب النمو أو فترة الحساب، الرقم بيتغير.']]},
+ sources:{t:'بيجي منين',s:[
+  ['ده إيه؟','نفس رقم الدخل الشهري الحالي، بس متقسّم حسب النوع (إيجار، فايدة، توزيعات)، وتحته حسب المجموعة.'],
+  ['ملحوظة','التوزيعات هنا متوسط شهري، يعني توزيعات السنة ÷ 12، مش اللي هيتصرف الشهر ده.']]},
+ upcoming:{t:'جاي في الطريق',s:[
+  ['ده إيه؟','الفلوس اللي ليها ميعاد في الـ 3 شهور الجاية.'],
+  ['فيه إيه؟',['<b>الإيجارات الشهرية:</b> متجمعة في سطر واحد.','<b>التوزيعات:</b> كل دفعة بتاريخ صرفها، ولو مكتوب جنبها «توزيع متوقع» يبقى لسه ما اتعلنتش.','<b>أول إيجار:</b> للأصول اللي دخلها بيبدأ قريب.']],
+  ['مش لاقي سهم هنا؟','غالباً توزيعه بعد أكتر من 3 شهور، أو متسجل «تقدير بالنسبة» من غير مواعيد. افتح السهم وضيف مواعيد التوزيع.']]},
+ avgProj:{t:'متوسط الدخل الشهري المتوقع',s:[
+  ['ده إيه؟','متوسط دخلك في الشهر على طول فترة الحساب كلها، مش النهارده.'],
+  ['ليه أعلى من الحالي؟',['الأرصدة اللي ليها فايدة بتكبر مع الوقت.','الإيجارات اللي ليها زيادة سنوية بتزيد.','الأصول اللي دخلها بيبدأ بعدين بتدخل في الحساب من ساعة ما تبدأ.']],
+  ['خلي بالك','ده تقدير مبني على النسب اللي إنت حاططها.']]},
+ heat:{t:'خريطة الدخل بالشهر',s:[
+  ['ده إيه؟','كل خانة فيها الدخل المتوقع في الشهر ده. كل ما اللون يغمق، يبقى الدخل أكتر.'],
+  ['ليه الشهر الحالي أقل؟','الشهر الحالي فيه بس الدفعات اللي لسه جاية من النهارده لآخر الشهر.'],
+  ['ليه فيه شهور أعلى من غيرها؟','الشهور اللي فيها صرف توزيعات بتطلع أعلى، لأن التوزيع بيتحسب في شهر صرفه.'],
+  ['تقدر تعمل إيه؟','اختار أصل معيّن من «الأصل»، أو غيّر الفترة من «من» و«إلى».']]},
+ period:{t:'فترة الحساب',s:[
+  ['ده إيه؟','المدة اللي كل التوقعات والجداول بتتحسب عليها، من شهر لشهر.'],
+  ['بتأثر على إيه؟','ثروتك المتوقعة، ومتوسط الدخل المتوقع، والجداول في «العوائد والتوقعات».'],
+  ['ملحوظة','دي مش بتغيّر قيم أصولك، بتغيّر بس المدة اللي بنبص عليها قدام.']]},
+ gain:{t:'نسبة المكسب',s:[
+  ['ده إيه؟','الفرق بين قيمة الأصل النهارده واللي دفعته فيه، كنسبة مئوية. ▲ يعني مكسب و▼ يعني خسارة.'],
+  ['بيتحسب إزاي؟','(القيمة الحالية − سعر الشراء) ÷ سعر الشراء. بيظهر بس للأصول اللي كاتب لها سعر شراء.']]}
+};
+/* where to place the (i): exact label text → key */
+var T=[
+ ['الدخل الشهري الحالي','curInc'],['دخلك الشهري الحالي','curInc'],['تضيف كل شهر','contrib'],['صافي ثروتك','net'],
+ ['هدف الدخل السلبي','goal'],['بيجي منين','sources'],['جاي في الطريق','upcoming'],['متوسط الدخل الشهري المتوقع','avgProj'],
+ ['خريطة الدخل بالشهر','heat',1],['فترة الحساب','period'],['متوقع توصل في','proj',1],['ثروتك المتوقعة في','proj',1]
+];
+var css=document.createElement('style');css.textContent='.nmi-b{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin:-6px 2px -6px -4px;vertical-align:middle;border-radius:50%;cursor:pointer;color:#6a6a6a;flex:none;-webkit-tap-highlight-color:transparent}.nmi-b svg{width:16px;height:16px;display:block}.nmi-b:hover,.nmi-b:active{color:#222;background:rgba(0,0,0,.05)}.nmi-b:focus-visible{outline:2px solid #222;outline-offset:1px}.nm-dark .nmi-b,[data-nmi-light] .nmi-b{color:rgba(255,255,255,.75)}.nmi-scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5000;display:flex;align-items:flex-end;justify-content:center}.nmi-sheet{background:#fff;width:100%;max-width:520px;max-height:85vh;overflow:auto;border-radius:20px 20px 0 0;padding:8px 20px calc(20px + env(safe-area-inset-bottom,0px));direction:rtl;box-sizing:border-box;color:#222}@media(min-width:768px){.nmi-scrim{align-items:center}.nmi-sheet{border-radius:20px}}.nmi-grab{width:36px;height:4px;border-radius:2px;background:#dddddd;margin:4px auto 12px}.nmi-sheet h3{margin:0 0 4px;font-size:20px;line-height:1.3;display:flex;align-items:center;gap:8px}.nmi-sheet h3 svg{width:20px;height:20px;color:var(--nm-accent,#1E6B45);flex:none}.nmi-sec{padding:14px 0;border-bottom:1px solid #ebebeb}.nmi-sec:last-of-type{border-bottom:none}.nmi-sec h4{margin:0 0 6px;font-size:14px;font-weight:700;color:#222}.nmi-sec p{margin:0;font-size:15px;line-height:1.75;color:#3f3f3f}.nmi-sec ul{margin:0;padding:0 18px 0 0;font-size:15px;line-height:1.75;color:#3f3f3f}.nmi-sec li{margin:2px 0}.nmi-sec b{color:#222;font-weight:600}.nmi-ok{width:100%;height:50px;margin-top:8px;border:none;border-radius:12px;background:#222;color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer}.nmi-ok:focus-visible{outline:2px solid var(--nm-accent,#1E6B45);outline-offset:2px}';document.head.appendChild(css);
+var ICON='<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="6.2" r="1.05" fill="currentColor"/></svg>';
+var last=null;
+function close(){var s=document.getElementById('nmi-scrim');if(s)s.remove();document.removeEventListener('keydown',onKey,true);if(last&&last.focus){try{last.focus();}catch(e){}}}
+function onKey(e){if(e.key==='Escape'){e.stopPropagation();close();}}
+function open(k){var c=C[k];if(!c)return;last=document.activeElement;close();last=last;
+ var h='<div class="nmi-grab" aria-hidden="true"></div><h3 id="nmi-t">'+ICON+c.t+'</h3>';
+ c.s.forEach(function(x){h+='<div class="nmi-sec"><h4>'+x[0]+'</h4>'+(Array.isArray(x[1])?'<ul>'+x[1].map(function(li){return '<li>'+li+'</li>';}).join('')+'</ul>':'<p>'+x[1]+'</p>')+'</div>';});
+ h+='<button class="nmi-ok" id="nmi-ok">فهمت</button>';
+ var s=document.createElement('div');s.className='nmi-scrim';s.id='nmi-scrim';s.innerHTML='<div class="nmi-sheet" role="dialog" aria-modal="true" aria-labelledby="nmi-t">'+h+'</div>';
+ s.onclick=function(e){if(e.target===s)close();};document.body.appendChild(s);document.addEventListener('keydown',onKey,true);
+ var ok=s.querySelector('#nmi-ok');ok.onclick=close;setTimeout(function(){ok.focus({preventScroll:true});},30);}
+function mk(k,label){var b=document.createElement('span');b.className='nmi-b';b.setAttribute('role','button');b.setAttribute('tabindex','0');b.setAttribute('aria-label','شرح: '+label);b.setAttribute('data-nmi',k);b.innerHTML=ICON;
+ var fire=function(e){e.preventDefault();e.stopPropagation();open(k);};b.addEventListener('click',fire,true);b.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')fire(e);});
+ ['pointerdown','mousedown','touchstart'].forEach(function(ev){b.addEventListener(ev,function(e){e.stopPropagation();},{passive:true});});return b;}
+function scan(){var root=document.getElementById('root')||document.body;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);var n,hits=[];
+ while((n=w.nextNode())){var tx=(n.nodeValue||'').trim();if(!tx||tx.length>60)continue;for(var i=0;i<T.length;i++){var m=T[i];if(m[2]?tx.indexOf(m[0])===0||tx.indexOf(m[0])>0&&tx.indexOf(m[0])<4:tx===m[0]){hits.push([n,m]);break;}}}
+ hits.forEach(function(h){var el=h[0].parentElement;if(!el||el.closest('.nmi-sheet,.nms-sheet,.nmt-sheet,option,select,button.nm-seg-btn'))return;if(el.querySelector(':scope > .nmi-b'))return;
+  var dark=false;try{var col=getComputedStyle(el).color.match(/\d+/g);dark=col&&(+col[0]+ +col[1]+ +col[2])>600;}catch(e){}
+  var b=mk(h[1][1],h[1][0]);if(dark)b.style.color='rgba(255,255,255,.8)';el.appendChild(b);});}
+var t=0;new MutationObserver(function(){if(t)return;t=setTimeout(function(){t=0;scan();},120);}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+setTimeout(scan,600);
+window.NamaaInfo={open:open,scan:scan};
+})();
+</script>
+<script>
+window.NM_BUILD=57;window.NM_VERSION='5.7';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
