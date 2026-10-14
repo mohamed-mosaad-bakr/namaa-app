@@ -1021,8 +1021,8 @@ const renderHeatmap=()=>{const P2=projection;if(!P2||!P2.length)return null;
   React.createElement("div",{className:"section-title"},"🔥 خريطة الدخل بالشهر"),
   (()=>{const byId=id=>assets.find(a=>String(a.id)===String(id));const cur=sel==='all'?null:byId(sel);const grp=cur?(cur.parentId!=null?byId(cur.parentId):cur):null;const kids=grp?assets.filter(c=>c.parentId===grp.id):[];const sub=cur&&grp&&cur.id!==grp.id?cur:null;const pick=(t,items,v,cb)=>{if(window.NamaaPick)window.NamaaPick.open({title:t,items,value:v,onPick:cb});};
  return React.createElement("div",{className:"nm-fchips"},
-  React.createElement("button",{type:"button",className:"nm-fchip"+(grp?" on":""),"aria-haspopup":"listbox",onClick:()=>pick("اختار الأصل",[{v:'all',l:'كل الأصول'}].concat(assets.filter(a=>a.parentId==null).map(a=>({v:String(a.id),l:a.name,s:a.hasSubAssets?assets.filter(c=>c.parentId===a.id).length+' أصول جوّاه':''}))),grp?String(grp.id):'all',v=>setHmAsset(v))},React.createElement("small",null,"الأصل"),React.createElement("span",null,grp?grp.name:'كل الأصول'),React.createElement("i",{"aria-hidden":true},"▾")),
-  kids.length>0&&React.createElement("button",{type:"button",className:"nm-fchip"+(sub?" on":""),"aria-haspopup":"listbox",onClick:()=>pick("اختار من "+grp.name,[{v:String(grp.id),l:'كل '+grp.name}].concat(kids.map(c=>({v:String(c.id),l:c.name}))),sub?String(sub.id):String(grp.id),v=>setHmAsset(v))},React.createElement("small",null,"الأصل الفرعي"),React.createElement("span",null,sub?sub.name:'الكل'),React.createElement("i",{"aria-hidden":true},"▾")),
+  React.createElement("button",{type:"button",className:"nm-fchip"+(grp?" on":""),"aria-haspopup":"listbox",onClick:()=>pick("اختار الأصل",[{v:'all',l:'كل الأصول'}].concat(assets.filter(a=>a.parentId==null).map(a=>({v:String(a.id),l:a.name,s:a.hasSubAssets?assets.filter(c=>c.parentId===a.id).length+' أصول جوّاه':''}))),grp?String(grp.id):'all',v=>setHmAsset(v))},React.createElement("small",null,"الأصل"),React.createElement("span",null,grp?grp.name:'كل الأصول'),React.createElement("i",{"aria-hidden":true},React.createElement(ChevronDown,{size:20}))),
+  kids.length>0&&React.createElement("button",{type:"button",className:"nm-fchip"+(sub?" on":""),"aria-haspopup":"listbox",onClick:()=>pick("اختار من "+grp.name,[{v:String(grp.id),l:'كل '+grp.name}].concat(kids.map(c=>({v:String(c.id),l:c.name}))),sub?String(sub.id):String(grp.id),v=>setHmAsset(v))},React.createElement("small",null,"الأصل الفرعي"),React.createElement("span",null,sub?sub.name:'الكل'),React.createElement("i",{"aria-hidden":true},React.createElement(ChevronDown,{size:20}))),
   grp&&React.createElement("button",{type:"button",className:"nm-fchip-x","aria-label":"إلغاء الفلتر",onClick:()=>setHmAsset('all')},"×"));})(),
   max>0?React.createElement("div",{className:"nm-heat-sum"},React.createElement("span",null,"الإجمالي ",React.createElement("b",null,fmt(sum))),React.createElement("span",null,"أعلى شهر ",React.createElement("b",null,monthNames[top.month-1]+" "+top.year+" · "+fmt(max)))):React.createElement("div",{className:"nm-field-hint"},"مفيش دخل للأصل ده في الفترة دي."),
   React.createElement("div",{className:"nm-heat-scroll"},React.createElement("table",{className:"nm-heat-grid"},
@@ -1571,10 +1571,10 @@ const renderHome=()=>{if(homeSub==='earners')return renderEarners();
 .nm-an-now, .nm-an-inc { display: none !important; }
 .nm-heat-cell.tap { cursor: pointer; }
 .nm-fchips { display: flex; gap: 8px; flex-wrap: nowrap; align-items: stretch; margin: 4px 0 14px; }
-.nm-fchip { display: inline-flex; flex-direction: column; align-items: flex-start; position: relative; min-height: 48px; flex: 1 1 0; min-width: 0; padding-block: 6px; padding-inline: 14px 30px; border: 1px solid #dddddd; border-radius: 12px; background: #fff; font: inherit; color: #222; cursor: pointer; text-align: right; }
+.nm-fchip { display: inline-flex; flex-direction: column; align-items: flex-start; position: relative; min-height: 48px; flex: 1 1 0; min-width: 0; padding-block: 6px; padding-inline: 14px 42px; border: 1px solid #dddddd; border-radius: 12px; background: #fff; font: inherit; color: #222; cursor: pointer; text-align: right; }
 .nm-fchip small { font-size: 11px; color: #6a6a6a; }
 .nm-fchip span { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.nm-fchip i { position: absolute; inset-inline-end: 12px; top: 50%; transform: translateY(-50%); font-style: normal; color: #6a6a6a; font-size: 12px; }
+.nm-fchip i { position: absolute; inset-inline-end: 14px; top: 50%; transform: translateY(-50%); font-style: normal; color: #6a6a6a; display: flex; }
 .nm-fchip.on { border-color: #222; background: #F7F7F7; }
 .nm-fchip:focus-visible, .nm-fchip-x:focus-visible { outline: 2px solid #222; outline-offset: 2px; }
 .nm-fchip-x { flex: none; width: 44px; min-height: 48px; border: 1px solid #dddddd; border-radius: 12px; background: #fff; font-size: 20px; color: #6a6a6a; cursor: pointer; }
@@ -2229,7 +2229,7 @@ setTimeout(apply,300);setInterval(function(){var b=document.querySelector('.nm-a
 })();
 </script>
 <script>
-window.NM_BUILD=83;window.NM_VERSION='8.3';
+window.NM_BUILD=84;window.NM_VERSION='8.4';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
