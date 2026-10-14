@@ -1222,7 +1222,7 @@ const renderHome=()=>{if(homeSub==='earners')return renderEarners();
  const egp=v=>React.createElement(React.Fragment,null,fmt(v),React.createElement("span",{style:{fontSize:'0.62em',fontWeight:600,color:'#6a6a6a',marginInlineStart:'4px'}},"ج.م"));
  if(assets.length===0)return React.createElement("div",{style:{...card,textAlign:'center',padding:'56px 24px'}},React.createElement("div",{style:{fontSize:'48px',marginBottom:'12px'}},"🌱"),React.createElement("div",{style:{fontSize:'20px',fontWeight:700,color:'#222',marginBottom:'8px'}},"ابدأ ببناء محفظتك"),React.createElement("div",{style:{fontSize:'14px',color:'#6a6a6a',marginBottom:'22px',lineHeight:1.6}},"أضف أول أصل أو استورد محفظتك، ونماء هيحسبلك ثروتك ودخلك الشهري ونموهم."),React.createElement("button",{className:"btn btn-primary",style:{margin:'0 auto'},onClick:()=>{addAsset();goView('overview');}},React.createElement(Plus,{size:16}),"أضف أصل"));
  return React.createElement("div",{className:"nm-home"},
-  React.createElement("div",{className:"nm-span nm-greet"},React.createElement("span",null,greet+" 👋"),React.createElement("button",{className:"nm-refresh",onClick:()=>refreshAll(false),disabled:autoBusy},autoBusy?"بيحدّث الأسعار…":("↻ "+(ratesUpdated?("الأسعار: "+ratesUpdated):"حدّث الأسعار")))),
+  React.createElement("div",{className:"nm-span nm-greet"},React.createElement("span",null,greet+" 👋"),React.createElement("button",{className:"nm-refresh",onClick:()=>refreshAll(false),disabled:autoBusy,title:ratesUpdated?("آخر تحديث للأسعار: "+ratesUpdated):"حدّث الأسعار","aria-label":autoBusy?"بيحدّث الأسعار":(ratesUpdated?("حدّث الأسعار، آخر تحديث "+ratesUpdated):"حدّث الأسعار"),style:{whiteSpace:"nowrap"}},autoBusy?"↻ بيحدّث…":("↻ "+(ratesUpdated?("الأسعار "+String(ratesUpdated).split(/[،,]\s*/).pop()):"حدّث الأسعار")))),
   React.createElement("div",{className:"nm-span",style:{...card,padding:isMobile?'22px 20px 18px':'28px'}},
    React.createElement("div",{style:{fontSize:'13px',color:'#6a6a6a',fontWeight:500}},"صافي ثروتك"),
    React.createElement("div",{style:{fontSize:isMobile?'36px':'44px',fontWeight:800,letterSpacing:'-0.5px',color:'#222',margin:'4px 0 18px',lineHeight:1.15,fontVariantNumeric:'tabular-nums'}},egp(netWorth)),
@@ -2111,7 +2111,7 @@ window.NamaaZakat={render:function(){var h=document.getElementById('nm-zakat-hos
 })();
 </script>
 <script>
-window.NM_BUILD=71;window.NM_VERSION='7.1';
+window.NM_BUILD=72;window.NM_VERSION='7.2';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
