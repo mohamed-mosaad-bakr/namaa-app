@@ -1637,23 +1637,23 @@ const renderHome=()=>{if(homeSub==='earners')return renderEarners();
         .nm-theme { background: #fff; border-radius: 16px; padding: 18px 16px; margin-bottom: 16px; box-shadow: rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px; }
         .nm-theme h3 { margin: 0 0 4px; font-size: 16px; color: #222; }
         .nm-theme p { margin: 0 0 14px; font-size: 13px; color: #6a6a6a; line-height: 1.6; }
-.nm-set-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.nm-set-head p{margin:0!important}.nm-set-head>div{min-width:0}
+.nm-set-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.nm-set-head p{margin:0!important}.nm-set-head>div{min-width:0}
 .nm-set-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #DDDDDD;background:#fff;color:#222;font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;position:relative}
 .nm-set-btn.pri{background:var(--nm-accent);border-color:var(--nm-accent);color:#fff}.nm-set-btn:disabled{opacity:.55;cursor:default}
-.nm-set-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nm-set-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.nm-set-grid .nm-set-btn{white-space:normal;text-align:center;line-height:1.3;padding:8px 10px;min-width:0}
 .nm-set-link{display:inline-flex;align-items:center;gap:6px;background:none;border:none;padding:10px 2px;font:inherit;font-size:14px;font-weight:600;color:var(--nm-accent);cursor:pointer;min-height:44px}
 .nm-set-sub{font-size:13px;font-weight:700;color:#222;margin:18px 0 8px}
 .nm-set-note{display:block;font-size:12px;color:#6a6a6a;line-height:1.6;margin-top:8px}
 .nm-set-line{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:#3f3f3f;line-height:1.5}
 .nm-set-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:1px solid #ebebeb;border-radius:14px;background:#fff;font:inherit;text-align:right;cursor:pointer;min-height:60px}
-.nm-set-ic{font-size:20px}.nm-set-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.nm-set-rt b{font-size:14px;color:#222}.nm-set-rt small{font-size:12px;color:#6a6a6a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nm-set-chev{font-size:22px;color:#929292}
+.nm-set-ic{font-size:20px}.nm-set-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.nm-set-rt b{font-size:14px;color:#222}.nm-set-rt small{font-size:12px;color:#6a6a6a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.nm-set-rt small bdi{unicode-bidi:isolate}.nm-set-chev{font-size:22px;color:#929292}
 .nm-cur-list{display:flex;flex-direction:column}
-.nm-cur{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #f2f2f2}.nm-cur:first-child{border-top:none}
+.nm-cur{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:10px 0;border-top:1px solid #f2f2f2}.nm-cur:first-child{border-top:none}
 .nm-cur.off .nm-cur-n,.nm-cur.off .nm-cur-rate{opacity:.6}
-.nm-cur-n{display:flex;align-items:center;gap:8px;min-width:0}.nm-cur-f{font-size:20px}.nm-cur-n b{display:block;font-size:14px;color:#222;line-height:1.3}.nm-cur-n small{font-size:11px;color:#929292;font-weight:600}
-.nm-cur-base{font-size:12px;color:#6a6a6a}
-.nm-cur-rate{display:flex;align-items:center;gap:4px;border:1px solid #DDDDDD;border-radius:10px;padding:0 8px;height:38px;background:#fff}.nm-cur-rate:focus-within{border-color:#222}.nm-cur-rate input{width:64px;border:none;outline:none;font:inherit;font-size:14px;font-weight:600;text-align:center;background:transparent;color:#222}.nm-cur-rate span{font-size:11px;color:#6a6a6a}
-.nm-cur-del{width:32px;height:38px;display:flex;align-items:center;justify-content:center;border:none;background:none;color:#929292;cursor:pointer;border-radius:8px}
+.nm-cur-n{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}.nm-cur-n>div{min-width:0;flex:1}.nm-cur-f{font-size:20px}.nm-cur-n b{display:block;font-size:14px;color:#222;line-height:1.3}.nm-cur-n small{font-size:11px;color:#929292;font-weight:600}
+.nm-cur-base{font-size:12px;color:#6a6a6a}@media (max-width:440px){.nm-cur{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"t n d" ". r r";row-gap:6px}.nm-cur>.toggle{grid-area:t}.nm-cur>.nm-cur-n{grid-area:n}.nm-cur>.nm-cur-rate,.nm-cur>.nm-cur-base{grid-area:r;justify-self:start}.nm-cur>:last-child{grid-area:d}.nm-cur-rate input{width:90px}.nm-cur-n{overflow:visible}}
+.nm-cur-rate{display:flex;align-items:center;gap:4px;border:1px solid #DDDDDD;border-radius:10px;padding:0 8px;height:38px;background:#fff}.nm-cur-rate:focus-within{border-color:#222}.nm-cur-rate input{width:58px;min-width:0;border:none;outline:none;font:inherit;font-size:14px;font-weight:600;text-align:center;background:transparent;color:#222}.nm-cur-rate span{font-size:11px;color:#6a6a6a}
+.nm-cur-del{width:28px;height:38px;display:flex;align-items:center;justify-content:center;border:none;background:none;color:#929292;cursor:pointer;border-radius:8px}
 .nm-cur-more{margin-top:6px;border-top:1px solid #ebebeb;padding-top:6px}.nm-cur-more summary{cursor:pointer;font-size:14px;font-weight:600;color:#3f3f3f;padding:10px 0;min-height:24px}.nm-cur-more p{margin:0 0 4px!important;font-size:12px!important}
 .nm-set-danger{margin:28px 0 8px;padding:18px 16px;border:1px solid #F3D3CC;border-radius:16px;background:#FFFBFA}.nm-set-danger h3{margin:0 0 4px;font-size:15px;color:#B42318}.nm-set-danger p{margin:0 0 12px;font-size:13px;color:#6a6a6a}
 .nm-set-danger button{width:100%;min-height:46px;border-radius:12px;border:1px solid #B42318;background:#fff;color:#B42318;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
@@ -1798,7 +1798,7 @@ return h("div",{className:"nm-settings",style:{maxWidth:'900px',margin:'0 auto',
   h("p",null,"بياناتك محفوظة على الجهاز ده تلقائيًا."),
   window.NamaaSync&&h("button",{className:"nm-set-row",onClick:()=>window.NamaaSync.open()},
    h("span",{className:"nm-set-ic","aria-hidden":true},"☁️"),
-   h("span",{className:"nm-set-rt"},h("b",null,"المزامنة بين الأجهزة"),h("small",null,syncSt&&syncSt.auth?("متصل"+(email?(" · "+email):"")+(syncSt.status==='error'?" · المزامنة واقفة":"")):"سجّل دخول عشان تفتح محفظتك من أي جهاز")),
+   h("span",{className:"nm-set-rt"},h("b",null,"المزامنة بين الأجهزة"),h("small",null,syncSt&&syncSt.auth?(syncSt.status==='error'?"المزامنة واقفة · دوس عشان تصلحها":"متصل وبيزامن تلقائيًا"):"سجّل دخول عشان تفتح محفظتك من أي جهاز"),syncSt&&syncSt.auth&&email&&h("small",{dir:"ltr",style:{textAlign:"right"}},email)),
    h("span",{className:"nm-set-chev","aria-hidden":true},"‹")),
   h("div",{className:"nm-set-sub"},"نسخة احتياطية"),
   h("div",{className:"nm-set-grid"},
@@ -2194,7 +2194,7 @@ setTimeout(apply,300);setInterval(function(){var b=document.querySelector('.nm-a
 })();
 </script>
 <script>
-window.NM_BUILD=77;window.NM_VERSION='7.7';
+window.NM_BUILD=78;window.NM_VERSION='7.8';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
