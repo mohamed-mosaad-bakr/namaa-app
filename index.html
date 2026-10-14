@@ -2111,7 +2111,18 @@ window.NamaaZakat={render:function(){var h=document.getElementById('nm-zakat-hos
 })();
 </script>
 <script>
-window.NM_BUILD=73;window.NM_VERSION='7.3';
+/* NAMAA_NAVFX v1 — large title that collapses into a compact sticky bar on scroll (Airbnb-style) */
+(function(){
+var css=document.createElement('style');css.textContent='html,body{overflow-x:clip!important}.nm-appbar{position:sticky!important;top:0!important;transition:padding .28s cubic-bezier(.2,.8,.2,1),border-color .28s ease,box-shadow .28s ease}.nm-appbar h1{transition:font-size .28s cubic-bezier(.2,.8,.2,1),gap .28s ease}.nm-appbar h1 img{transition:width .28s cubic-bezier(.2,.8,.2,1),height .28s cubic-bezier(.2,.8,.2,1),border-radius .28s ease}.nm-appbar:not(.nm-compact){border-bottom-color:transparent!important;padding-top:20px!important;padding-bottom:14px!important}.nm-appbar:not(.nm-compact) h1{font-size:30px!important;letter-spacing:-.4px!important}.nm-appbar:not(.nm-compact) h1 img{width:44px!important;height:44px!important;border-radius:12px!important}.nm-appbar.nm-compact{padding-top:10px!important;padding-bottom:10px!important;box-shadow:0 1px 0 rgba(0,0,0,.06)}.nm-appbar.nm-compact h1{font-size:18px!important}.nm-appbar.nm-compact h1 img{width:28px!important;height:28px!important;border-radius:8px!important}@media(prefers-reduced-motion:reduce){.nm-appbar,.nm-appbar h1,.nm-appbar h1 img{transition:none!important}}';document.head.appendChild(css);
+var compact=false,tick=false;
+function apply(){tick=false;var b=document.querySelector('.nm-appbar');if(!b)return;var y=window.scrollY||document.documentElement.scrollTop||0;var c=compact?(y>8):(y>36);if(c!==compact||b.classList.contains('nm-compact')!==c){compact=c;b.classList.toggle('nm-compact',c);}}
+window.addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(apply);}},{passive:true});
+new MutationObserver(function(){if(!tick){tick=true;requestAnimationFrame(apply);}}).observe(document.documentElement,{childList:true,subtree:false});
+setTimeout(apply,300);setInterval(function(){var b=document.querySelector('.nm-appbar');if(b&&b.classList.contains('nm-compact')!==compact)b.classList.toggle('nm-compact',compact);},800);
+})();
+</script>
+<script>
+window.NM_BUILD=74;window.NM_VERSION='7.4';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
