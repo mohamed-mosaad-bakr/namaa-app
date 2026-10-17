@@ -2312,11 +2312,11 @@ function num(t){var v=parseFloat(String(t).replace(/[٠-٩]/g,function(x){return
 function par(d,a){return a.parentId!=null?(d.assets||[]).find(function(x){return x.id===a.parentId;}):null;}
 
 var CL=[
- {k:'cash',n:'كاش وادخار',s:'حساب ادخار أو ودايع إسلامية وصكوك',ic:'💵'},
- {k:'gold',n:'دهب',s:'سبايك أو جنيهات دهب',ic:'🪙'},
+ {k:'cash',n:'كاش وادخار',s:'شهادات وحسابات إسلامية',ic:'💵'},
+ {k:'gold',n:'دهب',s:'دهب أونلاين من سبيكة',ic:'🪙'},
  {k:'usd',n:'دولار وعملات',s:'حماية من تعويم الجنيه',ic:'💲'},
- {k:'stocks',n:'أسهم متوافقة',s:'أسهم بتعدّي فاحص الحلال',ic:'📈'},
- {k:'re',n:'عقار',s:'عقار كامل أو حصص عقار جزئي',ic:'🏢'}];
+ {k:'stocks',n:'أسهم متوافقة',s:'من بورصة حلال + ثاندر',ic:'📈'},
+ {k:'re',n:'عقار',s:'حصص عقار متراجعة شرعيًا',ic:'🏢'}];
 var CN={};CL.forEach(function(c){CN[c.k]=c;});
 var RE=/safe|سيف|أمتار|امتار|فريدة|farida|عقار|شقة|مكتب|وحدة|محل|فيلا|أرض|ارض|mall|tower|office|park|برج/i;
 function guess(d,a){var p=par(d,a);var c=a.currency||'EGP';var nm=a.name+' '+(p?p.name:'');
@@ -2359,10 +2359,10 @@ function stepsFor(d,p){
  var under=gaps.filter(function(g){return g.gap>T*0.02;}).sort(function(a,b){return b.gap-a.gap;});
  var over=gaps.filter(function(g){return g.gap<-T*0.05;}).sort(function(a,b){return a.gap-b.gap;});
  var how={
-  cash:zero?'افتح حساب ادخار في بنك إسلامي زي البركة أو فيصل أو أبوظبي الإسلامي، وحوّل عليه جزء ثابت كل شهر. ولو مش هتحتاج الفلوس قريب، شهادة إسلامية مع التطهير.':'وزّع بين حساب ادخار إسلامي وشهادات إسلامية مع التطهير، أو صناديق إسلامية قصيرة الأجل.',
-  gold:zero?'أسهل بداية: اشتري دهب أونلاين بأي مبلغ من «سبيكة». أو سبيكة صغيرة أو جنيه دهب من محل موثوق وخلّي الفاتورة. سجّله في نماء كأصل «دهب».':'اشتري سبايك أو جنيهات (مصنعيتها أقل من المشغولات)، أو صندوق دهب.',
+  cash:zero?'افتح حساب ادخار في بنك إسلامي زي البركة أو فيصل أو أبوظبي الإسلامي، وحوّل عليه جزء ثابت كل شهر. ولو مش هتحتاج الفلوس قريب، شهادة إسلامية مع التطهير.':'وزّع بين حساب ادخار إسلامي وشهادات إسلامية مع التطهير، من البركة أو فيصل أو أبوظبي الإسلامي.',
+  gold:zero?'اشتري دهب أونلاين بأي مبلغ من «سبيكة»، وسجّله في نماء كأصل «دهب».':'زوّد الدهب أونلاين من «سبيكة».',
   usd:'حوّل جزء لدولار وخليه في شهادة أو حساب دولار إسلامي (البركة أو فيصل أو أبوظبي الإسلامي) مع التطهير. الهدف الأساسي حماية قيمة فلوسك.',
-  stocks:zero?'نزّل ثاندر وافتح حساب، واختار سهم أو اتنين من ترشيحات «بورصة حلال» وابدأ بمبلغ صغير. أو صندوق نعيم للأسهم الشرعية لو مش عايز تختار بنفسك.':'زوّد الأسهم المتوافقة من ترشيحات «بورصة حلال» واشتريها من ثاندر، أو صندوق أسهم إسلامي.',
+  stocks:zero?'نزّل ثاندر وافتح حساب، واختار سهم أو اتنين من ترشيحات «بورصة حلال» وابدأ بمبلغ صغير.':'زوّد الأسهم المتوافقة من ترشيحات «بورصة حلال» واشتريها من ثاندر.',
   re:'حصص عقار جزئي بتبدأ من 1,000 ج وبتديك إيجار. اختار وحدات اتراجعت شرعيًا، زي وحدات أمتار اللي بتراجعها إجارة، وقارن العائد والمدة قبل ما تختار.'};
  under.forEach(function(g,i){var c=CN[g.k];
   if(i===0&&S>0)out.push({id:'add-'+g.k,c:g.k,t:'الشهر ده: حط '+f0(Math.min(S,g.gap))+' ج في '+c.n,d:how[g.k]+' دي أكتر فئة ناقصة في خطتك (ناقصك حوالي '+f0(g.gap)+' ج عشان توصل لنسبتك).'});
@@ -2381,16 +2381,11 @@ var PV={
  amtaar:{n:'أمتار',k:'re',l:'حصص عقارية بعائد إيجار · بمراجعة إجارة',d:'منصة رقمية بتشتري فيها حصص في وحدات عقارية بدل ما تشتري عقار كامل، وبتاخد نصيبك من الإيجار ومن زيادة سعر العقار. أول إصدار لصندوق بلتون عليها بيبدأ من 1,000 ج.',sh:'الوحدات بتتراجع شرعيًا من «إجارة» (Ejara)، ومكتوب ده على صفحة كل وحدة.',u:ps('Amtaar')},
  safe:{n:'Safe',k:'re',l:'من مدينة مصر · الحصة من 5,000 ج',d:'منصة الملكية الجزئية بتاعة مدينة مصر، وفيها وحدات من مطورين تانيين كمان. بتدفع مرة واحدة من غير أقساط، وبتاخد إيجار، وتقدر تبيع حصتك قبل ميعاد الخروج في السوق الثانوي.',sh:'دخلها من الإيجار مش من فوايد. اسأل المنصة عن الرأي الشرعي قبل ما تشترك.',u:'https://play.google.com/store/apps/details?id=com.madinetmasr.safe'},
  farida:{n:'فريدة',k:'re',l:'الحصة من 1,000 ج · تحت رقابة الرقابة المالية',d:'منصة ملكية جزئية فيها وحدات سكنية وإدارية وتجارية وطبية وساحلية، وبتكسب من الإيجار أو من بيع العقار. شراكة بين كولدويل بانكر وصقر، وورا الوحدات صندوق عقاري مرخّص.',sh:'المنصة بتقول إن استثماراتها متوافقة مع الشريعة.',u:'https://farida.estate/'},
- borsahalal:{n:'بورصة حلال + ثاندر',k:'stocks',l:'تعرف السهم الحلال وتشتريه من ثاندر',d:'«بورصة حلال» بتعرّفك أنهي أسهم في البورصة المصرية متوافقة مع الشريعة، وبعدين تشتريها من تطبيق ثاندر بمبالغ صغيرة. كده بتشتري أسهم متوافقة من غير ما تفحص كل سهم بنفسك.',sh:'الأسهم اللي بيرشحوها متوافقة مع الشريعة. وتقدر تتأكد من أي سهم في «فاحص الحلال» في نماء.',u:'https://www.borsahalal.com/',u2:'https://play.google.com/store/apps/details?id=com.axismarkets.thndr',u2l:'حمّل ثاندر'},
- thndr_sh:{n:'ثاندر · ثيم الشريعة',k:'stocks',l:'أسهم البورصة المصرية المتوافقة',d:'تطبيق سمسرة مرخّص بتشتري منه أسهم البورصة المصرية بمبالغ صغيرة. فيه ثيم اسمه «الشريعة» بيجمع الأسهم المتوافقة.',sh:'افحص أي سهم في «فاحص الحلال» أو «بورصة حلال» قبل ما تشتريه.',u:'https://play.google.com/store/apps/details?id=com.axismarkets.thndr'},
- nmf:{n:'صندوق نعيم للأسهم الشرعية',k:'stocks',l:'NMF · على ثاندر',d:'صندوق بيستثمر في أسهم البورصة المتوافقة، ومناسب لو مش عايز تختار الأسهم بنفسك. مخاطرته عالية زي أي أسهم.',sh:'عليه هيئة رقابة شرعية برئاسة د. علي جمعة.',u:'https://play.google.com/store/apps/details?id=com.axismarkets.thndr'},
+ borsahalal:{n:'بورصة حلال + ثاندر',k:'stocks',l:'تعرف السهم الحلال وتشتريه من ثاندر',d:'«بورصة حلال» بتعرّفك أنهي أسهم في البورصة المصرية متوافقة مع الشريعة، وبعدين تشتريها من تطبيق ثاندر بمبالغ صغيرة. كده بتشتري أسهم متوافقة من غير ما تفحص كل سهم بنفسك.',sh:'الأسهم اللي بيرشحوها متوافقة مع الشريعة.',u:'https://www.borsahalal.com/',u2:'https://play.google.com/store/apps/details?id=com.axismarkets.thndr',u2l:'حمّل ثاندر'},
  sabika:{n:'سبيكة',k:'gold',l:'Sabika · تشتري دهب أونلاين',d:'تطبيق بتشتري منه دهب وفضة أونلاين بأي مبلغ، وتبيع أو تخزّن من غير ما تشيل الدهب معاك.',sh:'بيقولوا إنهم ماشيين على المعيار الشرعي للذهب من AAOIFI.',u:'https://play.google.com/store/apps/details?id=com.sabika.app'},
- azg:{n:'صندوق الدهب AZG',k:'gold',l:'على ثاندر · دهب عيار 24',d:'صندوق بيشتري دهب عيار 24 حقيقي ومتخزن في خزن مرخّصة، فتشتري دهب بأي مبلغ من غير مصنعية ولا تخزين.',sh:'الدهب نفسه مفيهوش فوايد.',u:'https://play.google.com/store/apps/details?id=com.axismarkets.thndr'},
- bullion:{n:'سبايك وجنيهات دهب',k:'gold',l:'من محل دهب موثوق',d:'السبايك والجنيهات مصنعيتها أقل بكتير من المشغولات، وخلّي معاك الفاتورة.',sh:'لازم تستلم الدهب في نفس وقت الدفع (يدًا بيد).',u:''},
  ibank:{n:'شهادات وحسابات إسلامية',k:'cash',l:'بنك البركة · فيصل الإسلامي · أبوظبي الإسلامي',d:'شهادات وحسابات ادخار إسلامية بالجنيه، عائدها من المضاربة أو المرابحة بدل الفايدة. الحساب ينفع لاحتياطي الطوارئ، والشهادة للفلوس اللي مش هتحتاجها قريب.',sh:'مع التطهير: لو الهيئة الشرعية حددت نسبة من العائد للتطهير، طلّعها صدقة.',u:''},
- mtf:{n:'صندوق مصر تكافل',k:'cash',l:'MTF · على ثاندر · مخاطرة منخفضة',d:'صندوق ادخار منخفض المخاطر، تقدر تحط فيه احتياطي الطوارئ وتسحب منه.',sh:'متوافق مع الشريعة حسب ثاندر.',u:'https://play.google.com/store/apps/details?id=com.axismarkets.thndr'},
  usdacc:{n:'شهادات وحسابات دولار إسلامية',k:'usd',l:'بنك البركة · فيصل الإسلامي · أبوظبي الإسلامي',d:'نفس الفكرة بالدولار: شهادة أو حساب إسلامي بالدولار، يحمي جزء من فلوسك من التعويم ويديك عائد.',sh:'مع التطهير لو مطلوب، والصرف لازم يبقى فوري من غير تأجيل.',u:''}};
-var BYC={re:['ejara','amtaar','safe','farida'],stocks:['borsahalal','thndr_sh','nmf'],gold:['sabika','azg','bullion'],cash:['ibank','mtf'],usd:['usdacc']};
+var BYC={re:['ejara','amtaar','safe','farida'],stocks:['borsahalal'],gold:['sabika'],cash:['ibank'],usd:['usdacc']};
 function openUrl(u){try{if(window.NamaaAndroid&&window.NamaaAndroid.openUrl){window.NamaaAndroid.openUrl(u);return;}}catch(e){}window.open(u,'_blank','noopener');}
 function chips(k){var a=BYC[k]||[];if(!a.length)return '';return '<div class="nml-pv"><span>فين؟</span>'+a.map(function(id){return '<button type="button" class="nml-chip" data-pv="'+id+'">'+esc(PV[id].n)+'</button>';}).join('')+'</div>';}
 function provSheet(id){var v=PV[id];if(!v)return;var sc=document.createElement('div');sc.className='nml-scrim';
@@ -2486,7 +2481,7 @@ setTimeout(apply,300);setInterval(function(){var b=document.querySelector('.nm-a
 })();
 </script>
 <script>
-window.NM_BUILD=95;window.NM_VERSION='9.5';
+window.NM_BUILD=96;window.NM_VERSION='9.6';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
