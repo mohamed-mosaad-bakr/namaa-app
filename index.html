@@ -1898,11 +1898,9 @@ return h("div",{className:"nm-settings",style:{maxWidth:'900px',margin:'0 auto',
   h("small",{className:"nm-set-note"},"عشان تنقل بياناتك لجهاز تاني من غير مزامنة: صدّر الملف هنا واستورده هناك."),
   h("div",{className:"nm-set-sub"},"استيراد من الصور"),
   h("div",{className:"nm-set-line"},h("span",null,gk?"مفتاح Gemini محفوظ على الجهاز ده":"هتضيف مفتاح Gemini أول مرة تستورد أصول من صورة"),gk&&h("button",{className:"nm-set-link",onClick:e=>{const b=e.currentTarget;if(confirm('تمسح مفتاح Gemini من الجهاز ده؟ هيطلب منك تضيفه تاني المرة الجاية.')){try{localStorage.removeItem('namaa-gemini-key');}catch(x){}b.previousSibling.textContent='اتمسح المفتاح. هتضيفه تاني أول مرة تستورد من صورة';b.style.display='none';}}},"امسح المفتاح"))),
- /* 3. appearance + language */
+ /* 3. appearance */
  renderThemePicker(),
- h("section",{className:"nm-theme nm-set","aria-labelledby":"nm-lang-h"},
-  h("div",{className:"nm-set-head"},h("div",null,h("h3",{id:"nm-lang-h"},"اللغة"),h("p",null,"لغة القوايم والعناوين.")),
-   h("span",{className:"nm-input-wrap",style:{width:'150px',flex:'none'}},h("select",{className:"nm-input",value:lang,onChange:e=>setLang(e.target.value),"aria-label":"لغة التطبيق"},h("option",{value:"ar"},"العربية"),h("option",{value:"en"},"English")),h("span",{className:"nm-sel-chev","aria-hidden":true,dangerouslySetInnerHTML:{__html:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'}})))),
+ 
  /* 4. danger */
  h("section",{className:"nm-set-danger","aria-labelledby":"nm-dz-h"},
   h("h3",{id:"nm-dz-h"},"منطقة الخطر"),
@@ -2505,7 +2503,7 @@ function stepsFor(d,p){
 /* where to invest — sharia-oriented Egyptian options (facts from public sources, Oct 2026) */
 function ps(q){return 'https://play.google.com/store/search?q='+encodeURIComponent(q)+'&c=apps';}
 var PV={
- amtaar:{n:'إجارة + أمتار',k:'re',l:'إجارة بتراجع الوحدات شرعيًا وتشتريها من أمتار',d:'«إجارة» بتراجع وحدات العقار شرعيًا، وبعدين تشتري حصص في الوحدات دي من تطبيق أمتار بدل ما تشتري عقار كامل، وتاخد نصيبك من الإيجار ومن زيادة سعر العقار. على صفحة كل وحدة في أمتار مكتوب «تمت المراجعة بواسطة Ejara». أول إصدار لصندوق بلتون على أمتار بيبدأ من 1,000 ج.',sh:'الوحدات بتتراجع شرعيًا من «إجارة» (Ejara). ولو عندك سؤال عن وحدة قبل ما تشتري، كلّمهم.',u:ps('Amtaar'),ul:'حمّل أمتار',u2:'https://wa.me/201555309309',u2l:'كلّم إجارة على واتساب',u3:'https://t.me/+h1XKsOn-WWc4YTY0',u3l:'جروب إجارة على التليجرام'},
+ amtaar:{n:'إجارة + أمتار',k:'re',l:'إجارة بتراجع الوحدات شرعيًا وتشتريها من أمتار',d:'«إجارة» بتراجع وحدات العقار شرعيًا، وبعدين تشتري حصص في الوحدات دي من تطبيق أمتار بدل ما تشتري عقار كامل، وتاخد نصيبك من الإيجار ومن زيادة سعر العقار. على صفحة كل وحدة في أمتار مكتوب «تمت المراجعة بواسطة Ejara». أول إصدار لصندوق بلتون على أمتار بيبدأ من 1,000 ج.',sh:'الوحدات بتتراجع شرعيًا من «إجارة» (Ejara). ولو عندك سؤال عن وحدة قبل ما تشتري، كلّمهم.',u:'https://play.google.com/store/apps/details?id=com.iocode.amtaarApp',ul:'حمّل أمتار',u2:'https://wa.me/201555309309',u2l:'كلّم إجارة على واتساب',u3:'https://t.me/+h1XKsOn-WWc4YTY0',u3l:'جروب إجارة على التليجرام'},
  safe:{n:'Safe',k:'re',l:'من مدينة مصر · الحصة من 5,000 ج',d:'منصة الملكية الجزئية بتاعة مدينة مصر، وفيها وحدات من مطورين تانيين كمان. بتدفع مرة واحدة من غير أقساط، وبتاخد إيجار، وتقدر تبيع حصتك قبل ميعاد الخروج في السوق الثانوي.',sh:'دخلها من الإيجار مش من فوايد. اسأل المنصة عن الرأي الشرعي قبل ما تشترك.',u:'https://play.google.com/store/apps/details?id=com.madinetmasr.safe'},
  farida:{n:'فريدة',k:'re',l:'الحصة من 1,000 ج · تحت رقابة الرقابة المالية',d:'منصة ملكية جزئية فيها وحدات سكنية وإدارية وتجارية وطبية وساحلية، وبتكسب من الإيجار أو من بيع العقار. شراكة بين كولدويل بانكر وصقر، وورا الوحدات صندوق عقاري مرخّص.',sh:'المنصة بتقول إن استثماراتها متوافقة مع الشريعة.',u:'https://farida.estate/'},
  borsahalal:{n:'بورصة حلال + ثاندر',k:'stocks',l:'تعرف السهم الحلال وتشتريه من ثاندر',d:'«بورصة حلال» بتعرّفك أنهي أسهم في البورصة المصرية متوافقة مع الشريعة، وبعدين تشتريها من تطبيق ثاندر بمبالغ صغيرة. كده بتشتري أسهم متوافقة من غير ما تفحص كل سهم بنفسك.',sh:'الأسهم اللي بيرشحوها متوافقة مع الشريعة.',u:'https://www.borsahalal.com/',ul:'افتح بورصة حلال',u2:'https://play.google.com/store/apps/details?id=com.axismarkets.thndr',u2l:'حمّل ثاندر'},
@@ -2608,7 +2606,7 @@ setTimeout(apply,300);setInterval(function(){var b=document.querySelector('.nm-a
 })();
 </script>
 <script>
-window.NM_BUILD=102;window.NM_VERSION='10.2';
+window.NM_BUILD=103;window.NM_VERSION='10.3';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
