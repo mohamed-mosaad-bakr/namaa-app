@@ -3521,15 +3521,21 @@ function onAdd(n){if(n.nodeType!==1)return;var c=n.className&&n.className.baseVa
  if(/(^|\s)[a-z0-9]+-scrim(\s|$)/.test(c)){if(n.querySelector('.nmr')){setTimeout(function(){var b=n.querySelector('.nmr-sum b');play(b?(b.classList.contains('dn')?'down':'up'):'pop');},60);}else play('pop');}}
 new MutationObserver(function(ms){ms.forEach(function(m){for(var i=0;i<m.addedNodes.length;i++)onAdd(m.addedNodes[i]);});}).observe(document.body,{childList:true});
 
-/* ---------- net worth: count up once per launch ---------- */
-var counted=false;
+/* ---------- net worth: count up once per launch (only the existing text node, only after the value settles) ---------- */
+var counted=false,cuEl=null,cuVal=null,cuT=0;
 function countUp(){if(counted)return;var home=document.querySelector('.nm-home');if(!home)return;var lbl=null,ds=home.querySelectorAll('div');for(var i=0;i<ds.length&&i<60;i++){if(ds[i].childElementCount===0&&ds[i].textContent==='صافي ثروتك'){lbl=ds[i];break;}}
- if(!lbl||!lbl.nextElementSibling)return;var el=lbl.nextElementSibling;counted=true;if(!motionOn())return;
- var txt=el.textContent,m=txt.match(/\d{1,3}(?:([.,\u066C])\d{3})+/);if(!m)return;var sep=m[1],to=parseInt(m[0].replace(/[.,\u066C]/g,''),10);if(!(to>=1000))return;
- var pre=txt.slice(0,m.index),post=txt.slice(m.index+m[0].length),from=to*0.82,t0=0,D=750,lastSet=txt;
+ if(!lbl||!lbl.nextElementSibling)return;var el=lbl.nextElementSibling,tn=el.firstChild;
+ if(el.childNodes.length!==1||!tn||tn.nodeType!==3){counted=true;return;}
+ if(!motionOn()){counted=true;return;}
+ var now=Date.now();if(el!==cuEl||tn.nodeValue!==cuVal){cuEl=el;cuVal=tn.nodeValue;cuT=now;setTimeout(scan,900);return;}
+ if(now-cuT<800){setTimeout(scan,900-(now-cuT));return;}
+ if(now-(window.__nmBoot||0)>15000){counted=true;return;}
+ counted=true;var txt=tn.nodeValue,m=txt.match(/\d{1,3}(?:([.,٬])\d{3})+/);if(!m)return;var sep=m[1],to=parseInt(m[0].replace(/[.,٬]/g,''),10);if(!(to>=1000))return;
+ var pre=txt.slice(0,m.index),post=txt.slice(m.index+m[0].length),from=to*0.85,t0=0,D=650,lastSet;
  function fmt(v){return pre+Math.round(v).toLocaleString('en-US').replace(/,/g,sep)+post;}
- function step(ts){if(el.textContent!==lastSet)return;/* React re-rendered: stop */if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/D),e=1-Math.pow(1-k,3);lastSet=k>=1?txt:fmt(from+(to-from)*e);el.textContent=lastSet;if(k<1)requestAnimationFrame(step);}
- lastSet=fmt(from);el.textContent=lastSet;requestAnimationFrame(step);}
+ function step(ts){if(!tn.parentNode||tn.nodeValue!==lastSet)return;/* React wrote a new value: it wins */if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/D),e=1-Math.pow(1-k,3);lastSet=k>=1?txt:fmt(from+(to-from)*e);tn.nodeValue=lastSet;if(k<1)requestAnimationFrame(step);}
+ lastSet=fmt(from);tn.nodeValue=lastSet;requestAnimationFrame(step);}
+window.__nmBoot=Date.now();
 
 /* ---------- settings control ---------- */
 function row(id,ic,t,sub,on){return '<div class="nm-set-row nmfx-row"><span class="nm-set-ic" aria-hidden="true">'+ic+'</span><span class="nm-set-rt"><b style="font-size:14px;color:#222">'+t+'</b><small style="font-size:12px;color:#6a6a6a;line-height:1.5;white-space:normal">'+sub+'</small></span><button type="button" class="toggle'+(on?' on':'')+'" id="'+id+'" role="switch" aria-checked="'+(on?'true':'false')+'" aria-label="'+t+'"><div class="toggle-dot"></div></button></div>';}
@@ -3558,7 +3564,7 @@ document.head.appendChild(css);
 })();
 </script>
 <script>
-window.NM_BUILD=119;window.NM_VERSION='11.9';
+window.NM_BUILD=120;window.NM_VERSION='12.0';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
