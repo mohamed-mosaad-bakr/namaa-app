@@ -3564,7 +3564,34 @@ document.head.appendChild(css);
 })();
 </script>
 <script>
-window.NM_BUILD=120;window.NM_VERSION='12.0';
+/* NAMAA_BACKGUARD v1 — زرار/سحبة الرجوع بتقفل شيتات React (إضافة، تعديل أصل، القوايم) بدل ما تقفل التطبيق */
+(function(){
+var SEL='.nm-sheet,.nm-editor,.menu-bottom-sheet';
+var stack=[],swallow=0;
+function inc(){window.__nmSheetOpen=(window.__nmSheetOpen||0)+1;}
+function dec(){setTimeout(function(){window.__nmSheetOpen=Math.max(0,(window.__nmSheetOpen||0)-1);},0);}
+function guard(el){try{history.pushState({nmSheet:1},'');}catch(e){return;}inc();stack.push(el);}
+function closeEl(el){var s=el.previousElementSibling;if(s&&/(^|\s)(nm-scrim|menu-overlay)(\s|$)/.test(s.className||'')){s.click();return;}var b=el.querySelector('.menu-bottom-sheet-close');if(b)b.click();}
+window.addEventListener('popstate',function(){
+ if(swallow>0){swallow--;dec();return;}
+ if(!stack.length)return;
+ var el=stack.pop();dec();
+ if(!el.isConnected)return;
+ el.__nmClosing=Date.now();closeEl(el);
+ setTimeout(function(){if(el.isConnected&&stack.indexOf(el)<0)guard(el);/* close refused (e.g. missing fields) → keep guarding */},120);
+});
+var sch=false;
+function scan(){sch=false;var now=Date.now(),gone=0;
+ for(var i=stack.length-1;i>=0;i--){if(!stack[i].isConnected){stack.splice(i,1);gone++;}}
+ var ns=document.querySelectorAll(SEL),fresh=[];for(var j=0;j<ns.length;j++){var x=ns[j];if(stack.indexOf(x)<0&&!(x.__nmClosing&&now-x.__nmClosing<400))fresh.push(x);}
+ while(gone>0&&fresh.length){stack.push(fresh.shift());gone--;}/* one sheet replaced another: reuse its history entry */
+ while(gone>0){gone--;swallow++;try{history.back();}catch(e){swallow--;dec();}}
+ fresh.forEach(guard);}
+new MutationObserver(function(){if(!sch){sch=true;requestAnimationFrame(scan);}}).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+<script>
+window.NM_BUILD=121;window.NM_VERSION='12.1';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
