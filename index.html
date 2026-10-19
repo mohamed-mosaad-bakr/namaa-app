@@ -3549,34 +3549,77 @@ document.head.appendChild(css);
 })();
 </script>
 <script>
-/* NAMAA_BACKGUARD v1 — زرار/سحبة الرجوع بتقفل شيتات React (إضافة، تعديل أصل، القوايم) بدل ما تقفل التطبيق */
+/* NAMAA_BACKGUARD v2 — زرار/سحبة الرجوع بتقفل شيتات React (إضافة، تعديل أصل، القوايم) بدل ما تقفل التطبيق.
+   كل شيت ليه history entry برقم (nmSeq). عند popstate بنقفل بس الشيتات اللي رقمها أكبر من الـ entry الحالية،
+   فلو شيت تاني (اختيار، تأكيد) اتقفل فوق المحرر، المحرر بيفضل مفتوح. */
 (function(){
 var SEL='.nm-sheet,.nm-editor,.menu-bottom-sheet';
-var stack=[],swallow=0;
+var stack=[],seq=0;/* items: {el,s} */
 function inc(){window.__nmSheetOpen=(window.__nmSheetOpen||0)+1;}
 function dec(){setTimeout(function(){window.__nmSheetOpen=Math.max(0,(window.__nmSheetOpen||0)-1);},0);}
-function guard(el){try{history.pushState({nmSheet:1},'');}catch(e){return;}inc();stack.push(el);}
+function find(el){for(var i=0;i<stack.length;i++)if(stack[i].el===el)return i;return -1;}
+function guard(el){var s=++seq;try{history.pushState({nmSheet:1,nmSeq:s},'');}catch(e){return;}inc();stack.push({el:el,s:s});}
 function closeEl(el){var s=el.previousElementSibling;if(s&&/(^|\s)(nm-scrim|menu-overlay)(\s|$)/.test(s.className||'')){s.click();return;}var b=el.querySelector('.menu-bottom-sheet-close');if(b)b.click();}
-window.addEventListener('popstate',function(){
- if(swallow>0){swallow--;dec();return;}
- if(!stack.length)return;
- var el=stack.pop();dec();
- if(!el.isConnected)return;
- el.__nmClosing=Date.now();closeEl(el);
- setTimeout(function(){if(el.isConnected&&stack.indexOf(el)<0)guard(el);/* close refused (e.g. missing fields) → keep guarding */},120);
+window.addEventListener('popstate',function(e){
+ var cur=(e.state&&e.state.nmSeq)||0;
+ for(var i=stack.length-1;i>=0;i--){var it=stack[i];if(it.s<=cur)continue;stack.splice(i,1);dec();
+  if(it.el.isConnected&&!it.gone){(function(el){el.__nmClosing=Date.now();closeEl(el);setTimeout(function(){if(el.isConnected&&find(el)<0)guard(el);/* close refused (missing fields) → keep guarding */},150);})(it.el);}}
+ setTimeout(scan,0);
 });
 var sch=false;
-function scan(){sch=false;var now=Date.now(),gone=0;
- for(var i=stack.length-1;i>=0;i--){if(!stack[i].isConnected){stack.splice(i,1);gone++;}}
- var ns=document.querySelectorAll(SEL),fresh=[];for(var j=0;j<ns.length;j++){var x=ns[j];if(stack.indexOf(x)<0&&!(x.__nmClosing&&now-x.__nmClosing<400))fresh.push(x);}
- while(gone>0&&fresh.length){stack.push(fresh.shift());gone--;}/* one sheet replaced another: reuse its history entry */
- while(gone>0){gone--;swallow++;try{history.back();}catch(e){swallow--;dec();}}
+function scan(){sch=false;var now=Date.now(),gone=[];
+ for(var i=0;i<stack.length;i++){var it=stack[i];if(!it.gone&&!it.el.isConnected){it.gone=true;gone.push(it);}}
+ var ns=document.querySelectorAll(SEL),fresh=[];for(var j=0;j<ns.length;j++){var x=ns[j];if(find(x)<0&&!(x.__nmClosing&&now-x.__nmClosing<400))fresh.push(x);}
+ while(gone.length&&fresh.length){var g=gone.pop();g.el=fresh.shift();g.gone=false;}/* one sheet replaced another: reuse its entry */
+ if(gone.length){var top=stack[stack.length-1];/* only unwind if our dead entries are on top of history */if(top&&top.gone){var cs=(history.state&&history.state.nmSeq)||0;if(cs===top.s){try{history.back();}catch(e){}}}}
  fresh.forEach(guard);}
 new MutationObserver(function(){if(!sch){sch=true;requestAnimationFrame(scan);}}).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 <script>
-window.NM_BUILD=122;window.NM_VERSION='12.2';
+/* NAMAA_DIALOGS v1 — بدل نوافذ JavaScript الرمادي (confirm/alert): بوتوم شيت بشكل التطبيق */
+(function(){
+if(!/\[native code\]/.test(String(window.confirm)))return;/* already replaced (tests) */
+var nConfirm=window.confirm.bind(window),nAlert=window.alert.bind(window);
+var lastT=null,lastAt=0,pass={};
+function rec(e){lastT=e.target;lastAt=Date.now();}
+document.addEventListener('click',rec,true);
+function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+function clean(t){return String(t).replace(/^[\s✅❌⚠️]+/,'').trim();}
+function verb(m){if(/تحذف|حذف/.test(m))return 'احذف';if(/تمسح|امسح/.test(m))return 'امسح';if(/تشيل/.test(m))return 'شيل';if(/تفتح/.test(m))return 'افتح';if(/تطبّق|هتتحط/.test(m))return 'طبّق';return 'كمّل';}
+function danger(m){return /تحذف|حذف|تمسح|امسح|تشيل|نهائي/.test(m);}
+function sheet(msg,kind,onOk){
+ var parts=clean(msg).split(/\n+/),title=parts.shift(),body=parts.join('\n');
+ if(kind==='alert'&&title.length>60&&!body){body=title;title='';}
+ var d=kind==='confirm'&&danger(msg);
+ var sc=document.createElement('div');sc.className='nmd-scrim';
+ sc.innerHTML='<div class="nmd-sheet" role="'+(kind==='confirm'?'alertdialog':'dialog')+'" aria-modal="true"'+(title?' aria-labelledby="nmd-t"':'')+(body?' aria-describedby="nmd-b"':'')+'><div class="nmd-grab" aria-hidden="true"></div>'+(d?'<div class="nmd-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></div>':'')+(title?'<h3 id="nmd-t">'+esc(title)+'</h3>':'')+(body?'<p id="nmd-b">'+esc(body)+'</p>':'')+'<div class="nmd-act">'+(kind==='confirm'?'<button type="button" class="nmd-ok'+(d?' dg':'')+'">'+verb(msg)+'</button><button type="button" class="nmd-no">إلغاء</button>':'<button type="button" class="nmd-ok">تمام</button>')+'</div></div>';
+ document.body.appendChild(sc);requestAnimationFrame(function(){sc.classList.add('in');});
+ var popped=false,done=false;function dec(){window.__nmSheetOpen=Math.max(0,(window.__nmSheetOpen||0)-1);}
+ function onPop(){popped=true;window.removeEventListener('popstate',onPop);setTimeout(dec,0);close(false,true);}
+ try{history.pushState({nmSheet:1},'');window.__nmSheetOpen=(window.__nmSheetOpen||0)+1;window.addEventListener('popstate',onPop);}catch(e){popped=true;}
+ function close(ok,fromPop){if(done)return;done=true;sc.classList.remove('in');setTimeout(function(){sc.remove();},200);document.removeEventListener('keydown',kd,true);
+  var run=ok&&onOk?onOk:null;
+  if(!fromPop&&!popped){popped=true;window.removeEventListener('popstate',onPop);var fired=false,go=function(){if(fired)return;fired=true;dec();if(run)run();};window.addEventListener('popstate',function sw(){window.removeEventListener('popstate',sw);setTimeout(go,0);});setTimeout(go,700);try{history.back();}catch(e){go();}}
+  else if(run)setTimeout(run,0);}
+ function kd(e){if(e.key==='Escape'){e.preventDefault();close(false);}}
+ document.addEventListener('keydown',kd,true);
+ sc.addEventListener('click',function(e){if(e.target===sc||e.target.closest('.nmd-no'))close(false);else if(e.target.closest('.nmd-ok'))close(true);});
+ var f=sc.querySelector(kind==='confirm'&&d?'.nmd-no':'.nmd-ok');if(f)try{f.focus({preventScroll:true});}catch(e){}
+}
+window.confirm=function(msg){msg=String(msg==null?'':msg);
+ if(pass[msg]){delete pass[msg];return true;}
+ var t=(Date.now()-lastAt<1500&&lastT&&lastT.isConnected)?lastT:null;
+ if(!t)return nConfirm(msg);/* not from a tap: keep the native behaviour */
+ sheet(msg,'confirm',function(){if(!t.isConnected)return;pass[msg]=true;setTimeout(function(){delete pass[msg];},1500);t.click();});
+ return false;};
+window.alert=function(msg){try{sheet(String(msg==null?'':msg),'alert');}catch(e){nAlert(msg);}};
+window.NamaaDialog={confirm:function(msg,cb){sheet(String(msg),'confirm',cb);},alert:function(msg){sheet(String(msg),'alert');}};
+var css=document.createElement('style');css.textContent='*{-webkit-tap-highlight-color:transparent}.nmd-scrim{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background-color .2s ease}.nmd-scrim.in{background:rgba(0,0,0,.45)}.nmd-sheet{width:100%;max-width:520px;background:#fff;border-radius:24px 24px 0 0;padding:8px 20px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);font-family:inherit;direction:rtl;text-align:right}.nmd-scrim.in .nmd-sheet{transform:none}.nmd-grab{width:40px;height:4px;border-radius:4px;background:#ddd;margin:0 auto 16px}.nmd-ic{width:48px;height:48px;border-radius:14px;background:#FEF3F2;color:#B42318;display:flex;align-items:center;justify-content:center;margin-bottom:12px}.nmd-sheet h3{margin:0 0 6px;font-size:18px;font-weight:700;color:#222;line-height:1.45}.nmd-sheet p{margin:0;font-size:14px;color:#3f3f3f;line-height:1.75;white-space:pre-line}.nmd-act{display:flex;flex-direction:column;gap:8px;margin-top:20px}.nmd-act button{min-height:50px;border-radius:12px;font:inherit;font-size:16px;font-weight:600;cursor:pointer;transition:filter .15s ease,background-color .15s ease}.nmd-ok{background:#222;color:#fff;border:none}.nmd-ok.dg{background:#B42318}.nmd-no{background:#fff;color:#222;border:1px solid #ddd}.nmd-act button:active{filter:brightness(.92)}.nmd-act button:focus-visible{outline:2px solid #222;outline-offset:2px}@media(min-width:768px){.nmd-scrim{align-items:center}.nmd-sheet{border-radius:20px;max-width:420px}.nmd-grab{display:none}}@media(prefers-reduced-motion:reduce){.nmd-sheet,.nmd-scrim{transition:none}}';document.head.appendChild(css);
+})();
+</script>
+<script>
+window.NM_BUILD=123;window.NM_VERSION='12.3';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
