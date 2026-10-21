@@ -3653,6 +3653,15 @@ document.head.appendChild(css);
    كل شيت ليه history entry برقم (nmSeq). عند popstate بنقفل بس الشيتات اللي رقمها أكبر من الـ entry الحالية،
    فلو شيت تاني (اختيار، تأكيد) اتقفل فوق المحرر، المحرر بيفضل مفتوح. */
 (function(){
+/* NM_HISTKEEP: the Android shell calls WebView.clearHistory() when the page "finishes" loading. With many images that can land
+   after the user already opened pages, wiping our back entries so the next back closes the app. Keep a copy and restore it. */
+(function(){var H=history,push=H.pushState.bind(H),rep=H.replaceState.bind(H),stk=[],n=0;
+ function tag(st,i){var s2=(st&&typeof st==='object')?Object.assign({},st):(st==null?{}:{v:st});s2.__nmi=i;return s2;}
+ H.pushState=function(st,t,u){var s2=tag(st,++n);stk.push(s2);return push(s2,t,u);};
+ H.replaceState=function(st,t,u){var c=H.state&&H.state.__nmi;if(!c)return rep(st,t,u);var s2=tag(st,c);stk=stk.map(function(x){return x.__nmi===c?s2:x;});return rep(s2,t,u);};
+ window.addEventListener('popstate',function(e){var c=e.state&&e.state.__nmi;stk=c?stk.filter(function(x){return x.__nmi<=c;}):[];},true);
+ function fix(){if(!stk.length||H.length>=1+stk.length)return;/* wiped: rebuild base + our entries, ending on the current one */var keep=stk.slice();rep(null,'');keep.forEach(function(x){push(x,'');});}
+ window.addEventListener('load',function(){[50,400,1500,4000].forEach(function(d){setTimeout(fix,d);});});setInterval(fix,1000);})();
 var SEL='.nm-sheet,.nm-editor,.menu-bottom-sheet';
 var stack=[],seq=0;/* items: {el,s} */
 function inc(){window.__nmSheetOpen=(window.__nmSheetOpen||0)+1;}
@@ -3874,7 +3883,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=168;window.NM_VERSION='16.8';
+window.NM_BUILD=169;window.NM_VERSION='16.9';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
