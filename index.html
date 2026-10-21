@@ -3735,7 +3735,38 @@ document.head.appendChild(css);
 })();
 </script>
 <script>
-window.NM_BUILD=144;window.NM_VERSION='14.4';
+/* NAMAA_EXIT v1 — سحبة الرجوع من الرئيسية: شيت «تقفل نماء؟» (زي Speak). من أي تاب تاني: ترجّعك للرئيسية الأول. محتاج APK 4.7 (NamaaAndroid.exit) */
+(function(){
+var A=window.NamaaAndroid;if(!A||typeof A.exit!=='function')return;
+var armed=false,sc=null;
+function arm(){if(armed)return;try{history.pushState({nmExit:1},'');armed=true;}catch(e){}}
+function ready(){var l=document.getElementById('loader');return !!document.querySelector('.nm-tabbar')&&(!l||l.classList.contains('hidden')||l.style.display==='none')&&!document.querySelector('.nmo');}
+function onHome(){return !!document.querySelector('.nm-home')&&!document.body.classList.contains('nm-sub');}
+function hide(){if(!sc)return;var s=sc;sc=null;s.classList.remove('in');setTimeout(function(){s.remove();},220);}
+function stay(){hide();arm();}
+function leave(){hide();setTimeout(function(){arm();try{A.exit();}catch(e){}},120);}
+function show(){if(sc)return;sc=document.createElement('div');sc.className='nmx-scrim';
+ sc.innerHTML='<div class="nmx-sheet" role="alertdialog" aria-modal="true" aria-labelledby="nmx-t"><button type="button" class="nmx-x" aria-label="اقفل الرسالة">×</button><div class="nmx-art" aria-hidden="true"><svg width="64" height="64" viewBox="0 0 24 24" fill="none"><rect x="5" y="13" width="3" height="6" rx="1" fill="#fff"/><rect x="10.5" y="9" width="3" height="10" rx="1" fill="#fff"/><rect x="16" y="11" width="3" height="8" rx="1" fill="#fff"/><circle cx="9" cy="6.5" r="3.2" fill="#fff" opacity=".85"/><circle cx="15.5" cy="5" r="2.6" fill="#fff" opacity=".65"/></svg></div><h3 id="nmx-t">تقفل نماء دلوقتي؟</h3><p>كل حاجة محفوظة على موبايلك. ونعمة بكره مستنياك.</p><button type="button" class="nmx-stay">كمّل في نماء</button><button type="button" class="nmx-quit">اقفل التطبيق</button></div>';
+ document.body.appendChild(sc);requestAnimationFrame(function(){if(sc)sc.classList.add('in');});
+ sc.addEventListener('click',function(e){if(e.target===sc||e.target.closest('.nmx-x')||e.target.closest('.nmx-stay'))stay();else if(e.target.closest('.nmx-quit'))leave();});
+ try{window.NamaaFX&&NamaaFX.play('pop');}catch(e){}
+ var f=sc.querySelector('.nmx-stay');try{f.focus({preventScroll:true});}catch(e){}
+ armed=false;arm();/* back again while the sheet is open = exit */}
+window.addEventListener('popstate',function(e){var st=e.state;
+ if(st&&st.nmExit){return;}           /* landed on our sentinel: something above it closed */
+ if(st&&(st.nmSheet||st.nmMore||st.nmSeq))return;
+ if(!armed)return;armed=false;
+ setTimeout(function(){
+  if((window.__nmSheetOpen||0)>0||document.querySelector('.nms-scrim,.nmd-scrim,.nmo')){arm();return;}
+  if(sc){leave();return;}             /* second back */
+  if(!onHome()){try{window.__nmTab&&window.__nmTab('home');}catch(x){}arm();return;}
+  show();},0);});
+var tries=0;(function wait(){if(ready()){arm();return;}if(tries++<80)setTimeout(wait,250);})();
+var css=document.createElement('style');css.textContent='.nmx-scrim{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background-color .2s ease}.nmx-scrim.in{background:rgba(0,0,0,.45)}.nmx-sheet{position:relative;width:100%;max-width:520px;background:#fff;border-radius:28px 28px 0 0;padding:28px 20px calc(18px + env(safe-area-inset-bottom,0px));text-align:center;direction:rtl;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}.nmx-scrim.in .nmx-sheet{transform:none}.nmx-x{position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:50%;border:none;background:#F2F2F2;color:#222;font-size:22px;line-height:1;cursor:pointer}.nmx-art{width:88px;height:88px;margin:8px auto 18px;border-radius:26px;background:var(--nm-accent,#1E6B45);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.12);animation:nmx-bob 2.4s ease-in-out infinite}@keyframes nmx-bob{0%,100%{translate:0 0}50%{translate:0 -4px}}.nmx-sheet h3{margin:0 0 8px;font-size:22px;font-weight:800;color:#222;line-height:1.4}.nmx-sheet p{margin:0 0 22px;font-size:14.5px;color:#3f3f3f;line-height:1.7}.nmx-stay{display:block;width:100%;min-height:52px;border:none;border-radius:14px;background:var(--nm-accent,#1E6B45);color:#fff;font:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:filter .15s ease}.nmx-quit{display:block;width:100%;min-height:48px;margin-top:6px;border:none;background:none;color:var(--nm-accent,#1E6B45);font:inherit;font-size:15px;font-weight:600;cursor:pointer}.nmx-stay:active{filter:brightness(.92)}.nmx-sheet button:focus-visible{outline:2px solid #222;outline-offset:2px}@media(min-width:768px){.nmx-scrim{align-items:center}.nmx-sheet{border-radius:24px;max-width:400px}}@media(prefers-reduced-motion:reduce){.nmx-sheet,.nmx-scrim{transition:none}.nmx-art{animation:none}}';document.head.appendChild(css);
+})();
+</script>
+<script>
+window.NM_BUILD=145;window.NM_VERSION='14.5';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
