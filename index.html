@@ -903,7 +903,7 @@ const groupCard=a=>{const isG=a.hasSubAssets;const kids=isG?kidsOf(a.id):[];cons
    avatarOf(a,52),
    React.createElement("div",{className:"nm-gcard-body"},
     React.createElement("div",{className:"nm-gcard-top"},React.createElement("div",{className:"nm-gcard-name"},a.name),isG&&React.createElement("span",{className:"nm-count"},kids.length+' '+(kids.length===1?'أصل':'أصول'))),
-    React.createElement("div",{className:"nm-gcard-val"},fmt(valEGP(a)),React.createElement("span",{className:"nm-cur"},"ج.م")),
+    React.createElement("div",{className:"nm-gcard-val"},fmt(valEGP(a)),React.createElement("span",{className:"nm-cur-u"},"ج.م")),
     nat&&React.createElement("div",{className:"nm-native",dir:"ltr"},nat),
     React.createElement("div",{className:"nm-pills"},metaPills(a),a.platformUrl&&linkChip(a))),
    React.createElement("div",{className:"nm-gcard-actions"},
@@ -1137,8 +1137,8 @@ const renderAssetEditor=()=>{if(editAssetId==null)return null;const ea=assets.fi
     numField(ea.isStock?'سعر السهم الحالي':'سعر الوحدة','pricePerShare',{required:1,suffix:cur,onSet:n=>({value:n*(Number(ea.shareCount)||0)})})),
     ea.isStock&&numField('متوسط سعر الشراء','avgBuyPrice',{suffix:cur,hint:Number(ea.avgBuyPrice)>0&&Number(ea.shareCount)>0?('التكلفة '+n2(Number(ea.avgBuyPrice)*Number(ea.shareCount))+' '+cur):null}));
   return null;};
- const valueBlock=ea.hasSubAssets?React.createElement("div",{className:"nm-ed-value"},React.createElement("div",{className:"nm-field-label"},"القيمة الإجمالية"),React.createElement("div",{className:"nm-ed-big"},fmt(valEGP(ea)),React.createElement("span",{className:"nm-cur"},"ج.م")),React.createElement("div",{className:"nm-field-hint"},"مجموع "+kids.length+" أصول فرعية · بتتحسب لوحدها"))
-  :ea.useShares&&Number(ea.shareCount)>0?React.createElement("div",{className:"nm-ed-value"},React.createElement("div",{className:"nm-field-label"},"القيمة الحالية"),React.createElement("div",{className:"nm-ed-big"},n2(leafVal(ea)),React.createElement("span",{className:"nm-cur"},cur)),React.createElement("div",{className:"nm-field-hint"},"العدد × السعر · عدّلهم من «بعدد أسهم أو وحدات»"))
+ const valueBlock=ea.hasSubAssets?React.createElement("div",{className:"nm-ed-value"},React.createElement("div",{className:"nm-field-label"},"القيمة الإجمالية"),React.createElement("div",{className:"nm-ed-big"},fmt(valEGP(ea)),React.createElement("span",{className:"nm-cur-u"},"ج.م")),React.createElement("div",{className:"nm-field-hint"},"مجموع "+kids.length+" أصول فرعية · بتتحسب لوحدها"))
+  :ea.useShares&&Number(ea.shareCount)>0?React.createElement("div",{className:"nm-ed-value"},React.createElement("div",{className:"nm-field-label"},"القيمة الحالية"),React.createElement("div",{className:"nm-ed-big"},n2(leafVal(ea)),React.createElement("span",{className:"nm-cur-u"},cur)),React.createElement("div",{className:"nm-field-hint"},"العدد × السعر · عدّلهم من «بعدد أسهم أو وحدات»"))
   :numField(ea.hasInstallments?'المدفوع لحد دلوقتي':'القيمة الحالية','value',{suffix:curSelect('currency',ea.currency),onSet:n=>ea.hasInstallments?{totalInstallments:n}:{}});
  const egpHint=!ea.hasSubAssets&&ea.currency!=='EGP'?React.createElement("div",{className:"nm-field-hint",style:{marginTop:'6px'}},"≈ "+fmt(valEGP(ea))+" ج.م بسعر اليوم"):null;
  const addTagNow=t=>{const v=String(t||'').trim();if(!v)return;if(!(ea.tags||[]).includes(v))P({tags:[...(ea.tags||[]),v]});setTagDraft('');};
@@ -1409,7 +1409,7 @@ const renderHome=()=>{if(homeSub==='earners')return renderEarners();
         .nm-gcard-name { font-size: 16px; font-weight: 700; color: #222; line-height: 1.3; }
         .nm-count { font-size: 11px; font-weight: 600; color: #6a6a6a; background: #F2F2F2; border-radius: 99px; padding: 2px 8px; }
         .nm-gcard-val { font-size: 23px; font-weight: 800; color: #222; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; line-height: 1.2; }
-        .nm-cur { font-size: 12px; font-weight: 600; color: #6a6a6a; margin-inline-start: 4px; }
+        .nm-cur-u { font-size: 12px; font-weight: 600; color: #6a6a6a; margin-inline-start: 4px; display: inline; }
         .nm-native { font-size: 12px; color: #6a6a6a; margin-top: 2px; text-align: right; }
         .nm-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
         .nm-pills:empty { display: none; }
@@ -3735,7 +3735,7 @@ document.head.appendChild(css);
 })();
 </script>
 <script>
-window.NM_BUILD=140;window.NM_VERSION='14.0';
+window.NM_BUILD=141;window.NM_VERSION='14.1';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);setTimeout(function(){t.remove();},4500);},1200);});}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){var A=window.NamaaAndroid;if(!A||!A.saveUpdate)return;var RAW='https://raw.githubusercontent.com/mohamed-mosaad-bakr/namaa-app/main/';
 function isRemote(){try{return A.isRemote();}catch(e){return false;}}
