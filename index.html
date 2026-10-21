@@ -3857,7 +3857,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=161;window.NM_VERSION='16.1';
+window.NM_BUILD=162;window.NM_VERSION='16.2';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -3869,8 +3869,8 @@ var css=document.createElement('style');css.textContent='.nmu{position:fixed;lef
 function snap(){try{var c=window.__nmCur||{};localStorage.setItem('nm-resume',JSON.stringify({at:Date.now(),tab:c.tab,view:c.view,sub:document.body.classList.contains('nm-sub'),y:window.scrollY||0}));}catch(e){}}
 function busyUI(){return (window.__nmSheetOpen||0)>0||!!document.querySelector('.nm-editor,.nm-sheet,.menu-bottom-sheet,.nmo,.nmd-scrim,.nms-scrim,.nmx-scrim')||(document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));}
 function go(){snap();var c=document.createElement('div');c.style.cssText='position:fixed;inset:0;z-index:100002;background:#F4F3F1;opacity:0;transition:opacity .22s ease;pointer-events:all';document.body.appendChild(c);requestAnimationFrame(function(){c.style.opacity='1';});setTimeout(function(){try{A.restart();}catch(e){c.remove();}},240);}
-/* silent: update while the app is in the background, so you come back to the new version in the same place */
-document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&ready&&!busyUI()){snap();try{A.restart();}catch(e){}}});
+/* quiet apply: never reload while hidden (a background reload that can't finish gets rolled back on next launch). If the update is ready and you were away 1 min+, switch on return with a short fade, same place. */
+var hidAt=0;document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'){hidAt=Date.now();return;}if(ready&&hidAt&&Date.now()-hidAt>60*1000&&!busyUI())go();});
 function showPill(){if(bar){bar.remove();bar=null;}if(pill)return;pill=document.createElement('button');pill.type='button';pill.className='nmu-pill';pill.setAttribute('aria-label','نسخة جديدة جاهزة، دوس للتحديث');pill.innerHTML='<i aria-hidden="true"></i><span>حدّث نماء'+(ready&&ready.version?' · '+ready.version:'')+'</span>';pill.onclick=go;document.body.appendChild(pill);}
 var shown=0;
 function setPct(f){if(!bar)return;f=Math.max(shown,Math.min(.97,f));shown=f;var w=bar.querySelector('.nmu-w'),b=bar.querySelector('.nmu-go');if(w)w.style.width=Math.max(3,f*100).toFixed(1)+'%';if(b&&!ready)b.textContent=Math.round(f*100)+'%';}
@@ -3902,7 +3902,7 @@ window.NamaaUpdate={check:check};
 function boot(){var ok=!!document.querySelector('.nm-tabbar,.nm-toptabs,.nm-home,.nm-earn');if(!ok)return false;
  if(isRemote()){var has=false;try{has=!!localStorage.getItem('portfolioData');}catch(e){}if(!has){try{A.clearUpdate(true);A.restart();}catch(e){}return true;}}
  try{A.bootOk();}catch(e){}check();return true;}
-var tries=0;(function wait(){if(boot())return;if(tries++<40)setTimeout(wait,250);})();
+var tries=0;(function wait(){if(boot())return;tries++;setTimeout(wait,tries<40?250:1000);/* keep waiting on slow/background starts so bootOk always lands */})();
 /* in-session: look again every 3 minutes while the app is open, and whenever you come back to it */
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&Date.now()-lastCheck>60*1000)check();});
 setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastCheck>170*1000)check();},30*1000);
