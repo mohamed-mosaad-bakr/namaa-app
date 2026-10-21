@@ -872,18 +872,18 @@ const addSubFor=pid=>{const nid=Math.max(...assets.map(a=>a.id),0)+1;addSubAsset
 const pressable=fn=>({role:"button",tabIndex:0,onClick:fn,onKeyDown:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fn(e);}}});
 const SORT_OPTS=[['none','الترتيب الافتراضي'],['highestValue','الأعلى قيمة'],['lowestValue','الأقل قيمة'],['mostProfitable','الأكثر ربحاً'],['leastProfitable','الأقل ربحاً'],['yieldNewest','العائد الأحدث'],['yieldOldest','العائد الأقدم']];
 const chipSel=(icon,label,on,value,opts,onChange,aria)=>React.createElement("label",{className:"nm-chip-sel"+(on?" on":"")},React.createElement("span",{"aria-hidden":true},icon),React.createElement("span",null,label),React.createElement(ChevronDown,{size:14}),React.createElement("select",{className:"nm-chip-native",value,onChange:e=>onChange(e.target.value),"aria-label":aria},opts.map(([v,l])=>React.createElement("option",{key:v,value:v},l))));
-const renderAssetsHead=()=>{if(!assets.length)return null;const roots=filteredAssets.filter(a=>!a.parentId);const total=roots.reduce((t,a)=>t+valEGP(a),0);const n=filteredAssets.filter(a=>!a.hasSubAssets).length;
- return React.createElement("div",{className:"nm-ah-title"},!isMobile&&React.createElement("h2",null,"أصولك"),React.createElement("div",{className:"nm-ah-sub"},React.createElement("b",null,fmt(total)+" ج.م"),React.createElement("span",null," · "+n+" أصل في "+roots.length+" "+(roots.length===1?"مجموعة":(roots.length<=10?"مجموعات":"مجموعة"))),selectedTagFilters.length>0&&React.createElement("span",{className:"nm-ah-filter"}," · مفلتر")));};
-const renderAssetToolbar=()=>{const hasGroups=groupIds().length>0;const lay=cardLayout==='cards'?'big':cardLayout;const hasStocks=assets.some(a=>a.isStock);const tagVal=selectedTagFilters.length===1?selectedTagFilters[0]:(selectedTagFilters.length>1?'__multi':'');const sortLbl=(SORT_OPTS.find(o=>o[0]===sortBy)||SORT_OPTS[0])[1];
- return React.createElement("div",{className:"nm-asset-toolbar"},
-  React.createElement("div",{className:"nm-tb-group"},
-   React.createElement("div",{className:"nm-seg nm-seg-sm",role:"tablist","aria-label":"طريقة العرض"},[['big','كبير'],['small','صغير'],['table','جدول']].map(([v,l])=>React.createElement("button",{key:v,role:"tab","aria-selected":lay===v,className:"nm-seg-btn"+(lay===v?" on":""),onClick:()=>setLayout(v)},l))),
-   hasGroups&&lay!=='table'&&React.createElement("button",{className:"nm-link-btn",onClick:()=>setAllOpen(!allOpen())},allOpen()?'طي الكل':'فتح الكل')),
-  React.createElement("div",{className:"nm-tb-filters"},
-   chipSel("↕",sortLbl,sortBy!=='none',sortBy,SORT_OPTS,v=>setSortBy(v),"ترتيب"),
-   allTagsSet.length>0&&chipSel("🏷",tagVal===''?'كل التاجات':(tagVal==='__multi'?selectedTagFilters.length+' تاجات':tagVal),tagVal!=='',tagVal,[['','كل التاجات']].concat(tagVal==='__multi'?[['__multi',selectedTagFilters.length+' تاجات']]:[]).concat(allTagsSet.map(t=>[t,t])),v=>setSelectedTagFilters(v&&v!=='__multi'?[v]:(v==='__multi'?selectedTagFilters:[])),"فلترة بالتاج"),
-   
-   (sortBy!=='none'||selectedTagFilters.length>0)&&React.createElement("button",{className:"nm-link-btn",onClick:()=>{setSortBy('none');setSelectedTagFilters([]);}},"مسح")));};
+const renderAssetsHead=()=>{if(!assets.length||isMobile)return null;return React.createElement("div",{className:"nm-ah-title"},React.createElement("h2",null,"أصولك"));};
+const renderAssetToolbar=()=>{const hasGroups=groupIds().length>0;const lay=cardLayout==='cards'?'big':cardLayout;const tagVal=selectedTagFilters.length===1?selectedTagFilters[0]:(selectedTagFilters.length>1?'__multi':'');const sortLbl=(SORT_OPTS.find(o=>o[0]===sortBy)||SORT_OPTS[0])[1];
+ const roots=filteredAssets.filter(a=>!a.parentId),subs=filteredAssets.filter(a=>a.parentId).length,total=roots.reduce((t,a)=>t+valEGP(a),0),filt=selectedTagFilters.length>0;const VIEWS=[['big','كبير'],['small','صغير'],['table','جدول']];
+ return React.createElement("div",{className:"nm-asset-toolbar nm-tb2"},
+  React.createElement("div",{className:"nm-tb-row",role:"toolbar","aria-label":"الترتيب والفلتر والعرض"},
+   chipSel("↕",sortBy==='none'?'ترتيب':sortLbl,sortBy!=='none',sortBy,SORT_OPTS,v=>setSortBy(v),"ترتيب"),
+   allTagsSet.length>0&&chipSel("🏷",tagVal===''?'التاجات':(tagVal==='__multi'?selectedTagFilters.length+' تاجات':tagVal),tagVal!=='',tagVal,[['','كل التاجات']].concat(tagVal==='__multi'?[['__multi',selectedTagFilters.length+' تاجات']]:[]).concat(allTagsSet.map(t=>[t,t])),v=>setSelectedTagFilters(v&&v!=='__multi'?[v]:(v==='__multi'?selectedTagFilters:[])),"فلترة بالتاج"),
+   chipSel("▦",'عرض: '+(VIEWS.find(x=>x[0]===lay)||VIEWS[0])[1],false,lay,VIEWS,v=>setLayout(v),"طريقة العرض"),
+   null),
+  React.createElement("div",{className:"nm-tb-res","aria-live":"polite"},
+   React.createElement("span",null,React.createElement("b",null,fmt(total)+" ج.م"),React.createElement("span",null," · "+roots.length+" "+(roots.length===1?"أصل":(roots.length<=10?"أصول":"أصل"))+(subs?" و"+subs+" فرعي":"")),filt&&React.createElement("span",{className:"nm-ah-filter"}," · مفلتر"),(sortBy!=='none'||filt)&&React.createElement("button",{className:"nm-link-btn nm-tb-clr",style:{marginInlineStart:'8px'},onClick:()=>{setSortBy('none');setSelectedTagFilters([]);}},"مسح")),
+   hasGroups&&lay!=='table'&&React.createElement("button",{className:"nm-link-btn",onClick:()=>setAllOpen(!allOpen())},allOpen()?'طي الكل':'فتح الكل')));};
 const rowItem=(a,depth,variant)=>{const isG=a.hasSubAssets;const open=!!expandedGroups[a.id];const kids=isG?kidsOf(a.id):[];const inc=incEGP(a);const g=gainOf(a);const nat=nativeLine(a);
  const meta=[];if(isG)meta.push(kids.length+' '+(kids.length===1?'أصل':'أصول'));if(inc>0)meta.push(React.createElement("span",{key:'i',style:{color:'#0A7B24',fontWeight:600}},incLbl(a,inc)));{const fu=futLbl(a);if(fu)meta.push(React.createElement("span",{key:'fu',style:{color:'#929292'}},fu));}if(!isG&&a.hasInstallments&&Number(a.fullAssetValue)>0)meta.push('مدفوع '+Math.min(100,Math.round(leafVal(a)/Number(a.fullAssetValue)*100))+'%');if(nat)meta.push(React.createElement("span",{key:'n',dir:"ltr"},nat));
  const metaEls=[];meta.forEach((m,i)=>{if(i)metaEls.push(React.createElement("span",{key:'s'+i,style:{color:'#C4C4C4'}}," · "));metaEls.push(React.createElement("span",{key:'m'+i,style:{unicodeBidi:'isolate'}},m));});
@@ -1393,6 +1393,14 @@ const renderHome=()=>{if(homeSub==='earners')return renderEarners();
 
         /* ── Assets: grouped list + editor ── */
         .nm-asset-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 2px 0 14px; }
+.nm-tb2.nm-asset-toolbar { display: block !important; margin: 0 0 12px; }
+.nm-tb-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px 4px; }
+.nm-tb-row::-webkit-scrollbar { display: none; }
+.nm-tb-clr { flex: none; }
+.nm-tb-res { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 14px; color: #6a6a6a; }
+.nm-tb-res b { color: #222; font-weight: 700; font-variant-numeric: tabular-nums; }
+.nm-tb-res .nm-link-btn { flex: none; }
+@media (min-width: 768px) { .nm-tb-row { margin: 0; padding: 2px 0 4px; } }
         .nm-seg-sm { margin: 0; padding: 3px; border-radius: 10px; flex: 0 1 auto; }
         .nm-seg-sm .nm-seg-btn { padding: 7px 14px; font-size: 13px; }
         .nm-link-btn { background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 600; color: #222; text-decoration: underline; cursor: pointer; padding: 6px; }
@@ -3857,7 +3865,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=162;window.NM_VERSION='16.2';
+window.NM_BUILD=163;window.NM_VERSION='16.3';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
