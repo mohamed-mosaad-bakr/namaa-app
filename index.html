@@ -1153,11 +1153,11 @@ const renderAssetEditor=()=>{if(editAssetId==null)return null;const ea=assets.fi
   React.createElement("div",{className:"nm-editor",role:"dialog","aria-modal":true,"aria-label":"تعديل "+ea.name},
    React.createElement("div",{className:"nm-ed-head"},React.createElement("div",{className:"nm-sheet-grab"}),React.createElement("div",{className:"nm-ed-headrow"},
     React.createElement("button",{className:"menu-bottom-sheet-close",onClick:()=>closeEditor(false),"aria-label":"إغلاق"},React.createElement(X,{size:20})),
-    React.createElement("div",{className:"nm-ed-title"},parent?"أصل فرعي":(ea.hasSubAssets?"مجموعة أصول":"أصل")),
-    React.createElement("button",{className:"nm-ed-done-sm",onClick:()=>closeEditor(false)},"تم"))),
+    React.createElement("div",{className:"nm-ed-title"},parent?"أصل فرعي":(ea.hasSubAssets?"مجموعة أصول":"أصل"),parent&&React.createElement("small",{style:{display:'block',fontSize:'12.5px',fontWeight:500,color:'#6a6a6a',marginTop:'2px'}},"في "+parent.name)),
+    React.createElement("span",{"aria-hidden":true,style:{width:'40px',flex:'none'}}))),
    React.createElement("div",{className:"nm-ed-scroll"},
     editTried&&miss.length>0&&React.createElement("div",{className:"nm-banner"},React.createElement("div",{style:{fontWeight:700,marginBottom:'4px'}},"فاضل تكمّل: "+miss.map(f=>f.need).join('، ')),React.createElement("div",null,"اكتبهم، أو اقفل الخاصية لو مش محتاجها. "),React.createElement("button",{className:"nm-banner-btn",onClick:()=>{const p={};miss.forEach(f=>{p[f.k]=false;});P(p);closeEditor(true);}},"اقفل الناقص واخرج")),
-    parent&&React.createElement("button",{className:"nm-crumb",onClick:()=>openEditor(parent.id)},React.createElement(ChevronLeftIcon,{size:14,style:{transform:'scaleX(-1)'}}),"جوّه "+parent.name),
+    
     React.createElement("div",{className:"nm-ed-card"},
      React.createElement("div",{className:"nm-ed-hero"},
       React.createElement("label",{className:"nm-ed-avatar","aria-label":"تغيير الصورة"},avatarOf(ea,64),React.createElement("span",{className:"nm-ed-avatar-badge"},"📷"),React.createElement("input",{type:"file",accept:"image/*",style:{display:'none'},onChange:e=>handleImageUpload(id,e)})),
@@ -3891,7 +3891,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=171;window.NM_VERSION='17.1';
+window.NM_BUILD=172;window.NM_VERSION='17.2';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
