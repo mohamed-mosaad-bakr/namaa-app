@@ -3908,6 +3908,121 @@ setTimeout(function(){pv();setInterval(pv,1000);},1200);
 })();
 </script>
 <script>
+/* NAMAA_QUICKADD v1 — «اشتريت من منصة؟»: ثاندر (أسهم) / أمتار / فريدة / Safe (عقار بالحصص). بيجهّز الأصل والمستخدم يكتب الأرقام، أو الصورة تملاها لو عنده مفتاح Gemini. بيتفتح من خطوة «ضيف أصولك». */
+(function(){
+var KEY='portfolioData';
+var P={
+ thndr:{n:'ثاندر',k:'stock',s:'أسهم البورصة المصرية',dom:'thndr.app',ic:'📈'},
+ amtaar:{n:'أمتار',k:'re',s:'عقار بالحصص',dom:'amtaar.co',ic:'🏢'},
+ farida:{n:'فريدة',k:'re',s:'عقار بالحصص',dom:'farida.estate',ic:'🏠'},
+ safe:{n:'Safe',k:'re',s:'عقار بالحصص · مدينة مصر',dom:'madinetmasr.com',ic:'🏙️'}
+};
+function tr(n,p){try{window.NamaaTrack&&NamaaTrack(n,p);}catch(e){}}
+function fx(n){try{window.NamaaFX&&NamaaFX.play(n);}catch(e){}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function num(v){v=String(v==null?'':v).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);}).replace(/[,،\s]/g,'');var n=parseFloat(v);return isFinite(n)?n:0;}
+function gkey(){try{return localStorage.getItem('namaa-gemini-key')||'';}catch(e){return '';}}
+function data(){try{return JSON.parse(localStorage.getItem(KEY)||'null')||{assets:[]};}catch(e){return {assets:[]};}}
+function logo(p){return '<span class="nmq-lg"><img src="https://www.google.com/s2/favicons?domain='+p.dom+'&sz=64" alt="" onerror="this.remove()"><i>'+p.ic+'</i></span>';}
+function sheet(title,html,mount){if(!window.NamaaDialog||!NamaaDialog.sheet)return;NamaaDialog.sheet({title:title,html:html,onMount:mount});}
+function toast(t){var x=document.createElement('div');x.className='nmq-toast';x.textContent=t;document.body.appendChild(x);setTimeout(function(){x.classList.add('on');},20);setTimeout(function(){x.classList.remove('on');setTimeout(function(){x.remove();},300);},2600);}
+
+/* ---------- 1) اختيار المنصة ---------- */
+function open(){
+ tr('quick_add_open');
+ var h='<p class="nmq-lead">اختار المنصة، ونماء يجهّز الأصل. إنت بس تكتب الأرقام.</p><div class="nmq-grid">'+
+  Object.keys(P).map(function(k){var p=P[k];return '<button type="button" class="nmq-tile" data-p="'+k+'">'+logo(p)+'<b>'+p.n+'</b><small>'+p.s+'</small></button>';}).join('')+
+  '</div><button type="button" class="nmq-other" data-p="other"><span>حاجة تانية</span><small>كاش، بنك، دهب، عقار، شهادة…</small></button>';
+ sheet('اشتريت من منصة؟',h,function(root,close){
+  root.querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-p');fx('tap');tr('quick_add_platform',{platform:k});
+   close(function(){if(k==='other'){if(window.__nmFab)window.__nmFab();return;}setTimeout(function(){form(k);},60);});};});
+ });}
+
+/* ---------- 2) الفورم ---------- */
+function reRow(i,v){v=v||{};return '<div class="nmq-row" data-i="'+i+'">'+
+ '<label class="nmq-f"><span>اسم الوحدة أو المشروع <em>(اختياري)</em></span><input class="nmd-in" data-f="name" value="'+esc(v.name||'')+'" placeholder="مثلًا: وحدة التجمع الخامس"></label>'+
+ '<div class="nmq-2"><label class="nmq-f"><span>دفعت كام؟</span><input class="nmd-in" data-f="paid" inputmode="decimal" value="'+(v.paid||'')+'" placeholder="0"></label>'+
+ '<label class="nmq-f"><span>قيمتها النهارده <em>(اختياري)</em></span><input class="nmd-in" data-f="value" inputmode="decimal" value="'+(v.value||'')+'" placeholder="زي اللي دفعته"></label></div>'+
+ '<div class="nmq-2"><label class="nmq-f"><span>العائد السنوي % <em>(اختياري)</em></span><input class="nmd-in" data-f="yield" inputmode="decimal" value="'+(v.yield||'')+'" placeholder="مثلًا 8"></label>'+
+ '<label class="nmq-f"><span>اشتريت إمتى <em>(اختياري)</em></span><input class="nmd-in" data-f="date" type="month" value="'+esc(v.date||'')+'"></label></div></div>';}
+function stRow(i,v){v=v||{};return '<div class="nmq-row nmq-st" data-i="'+i+'">'+
+ '<div class="nmq-3"><label class="nmq-f"><span>رمز السهم</span><input class="nmd-in" data-f="sym" value="'+esc(v.sym||'')+'" placeholder="COMI" autocapitalize="characters" dir="ltr"></label>'+
+ '<label class="nmq-f"><span>عدد الأسهم</span><input class="nmd-in" data-f="shares" inputmode="decimal" value="'+(v.shares||'')+'" placeholder="0"></label>'+
+ '<label class="nmq-f"><span>متوسط سعر الشراء</span><input class="nmd-in" data-f="avg" inputmode="decimal" value="'+(v.avg||'')+'" placeholder="0"></label></div>'+
+ (v.name?'<input type="hidden" data-f="sname" value="'+esc(v.name)+'">':'')+(v.price?'<input type="hidden" data-f="price" value="'+v.price+'">':'')+'</div>';}
+function form(k,pre){
+ var p=P[k],isSt=p.k==='stock',key=gkey(),rows=pre&&pre.length?pre:[{}];
+ var row=isSt?stRow:reRow;
+ var img=key?'<button type="button" class="nmq-img"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="12" cy="12" r="3.2"/><path d="M8 5l1.5-2h5L16 5"/></svg><span><b>اقرا من صورة</b><small>سكرين شوت من '+(isSt?'محفظتك في ثاندر':'صفحة استثماراتك في '+p.n)+'</small></span></button><input type="file" accept="image/*" class="nmq-file" hidden>':
+  '<p class="nmq-hint">عندك مفتاح Gemini؟ ضيفه من الإعدادات، وسكرين شوت من '+p.n+' يملا الأرقام لوحده.</p>';
+ var h='<div class="nmq-hd">'+logo(p)+'<div><b>'+p.n+'</b><small>'+(isSt?'الأسعار هتتحدث لوحدها من البورصة':'هيتضاف كأصل عقاري في محفظتك')+'</small></div></div>'+img+
+  '<div class="nmq-rows">'+rows.map(function(v,i){return row(i,v);}).join('')+'</div>'+
+  '<button type="button" class="nmq-more">＋ '+(isSt?'سهم تاني':'وحدة تانية')+'</button><p class="nmq-err" role="alert"></p>'+
+  '<button type="button" class="nmb-btn nmq-save">ضيف'+(isSt?' الأسهم':'ها')+' لمحفظتي</button>';
+ sheet(isSt?'ضيف أسهمك من ثاندر':'ضيف حصتك في '+p.n,h,function(root,close){
+  var usedImg=0,box=root.querySelector('.nmq-rows'),er=root.querySelector('.nmq-err'),save=document.querySelector('.nmq-save')||root.querySelector('.nmq-save');
+  root.querySelector('.nmq-more').onclick=function(){var n=box.children.length;box.insertAdjacentHTML('beforeend',row(n,{}));var f=box.lastElementChild.querySelector('input');if(f)f.focus();};
+  var ib=root.querySelector('.nmq-img'),fi=root.querySelector('.nmq-file');
+  if(ib)ib.onclick=function(){fi.click();};
+  if(fi)fi.onchange=function(){var f=fi.files&&fi.files[0];if(!f)return;ib.classList.add('busy');ib.querySelector('b').textContent='بيقرا الصورة…';er.textContent='';
+   readImage(f,k).then(function(list){tr('quick_add_image_read',{platform:k,ok:1,count:list.length});
+    if(!list.length){ib.classList.remove('busy');ib.querySelector('b').textContent='اقرا من صورة';er.textContent='مالقيتش أرقام في الصورة دي. جرّب سكرين شوت تانية أو اكتبها تحت.';return;}
+    usedImg=1;box.innerHTML=list.map(function(v,i){return row(i,v);}).join('');ib.classList.remove('busy');ib.querySelector('b').textContent='اتقرت ✓ راجع الأرقام';fx('success');
+   }).catch(function(e){tr('quick_add_image_read',{platform:k,ok:0,count:0});ib.classList.remove('busy');ib.querySelector('b').textContent='اقرا من صورة';er.textContent='الصورة ماتقرتش ('+String(e&&e.message||e).slice(0,60)+'). اكتب الأرقام تحت.';});};
+  if(save)save.onclick=function(){var items=[].map.call(box.children,function(r){var o={};r.querySelectorAll('[data-f]').forEach(function(x){o[x.getAttribute('data-f')]=x.value.trim();});return o;});
+   var ok=isSt?items.filter(function(o){return o.sym&&num(o.shares)>0;}):items.filter(function(o){return num(o.paid)>0||num(o.value)>0;});
+   if(!ok.length){er.textContent=isSt?'اكتب رمز السهم وعدد الأسهم.':'اكتب المبلغ اللي دفعته.';var bad=box.querySelector(isSt?'[data-f=sym]':'[data-f=paid]');if(bad)bad.focus();return;}
+   var n=add(k,ok);tr('quick_add_save',{platform:k,count:n,method:usedImg?'image':'manual'});
+   close(function(){fx('success');toast(n>1?('اتضاف '+n+' أصول لمحفظتك ✓'):'اتضاف لمحفظتك ✓');try{window.__nmTab&&window.__nmTab('assets');}catch(e){}});};
+ });}
+
+/* ---------- 3) إضافة الأصول ---------- */
+function base(d,id){return {id:id,parentId:null,hasSubAssets:false,name:'',image:null,tags:[],value:0,currency:'EGP',capitalGrowthRate:0,hasCapitalGrowth:false,hasContribution:false,monthlyContribution:0,contribCurrency:'EGP',hasPurchaseValue:false,purchaseValue:0,hasPurchaseDate:false,purchaseDate:'',hasInstallments:false,totalInstallments:0,fullAssetValue:0,installmentsList:[],useShares:false,pricePerShare:0,shareCount:0,hasYield:false,yieldRate:0,yieldStartM:d.startMonth||1,yieldStartY:d.startYear||new Date().getFullYear(),yieldEndM:d.endMonth||12,yieldEndY:d.endYear||(new Date().getFullYear()+10),useRentGrowth:false,rentGrowthRate:0};}
+function add(k,items){var p=P[k],d=data();d.assets=d.assets||[];var id=d.assets.reduce(function(m,a){return Math.max(m,Number(a.id)||0);},0);
+ items.forEach(function(o){id++;var a=base(d,id);
+  if(p.k==='stock'){var sh=num(o.shares),avg=num(o.avg),pr=num(o.price)||avg,sym=String(o.sym).toUpperCase().replace(/[^A-Z0-9.]/g,'');
+   Object.assign(a,{name:o.sname||sym,stockSymbol:sym,isStock:true,tags:['أسهم','ثاندر'],useShares:true,shareCount:sh,pricePerShare:pr,avgBuyPrice:avg||pr,value:sh*pr,hasPurchaseValue:avg>0,purchaseValue:avg*sh,stockStatus:'active',stockSector:'',stockTerm:'long',brokerFee:0,stockNotes:'من ثاندر'});}
+  else{var paid=num(o.paid),val=num(o.value)||paid,y=num(o.yield);
+   Object.assign(a,{name:p.n+(o.name?' · '+o.name:''),tags:['عقارات',p.n],value:val,hasPurchaseValue:paid>0,purchaseValue:paid,hasYield:y>0,yieldRate:y,capitalGrowthRate:0});
+   if(o.date){a.hasPurchaseDate=true;a.purchaseDate=/^\d{4}-\d{2}$/.test(o.date)?o.date+'-01':o.date;}}
+  d.assets.push(a);});
+ try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}
+ if(typeof window.__nmApply==='function'){try{window.__nmApply(d);}catch(e){}}
+ return items.length;}
+
+/* ---------- 4) قراءة الصورة (Gemini بمفتاح المستخدم) ---------- */
+function shrink(file){return new Promise(function(res,rej){var r=new FileReader();r.onerror=function(){rej(new Error('ملف مش مقروء'));};r.onload=function(){var im=new Image();im.onload=function(){var m=1600,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.85).split(',')[1]);};im.onerror=function(){rej(new Error('صورة مش مدعومة'));};im.src=r.result;};r.readAsDataURL(file);});}
+function readImage(file,k){var p=P[k],key=gkey();if(!key||typeof window.__nmGem!=='function')return Promise.reject(new Error('مفيش مفتاح Gemini'));
+ var prompt=p.k==='stock'?
+  'This is a screenshot of the Thndr app (Egyptian Exchange broker) portfolio. Extract every stock holding. Return ONLY JSON: {"items":[{"sym":"<EGX ticker like COMI, uppercase>","name":"<company name as shown>","shares":<number of shares>,"avg":<average buy price per share or 0>,"price":<current price per share or 0>}]}. Strip commas. If the ticker is not shown, infer the EGX ticker from the company name.':
+  'This is a screenshot from '+(k==='amtaar'?'Amtaar':k==='farida'?'Farida':'Safe (Madinet Masr)')+', an Egyptian fractional real-estate investment app. Extract each property/unit investment. Return ONLY JSON: {"items":[{"name":"<unit or project name as shown>","paid":<total amount invested in EGP>,"value":<current valuation in EGP or 0>,"yield":<annual rental yield % or 0; if a monthly rent amount is shown compute monthly*12/paid*100>,"date":"<YYYY-MM if purchase date shown else empty>"}]}. Strip commas and currency.';
+ return shrink(file).then(function(b64){return window.__nmGem({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:'image/jpeg',data:b64}},{text:prompt}]}],generationConfig:{temperature:0.1,maxOutputTokens:2000,responseMimeType:'application/json'}})});})
+ .then(function(r){if(!r||!r.ok)throw new Error('Gemini '+(r&&r.status));return r.json();})
+ .then(function(j){var t=j&&j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0].text||'';var o;try{o=JSON.parse(t.replace(/^```(json)?|```$/g,''));}catch(e){throw new Error('رد مش مفهوم');}
+  return (o.items||[]).filter(function(x){return x&&(p.k==='stock'?(x.sym||x.name):(x.paid||x.value));}).slice(0,20);});}
+
+window.NamaaQuick={open:open,form:form};
+var css=document.createElement('style');css.textContent=
+'.nmq-lead{margin:0 0 14px;color:#6a6a6a;font-size:14px;line-height:1.6}'+
+'.nmq-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}'+
+'.nmq-tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border:1px solid #ddd;border-radius:14px;background:#fff;font:inherit;text-align:right;cursor:pointer;min-height:112px}.nmq-tile:active{background:#f7f7f7}'+
+'.nmq-tile b{font-size:15px;color:#222}.nmq-tile small{font-size:12.5px;color:#6a6a6a}'+
+'.nmq-lg{position:relative;width:36px;height:36px;border-radius:10px;background:#f2f2f2;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}.nmq-lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}.nmq-lg i{font-style:normal;font-size:18px}'+
+'.nmq-other{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin-top:10px;padding:14px;border:1px dashed #c1c1c1;border-radius:14px;background:none;font:inherit;text-align:right;cursor:pointer}.nmq-other span{font-weight:700;color:#222;font-size:14.5px}.nmq-other small{color:#6a6a6a;font-size:12.5px}'+
+'.nmq-hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}.nmq-hd b{display:block;font-size:15px;color:#222}.nmq-hd small{display:block;font-size:12.5px;color:#6a6a6a}'+
+'.nmq-img{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:14px;background:#f7f7f7;font:inherit;text-align:right;cursor:pointer;color:var(--nm-accent,#1E6B45)}.nmq-img span b{display:block;color:#222;font-size:14.5px}.nmq-img span small{display:block;color:#6a6a6a;font-size:12.5px}.nmq-img.busy{opacity:.7;pointer-events:none}'+
+'.nmq-hint{margin:0;padding:10px 12px;border-radius:12px;background:#f7f7f7;color:#3f3f3f;font-size:12.5px;line-height:1.55}'+
+'.nmq-row{padding:6px 0 12px;border-bottom:1px solid #ebebeb}.nmq-row:last-child{border-bottom:none}'+
+'.nmq-f{display:block;margin-top:10px}.nmq-f>span{display:block;font-size:13px;font-weight:500;color:#3f3f3f;margin-bottom:6px}.nmq-f em{font-style:normal;color:#929292;font-weight:400}'+
+'.nmq-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.nmq-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.nmq-3 .nmd-in{padding:0 10px}'+
+'.nmq-more{margin-top:8px;padding:10px 0;border:none;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--nm-accent,#1E6B45);cursor:pointer}'+
+'.nmq-err{margin:4px 0 0;min-height:1em;color:#c13515;font-size:13px}.nmq-save{width:100%}'+
+'.nmq-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;background:#222;color:#fff;padding:10px 16px;border-radius:999px;font-size:13.5px;z-index:99991;transition:opacity .25s ease,transform .25s ease;pointer-events:none}.nmq-toast.on{opacity:1;transform:translate(-50%,0)}'+
+'@media(max-width:360px){.nmq-3{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){.nmq-toast{transition:none}}';
+document.head.appendChild(css);
+})();
+</script>
+<script>
 /* NAMAA_ONBOARD v1 — أول مرة: 3 شاشات ترحيب (تتخطى) + كارت «ابدأ مع نماء» في الرئيسية بخطوات بتتعلم لوحدها */
 (function(){
 var OK='nm-onb';
@@ -3920,7 +4035,7 @@ function budget(){return ld('nm-budget',{})||{};}
 function more(v){try{if(window.__nmOpenMore)window.__nmOpenMore(v);}catch(e){}}
 function mark(k){var o=O()||{};o.v=o.v||{};o.v[k]=1;sv(OK,o);}
 var STEPS={
- asset:{t:'ضيف أصولك',s:'كاش، حساب بنك، دهب، عقار أو سهم. ابدأ بأكبر حاجة عندك.',ic:'💼',cta:'أضف أصل',done:function(){return assets().length>0;},go:function(){if(window.__nmFab)window.__nmFab();}},
+ asset:{t:'ضيف أصولك',s:'كاش، بنك، دهب، عقار أو سهم. أو اللي اشتريته من ثاندر أو أمتار أو فريدة أو Safe.',ic:'💼',cta:'أضف أصل',done:function(){return assets().length>0;},go:function(){if(window.NamaaQuick)window.NamaaQuick.open();else if(window.__nmFab)window.__nmFab();}},
  plan:{t:'اعمل خطتي',s:'6 أسئلة وتاخد توزيع مقترح لفلوسك وأول خطوة تعملها.',ic:'🎯',cta:'ابدأ الأسئلة',done:function(){try{return !!(window.NamaaPlan&&window.NamaaPlan.has());}catch(e){return false;}},go:function(){more('plan');}},
  budget:{t:'ظبّط ميزانيتك',s:'دخلك الثابت والتزاماتك، وسجّل أول مصروف.',ic:'👛',cta:'افتح ميزانيتي',done:function(){var b=budget();return !!((b.income&&b.income.length)||(b.tx&&b.tx.length));},go:function(){more('budget');}},
  income:{t:'ضيف دخل لأصل',s:'إيجار، فايدة شهادة أو توزيعات. نماء هيحسب دخلك السلبي كل شهر.',ic:'💰',cta:'افتح أصولك',done:function(){return assets().some(function(a){return a.hasYield;});},go:function(){if(window.__nmTab)window.__nmTab('assets');}},
@@ -4113,7 +4228,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=194;window.NM_VERSION='19.4';
+window.NM_BUILD=195;window.NM_VERSION='19.5';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
