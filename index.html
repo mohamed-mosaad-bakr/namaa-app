@@ -3913,7 +3913,7 @@ setTimeout(function(){pv();setInterval(pv,1000);},1200);
 var KEY='portfolioData';
 var P={
  thndr:{n:'ثاندر',k:'stock',s:'أسهم البورصة المصرية',dom:'thndr.app',ic:'📈'},
- amtaar:{n:'أمتار',k:'re',s:'عقار بالحصص',dom:'amtaar.co',ic:'🏢'},
+ amtaar:{n:'أمتار',k:'re',s:'عقار بالحصص',dom:'amtaar.app',img:'https://amtaar.app/assets/images/rewrite/amtaar.svg',ic:'🏢'},
  farida:{n:'فريدة',k:'re',s:'عقار بالحصص',dom:'farida.estate',ic:'🏠'},
  safe:{n:'Safe',k:'re',s:'عقار بالحصص · مدينة مصر',dom:'madinetmasr.com',ic:'🏙️'}
 };
@@ -3923,12 +3923,14 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function num(v){v=String(v==null?'':v).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);}).replace(/[,،\s]/g,'');var n=parseFloat(v);return isFinite(n)?n:0;}
 function gkey(){try{return localStorage.getItem('namaa-gemini-key')||'';}catch(e){return '';}}
 function data(){try{return JSON.parse(localStorage.getItem(KEY)||'null')||{assets:[]};}catch(e){return {assets:[]};}}
-function logo(p){return '<span class="nmq-lg"><img src="https://www.google.com/s2/favicons?domain='+p.dom+'&sz=64" alt="" onerror="this.remove()"><i>'+p.ic+'</i></span>';}
+function logo(p){var fav='https://www.google.com/s2/favicons?domain='+p.dom+'&sz=64';return '<span class="nmq-lg'+(p.img?' nmq-lg-c':'')+'"><img src="'+(p.img||fav)+'" alt="" data-fb="'+(p.img?fav:'')+'" onerror="var f=this.getAttribute(\'data-fb\');if(f){this.removeAttribute(\'data-fb\');this.parentNode.classList.remove(\'nmq-lg-c\');this.src=f;}else this.remove()"><i>'+p.ic+'</i></span>';}
 function sheet(title,html,mount){if(!window.NamaaDialog||!NamaaDialog.sheet)return;NamaaDialog.sheet({title:title,html:html,onMount:mount});}
 function toast(t){var x=document.createElement('div');x.className='nmq-toast';x.textContent=t;document.body.appendChild(x);setTimeout(function(){x.classList.add('on');},20);setTimeout(function(){x.classList.remove('on');setTimeout(function(){x.remove();},300);},2600);}
 
 /* ---------- 1) اختيار المنصة ---------- */
 function open(){
+ var w=0;(function wt(){if(document.querySelector('.nmd-scrim,.nmx-scrim,.nmi-scrim')&&w++<60){setTimeout(wt,300);return;}open2();})();}
+function open2(){
  tr('quick_add_open');
  var h='<p class="nmq-lead">اختار المنصة، ونماء يجهّز الأصل. إنت بس تكتب الأرقام.</p><div class="nmq-grid">'+
   Object.keys(P).map(function(k){var p=P[k];return '<button type="button" class="nmq-tile" data-p="'+k+'">'+logo(p)+'<b>'+p.n+'</b><small>'+p.s+'</small></button>';}).join('')+
@@ -4007,7 +4009,7 @@ var css=document.createElement('style');css.textContent=
 '.nmq-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}'+
 '.nmq-tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border:1px solid #ddd;border-radius:14px;background:#fff;font:inherit;text-align:right;cursor:pointer;min-height:112px}.nmq-tile:active{background:#f7f7f7}'+
 '.nmq-tile b{font-size:15px;color:#222}.nmq-tile small{font-size:12.5px;color:#6a6a6a}'+
-'.nmq-lg{position:relative;width:36px;height:36px;border-radius:10px;background:#f2f2f2;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}.nmq-lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}.nmq-lg i{font-style:normal;font-size:18px}'+
+'.nmq-lg{position:relative;width:36px;height:36px;border-radius:10px;background:#f2f2f2;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}.nmq-lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}.nmq-lg-c img{object-fit:contain;padding:4px;box-sizing:border-box}.nmq-lg i{font-style:normal;font-size:18px}'+
 '.nmq-other{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin-top:10px;padding:14px;border:1px dashed #c1c1c1;border-radius:14px;background:none;font:inherit;text-align:right;cursor:pointer}.nmq-other span{font-weight:700;color:#222;font-size:14.5px}.nmq-other small{color:#6a6a6a;font-size:12.5px}'+
 '.nmq-hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}.nmq-hd b{display:block;font-size:15px;color:#222}.nmq-hd small{display:block;font-size:12.5px;color:#6a6a6a}'+
 '.nmq-img{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:14px;background:#f7f7f7;font:inherit;text-align:right;cursor:pointer;color:var(--nm-accent,#1E6B45)}.nmq-img span b{display:block;color:#222;font-size:14.5px}.nmq-img span small{display:block;color:#6a6a6a;font-size:12.5px}.nmq-img.busy{opacity:.7;pointer-events:none}'+
@@ -4228,7 +4230,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=195;window.NM_VERSION='19.5';
+window.NM_BUILD=196;window.NM_VERSION='19.6';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
