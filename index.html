@@ -3818,6 +3818,29 @@ var css=document.createElement('style');css.textContent='*{-webkit-tap-highlight
 })();
 </script>
 <script>
+/* NAMAA_GA v1 — Google Analytics 4 للويب والـ APK. مفيش أي مبالغ أو أسماء أصول بتتبعت — بس الشاشات والأحداث. client_id محفوظ في localStorage (client_storage:none) عشان يشتغل جوه الـ WebView من غير كوكيز. */
+(function(){
+var ID='G-DCK80ST988';if(!/^G-[A-Z0-9]{4,}$/.test(ID))return;
+var A=window.NamaaAndroid,ST=false;try{ST=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}catch(e){}
+var PLAT=A?'apk':(ST?'pwa':'web');
+var BASE=/^https?:$/.test(location.protocol)?location.origin+location.pathname:'https://namaa-app.pages.dev/';
+function g(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+var cid=g('nm-ga-cid');if(!cid){cid=Math.floor(Math.random()*2147483647)+'.'+Math.floor(Date.now()/1000);try{localStorage.setItem('nm-ga-cid',cid);}catch(e){}}
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;
+gtag('js',new Date());
+var DBG=/[?&#]ga_debug=1/.test(location.href);if(DBG){try{localStorage.setItem('nm-ga-debug','1');}catch(e){}}DBG=DBG||g('nm-ga-debug')==='1';
+gtag('config',ID,Object.assign(DBG?{debug_mode:true}:{},{send_page_view:false,client_storage:'none',client_id:cid,app_platform:PLAT,page_location:BASE}));
+setTimeout(function(){gtag('set','user_properties',{app_platform:PLAT,app_version:String(window.NM_VERSION||''),app_build:String(window.NM_BUILD||'')});},600);
+var sc=document.createElement('script');sc.async=true;sc.src='https://www.googletagmanager.com/gtag/js?id='+ID;document.head.appendChild(sc);
+var T={home:'الرئيسية',overview:'الأصول',passiveIncome:'الدخل',analysis:'التحليل',more:'المزيد',nimah:'نعمة اليوم',learn:'رحلتك مع المال',cal:'تقويم الفلوس',track:'المتوقع والحقيقي',deal:'حاسبة صفقة عقار',plan:'خطتي',budget:'ميزانيتي',reports:'تقرير ثروتي',halal:'فاحص الحلال',zakat:'حاسبة الزكاة',compound:'الفائدة المركبة',settings:'الإعدادات'};
+window.NamaaTrack=function(name,p){try{p=p||{};p.app_platform=PLAT;gtag('event',name,p);}catch(e){}};
+var last='';
+function pv(){var c=window.__nmCur;if(!c)return;var v=c.view||c.tab||'home';if(v===last)return;last=v;
+ gtag('event','page_view',{page_title:T[v]||v,page_location:BASE+'#'+v,page_path:'/'+v,screen_name:v,app_platform:PLAT});}
+setTimeout(function(){pv();setInterval(pv,1000);},1200);
+})();
+</script>
+<script>
 /* NAMAA_ONBOARD v1 — أول مرة: 3 شاشات ترحيب (تتخطى) + كارت «ابدأ مع نماء» في الرئيسية بخطوات بتتعلم لوحدها */
 (function(){
 var OK='nm-onb';
@@ -3922,9 +3945,10 @@ var IOS=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPo
 var IOS_OTHER=IOS&&/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
 var IN_APP=/FBAN|FBAV|Instagram|Line\/|WhatsApp|Snapchat|TikTok/i.test(ua);
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;scan(true);});
-window.addEventListener('appinstalled',function(){s(OK,'1');deferred=null;remove();toast('نماء اتثبّت على موبايلك ✓');});
+window.addEventListener('appinstalled',function(){s(OK,'1');deferred=null;remove();toast('نماء اتثبّت على موبايلك ✓');tr('app_installed');});
 function dismissed(){var t=+g(DK)||0;return t&&Date.now()-t<14*864e5;}
 function remove(){var c=document.getElementById('nm-inst');if(c)c.remove();}
+function tr(n,p){try{window.NamaaTrack&&NamaaTrack(n,p);}catch(e){}}
 function fx(n){try{window.NamaaFX&&NamaaFX.play(n);}catch(e){}}
 var SHARE='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
 var PLUS='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
@@ -3934,11 +3958,12 @@ function card(){
  var d=document.createElement('div');d.id='nm-inst';d.className='nm-span nmi';d.setAttribute('role','region');d.setAttribute('aria-label','ثبّت نماء');
  d.innerHTML='<img class="nmi-ic" src="icon-192.png" alt="" onerror="this.style.visibility=\'hidden\'"><div class="nmi-tx"><b>ثبّت نماء على موبايلك</b><small>يفتح من الشاشة الرئيسية بضغطة، ملء الشاشة من غير المتصفح.</small></div><button type="button" class="nmi-go">'+DL+'<span>ثبّت</span></button><button type="button" class="nmi-x" aria-label="مش دلوقتي"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>';
  d.querySelector('.nmi-go').onclick=install;
- d.querySelector('.nmi-x').onclick=function(){s(DK,String(Date.now()));d.classList.add('nmi-out');fx('pop');setTimeout(remove,220);};
+ d.querySelector('.nmi-x').onclick=function(){s(DK,String(Date.now()));tr('install_dismiss');d.classList.add('nmi-out');fx('pop');setTimeout(remove,220);};
  return d;}
 function install(){
  fx('tap');
- if(deferred){var p=deferred;deferred=null;try{p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==='accepted'){s(OK,'1');remove();}}).catch(function(){});}catch(e){steps();}return;}
+ tr('install_click',{install_method:deferred?'prompt':'steps',device_os:IOS?'ios':'other'});
+ if(deferred){var p=deferred;deferred=null;try{p.prompt();p.userChoice.then(function(r){tr('install_prompt_result',{outcome:(r&&r.outcome)||'unknown'});if(r&&r.outcome==='accepted'){s(OK,'1');remove();}}).catch(function(){});}catch(e){steps();}return;}
  steps();}
 function steps(){
  var rows,title,note='';
@@ -3962,7 +3987,7 @@ function scan(){
  var anchor=document.getElementById('nm-onb-card');if(!anchor||!anchor.parentNode){return;}
  var c=document.getElementById('nm-inst');
  if(c&&c.nextSibling===anchor)return;
- if(!c){c=card();if(!seen){c.classList.add('nmi-in');seen=true;}}
+ if(!c){c=card();if(!seen){c.classList.add('nmi-in');seen=true;tr('install_card_view',{device_os:IOS?'ios':'other'});}}
  anchor.parentNode.insertBefore(c,anchor);}
 var sch=false;new MutationObserver(function(){if(!sch){sch=true;requestAnimationFrame(function(){sch=false;scan();});}}).observe(document.body,{childList:true,subtree:true});
 setTimeout(scan,800);
@@ -4021,7 +4046,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=187;window.NM_VERSION='18.7';
+window.NM_BUILD=188;window.NM_VERSION='18.8';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
