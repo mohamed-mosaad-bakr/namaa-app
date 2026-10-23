@@ -4114,6 +4114,23 @@ document.head.appendChild(css);
 })();
 </script>
 <script>
+/* NAMAA_SCROLLLOCK v1 — أي شيت/نافذة بتغطي الشاشة (أيًا كان الموديول اللي عملها) بتقفل سكرول الصفحة اللي وراها.
+   بيشوف أولاد body: لو فيه عنصر fixed مغطي الشاشة وظاهر، بيحط html.nm-lock (overflow hidden) لحد ما يتقفل. */
+(function(){
+var on=false,raf=0;
+function covering(el){if(!el||el.nodeType!==1)return false;if(el.id==='root'||el.id==='loader'||el.classList.contains('nm-tabbar'))return false;
+ var cs=getComputedStyle(el);if(cs.position!=='fixed'||cs.display==='none'||cs.visibility==='hidden'||cs.pointerEvents==='none')return false;
+ var r=el.getBoundingClientRect();return r.width>=innerWidth*0.9&&r.height>=innerHeight*0.6&&r.top<=innerHeight*0.4;}
+function check(){raf=0;var any=false,k=document.body.children;for(var i=0;i<k.length;i++){if(covering(k[i])){any=true;break;}}
+ if(!any){/* React portals / sheets mounted inside #root */var c=document.querySelectorAll('[role=dialog],[aria-modal=true]');for(var j=0;j<c.length;j++){var p=c[j];while(p&&p!==document.body){if(covering(p)){any=true;break;}p=p.parentElement;}if(any)break;}}
+ if(any!==on){on=any;document.documentElement.classList.toggle('nm-lock',on);}}
+function sched(){if(!raf)raf=requestAnimationFrame(check);}
+new MutationObserver(sched).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','hidden','aria-modal']});
+window.addEventListener('resize',sched);setTimeout(check,500);
+var css=document.createElement('style');css.textContent='html.nm-lock,html.nm-lock body{overflow:hidden!important;overscroll-behavior:none}';document.head.appendChild(css);
+})();
+</script>
+<script>
 /* NAMAA_ONBOARD v1 — أول مرة: 3 شاشات ترحيب (تتخطى) + كارت «ابدأ مع نماء» في الرئيسية بخطوات بتتعلم لوحدها */
 (function(){
 var OK='nm-onb';
@@ -4329,7 +4346,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=217;window.NM_VERSION='21.7';
+window.NM_BUILD=218;window.NM_VERSION='21.8';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
