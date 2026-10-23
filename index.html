@@ -2233,6 +2233,11 @@ var C={
   ['ليه بيطلع وينزل من شهر للتاني؟','عشان التوزيعات بتتصرف في شهور معيّنة. الشهر اللي فيه توزيعات بيطلع أعلى، واللي مفيهوش بيطلع أقل. عايز رقم ثابت تقارن بيه؟ بص على «المتوسط الشهري» تحته.'],
   ['ليه الشريط اللي تحت الرقم لونين؟','لون للفلوس اللي أكيد جاية، زي الإيجار وأرباح البنك. ولون للتوزيعات اللي الشركة لسه ما أعلنتهاش، فإحنا بنقدّرها.<br>مثلًا: 12,500 = 11,000 أكيد + 1,500 متوقع.'],
   ['والمرتب؟','مش محسوب هنا. هتلاقيه تحت «المتوسط الشهري» في سطر «دخلك كله في الشهر».']]},
+ curMonthHome:{t:'دخلك السلبي الشهر ده',learn:'passive',go:['income','افتح صفحة الدخل'],s:[
+  ['يعني إيه دخل سلبي؟','فلوس بتيجيلك من أصولك من غير ما تشتغل عشانها: إيجار شقة، أرباح حساب توفير أو شهادة في بنك إسلامي، أو توزيعات أسهم. مرتبك مش داخل هنا، لأنه بييجي من شغلك.'],
+  ['الرقم ده إيه؟','كل الدخل السلبي بتاع الشهر ده من أوله لآخره: اللي وصلك فعلاً واللي لسه جاي.'],
+  ['مثال','شقة إيجارها 6,000 ج، وشهادة 300,000 ج أرباحها 20% في السنة (يعني 5,000 ج في الشهر)، وسهم صرف توزيعات 1,500 ج الشهر ده.<br>دخلك السلبي الشهر ده = <b>12,500 ج</b>. والشهر الجاي من غير التوزيعات = 11,000 ج.'],
+  ['عايز تفاصيل أكتر؟','في صفحة «الدخل» هتلاقي الدخل ده بيجي منين، وإمتى، ومتوسطه في الشهر، ودخلك كله مع المرتب.']]},
  contrib:{t:'تضيف كل شهر',s:[
   ['ده إيه؟','الفلوس اللي بتحطها في أصولك كل شهر من جيبك. دي مش مكسب ولا دخل.'],
   ['مثال','بتحط 2,000 ج كل شهر في شهادة، وبتدفع قسط شقة 5,000 ج.<br>يبقى «تضيف كل شهر» = <b>7,000 ج</b>.'],
@@ -2287,7 +2292,7 @@ var C={
 };
 /* where to place the (i): exact label text → key */
 var T=[
- ['دخل الشهر ده','curMonth',1],['دخلك السلبي الشهر ده','curMonth',1],['دخل سلبي ·','curMonth',1],['المتوسط الشهري','avgProj',1],['الدخل الشهري الحالي','curInc'],['دخلك الشهري الحالي','curInc'],['تضيف كل شهر','contrib'],['صافي ثروتك','net'],
+ ['دخل الشهر ده','curMonth',1],['دخلك السلبي الشهر ده','curMonth',1],['دخل سلبي ·','curMonthHome',1],['المتوسط الشهري','avgProj',1],['الدخل الشهري الحالي','curInc'],['دخلك الشهري الحالي','curInc'],['تضيف كل شهر','contrib'],['صافي ثروتك','net'],
  ['هدف الدخل السلبي','goal'],['بيجي منين','sources'],['جاي في الطريق','upcoming'],['متوسط الدخل الشهري المتوقع','avgProj'],
  ['خريطة الدخل بالشهر','heat',1],['فترة الحساب','period'],['متوقع توصل في','proj',1],['ثروتك المتوقعة في','proj',1]
 ];
@@ -2300,9 +2305,10 @@ function onKey(e){if(e.key==='Escape'){e.stopPropagation();close();}}
 function open(k){var c=C[k];if(!c)return;last=document.activeElement;close();last=last;
  var h='<div class="nmi-hd"><div class="nmi-grab" aria-hidden="true"></div><h3 id="nmi-t">'+ICON+c.t+'</h3></div><div class="nmi-bd">';
  c.s.forEach(function(x){h+='<div class="nmi-sec'+(x[0]==='مثال'?' nmi-ex nm-nomask':'')+'"><h4>'+(x[0]==='مثال'?'💡 مثال':x[0])+'</h4>'+(Array.isArray(x[1])?'<ul>'+x[1].map(function(li){return '<li>'+li+'</li>';}).join('')+'</ul>':'<p>'+x[1]+'</p>')+'</div>';});
+ if(c.go)h+='<div class="nmi-sec"><button type="button" class="nmi-lall" data-gotab="'+c.go[0]+'">'+c.go[1]+'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button></div>';
  h+=learnBlock(c.learn);
  h+='</div><div class="nmi-ft"><button class="nmi-ok" id="nmi-ok">فهمت</button></div>';
- mount(h);bindLearn(c.learn);}
+ mount(h);bindLearn(c.learn);var gt=document.querySelector('#nmi-scrim [data-gotab]');if(gt)gt.onclick=function(){var t=gt.getAttribute('data-gotab');close();setTimeout(function(){try{window.__nmTab&&window.__nmTab(t);}catch(e){}},240);};}
 function learnBlock(cat){if(!cat||!window.NamaaLearn||!NamaaLearn.byCat)return '';var L=[];try{L=NamaaLearn.byCat(cat).slice(0,2);}catch(e){}
  var h='<div class="nmi-sec nmi-lrn"><h4>اتعلم أكتر في «رحلتك مع المال»</h4>';
  if(L.length)h+=L.map(function(v){return '<button type="button" class="nmi-lv" data-lv="'+v.id+'"><span class="th">'+(v.th?'<img src="'+v.th+'" alt="" loading="lazy" onerror="this.remove()">':'')+'<i aria-hidden="true">▶</i></span><span class="tx"><b>'+String(v.t||'فيديو').replace(/[<>&]/g,'')+'</b><small>'+(v.st==='done'?'اتفرجت عليه ✓':v.st==='prog'?'كمّل من مكانك':(v.k==='list'?'قايمة فيديوهات':'فيديو'))+'</small></span></button>';}).join('');
@@ -4321,7 +4327,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=215;window.NM_VERSION='21.5';
+window.NM_BUILD=216;window.NM_VERSION='21.6';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
