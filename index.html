@@ -4131,6 +4131,28 @@ var css=document.createElement('style');css.textContent='html.nm-lock,html.nm-lo
 })();
 </script>
 <script>
+/* NAMAA_ERRSCROLL v1 — سلوك عام: لما تدوس زرار والنتيجة خطأ (خانة ناقصة/رسالة خطأ)، الشاشة بتسكرول على أول خطأ وتحط المؤشر فيه وتنبّه عليه.
+   شغال مع محرر الأصول (React) وكل الشيتات (budget/learn/dialogs/quick add...) من غير ما نلمس كل واحد لوحده. */
+(function(){
+var FIELD='.nm-input-wrap.err,[aria-invalid="true"],.nm-field.err,.err>input,input.err,select.err,textarea.err';
+var MSG='.nmd-err,.nmq-err,.nmc-err,.nmb-err,.nmw-err,[role="alert"]';
+function vis(el){if(!el||!el.isConnected)return false;if(el.closest('[hidden]'))return false;var r=el.getBoundingClientRect();if(!(r.width||r.height))return false;var cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden';}
+function msgOk(el){return vis(el)&&(el.textContent||'').trim().length>0&&!el.closest('.nmi-toast,.nmw-toast,.nmq-toast,.nmx-toast,.nmt-toast,.nms-toast,.nmey-toast');}
+function scope(btn){return btn.closest('[role=dialog],.nmd-sheet,.nmi-sheet,.nml-scrim,.nm-ed-scroll')||btn.closest('.nm-editor,.nm-sheet')||document;}
+function first(root){var f=[].filter.call(root.querySelectorAll(FIELD),vis);if(!f.length&&root!==document){f=[].filter.call(document.querySelectorAll(FIELD),vis);}
+ if(f.length)return f[0];var m=[].filter.call(root.querySelectorAll(MSG),msgOk);return m[0]||null;}
+function all(){return [].filter.call(document.querySelectorAll(FIELD),vis).length+[].filter.call(document.querySelectorAll(MSG),msgOk).length;}
+function go(el){var t=el.closest('.nm-field,label,.nmd-f,.nmq-f,.nmc-l')||el;try{t.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}catch(e){t.scrollIntoView();}
+ var inp=el.matches('input,select,textarea')?el:(el.querySelector&&el.querySelector('input,select,textarea'))||(t.querySelector&&t.querySelector('input,select,textarea'));
+ setTimeout(function(){if(inp&&!inp.disabled){try{inp.focus({preventScroll:true});}catch(e){}}t.classList.remove('nm-err-hit');void t.offsetWidth;t.classList.add('nm-err-hit');setTimeout(function(){t.classList.remove('nm-err-hit');},900);},320);
+ try{window.NamaaTrack&&NamaaTrack('form_error_scroll');}catch(e){}}
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('button,[role=button],input[type=submit]');if(!b)return;
+ var before=all(),force=/ناقص|كمّل \d/.test(b.textContent||''),root=scope(b);
+ setTimeout(function(){var after=all();if(!(after>before||force))return;var el=first(root.isConnected===false?document:root);if(el)go(el);},180);},true);
+var css=document.createElement('style');css.textContent='@keyframes nmErrHit{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}.nm-err-hit{animation:nmErrHit .45s ease;border-radius:12px;box-shadow:0 0 0 3px rgba(193,53,21,.18)}@media(prefers-reduced-motion:reduce){.nm-err-hit{animation:none}}';document.head.appendChild(css);
+})();
+</script>
+<script>
 /* NAMAA_ONBOARD v1 — أول مرة: 3 شاشات ترحيب (تتخطى) + كارت «ابدأ مع نماء» في الرئيسية بخطوات بتتعلم لوحدها */
 (function(){
 var OK='nm-onb';
@@ -4346,7 +4368,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=220;window.NM_VERSION='22.0';
+window.NM_BUILD=221;window.NM_VERSION='22.1';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
