@@ -2244,7 +2244,7 @@ var C={
   ['ليه بنحسبه؟','عشان توقع ثروتك يبقى واقعي: كل شهر الـ 7,000 دي بتتضاف لأصولها، فثروتك بتكبر حتى لو مفيش أرباح.'],
   ['تغيّره منين؟','افتح الأصل وشغّل «إضافة شهرية» واكتب المبلغ. لو بالدولار، بيتحسب بالجنيه بسعر الصرف اللي في التطبيق.']]},
  net:{t:'صافي ثروتك',s:[
-  ['مثال','عندك شقة بـ 2,000,000 ج، و1,000 دولار والدولار بـ 50، و10 جرام دهب والجرام بـ 4,000.<br>صافي ثروتك = 2,000,000 + 50,000 + 40,000 = <b>2,090,000 ج</b>.'],
+  ['مثال','عندك شقة بـ 2,000,000 ج، و1,000 دولار (الدولار النهارده بـ {USD} ج)، و10 جرام دهب عيار 21 (الجرام النهارده بـ {G21} ج).<br>صافي ثروتك = 2,000,000 + {USDX} + {G21X} = <b>{NET} ج</b>.'],
   ['ده إيه؟','مجموع قيمة كل أصولك النهارده بالجنيه المصري.'],
   ['بيتحسب إزاي؟',['<b>الأسهم:</b> عدد الأسهم × آخر سعر متسجل.','<b>الدولار والعملات:</b> بسعر الصرف اللي في التطبيق.','<b>الدهب:</b> الجرامات × سعر الجرام.','<b>العقارات والحسابات:</b> بالقيمة اللي إنت كاتبها لكل أصل.']],
   ['ملحوظة','الرقم بيتغير لما تحدّث الأسعار أو قيمة أي أصل، أو لما سعر الصرف يتغير.']]},
@@ -2302,9 +2302,11 @@ var last=null;
 var guard=false;function dec(){window.__nmSheetOpen=Math.max(0,(window.__nmSheetOpen||0)-1);}function onPop(){guard=false;window.removeEventListener('popstate',onPop);var s=document.getElementById('nmi-scrim');if(s)s.remove();document.removeEventListener('keydown',onKey,true);dec();}function arm(){if(guard)return;try{history.pushState({nmSheet:1},'');guard=true;window.__nmSheetOpen=(window.__nmSheetOpen||0)+1;window.addEventListener('popstate',onPop);}catch(e){}}function unarm(){if(!guard)return;guard=false;window.removeEventListener('popstate',onPop);(window.__nmSwallowNext||function(f){window.addEventListener('popstate',function sw(){window.removeEventListener('popstate',sw);f();});})(function(){dec();});try{history.back();}catch(e){dec();}}
 function close(){var s=document.getElementById('nmi-scrim');if(s)s.remove();unarm();document.removeEventListener('keydown',onKey,true);if(last&&last.focus){try{last.focus();}catch(e){}}}
 function onKey(e){if(e.key==='Escape'){e.stopPropagation();close();}}
+function rates(){var u=0,g=0;try{var d=JSON.parse(localStorage.getItem('portfolioData')||'{}');(d.currencies||[]).forEach(function(x){if(!x)return;if(x.code==='USD')u=Number(x.rate)||0;if(x.code==='GOLD21')g=Number(x.rate)||0;});if(!u&&d.exchangeRates)u=Number(d.exchangeRates.USD)||0;var er=d.exchangeRates||{};if(!(g>3000))g=Number(er.goldKarat21)||((Number(er.goldKarat24)||0)*0.875)||g;var xa=JSON.parse(localStorage.getItem('nm-xau')||'null');if(xa&&xa.usd>0&&u>0){var gx=xa.usd/31.1035*0.875*u;if(gx>1000)g=gx;}}catch(e){}return {u:u||50,g:(g>1000?Math.round(g/5)*5:4500)};}
+function fillT(t){if(String(t).indexOf('{')<0)return t;var r=rates(),f=function(n){return Math.round(n).toLocaleString('en-US');},ux=1000*r.u,gx=10*r.g;return String(t).replace(/\{USD\}/g,(r.u%1?r.u.toFixed(2):f(r.u))).replace(/\{G21\}/g,f(r.g)).replace(/\{USDX\}/g,f(ux)).replace(/\{G21X\}/g,f(gx)).replace(/\{NET\}/g,f(2000000+ux+gx));}
 function open(k){var c=C[k];if(!c)return;last=document.activeElement;close();last=last;
  var h='<div class="nmi-hd"><div class="nmi-grab" aria-hidden="true"></div><h3 id="nmi-t">'+ICON+c.t+'</h3></div><div class="nmi-bd">';
- c.s.forEach(function(x){h+='<div class="nmi-sec'+(x[0]==='مثال'?' nmi-ex nm-nomask':'')+'"><h4>'+(x[0]==='مثال'?'💡 مثال':x[0])+'</h4>'+(Array.isArray(x[1])?'<ul>'+x[1].map(function(li){return '<li>'+li+'</li>';}).join('')+'</ul>':'<p>'+x[1]+'</p>')+'</div>';});
+ c.s.forEach(function(x){h+='<div class="nmi-sec'+(x[0]==='مثال'?' nmi-ex nm-nomask':'')+'"><h4>'+(x[0]==='مثال'?'💡 مثال':x[0])+'</h4>'+(Array.isArray(x[1])?'<ul>'+x[1].map(function(li){return '<li>'+fillT(li)+'</li>';}).join('')+'</ul>':'<p>'+fillT(x[1])+'</p>')+'</div>';});
  if(c.go)h+='<div class="nmi-sec"><button type="button" class="nmi-lall" data-gotab="'+c.go[0]+'">'+c.go[1]+'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button></div>';
  h+=learnBlock(c.learn);
  h+='</div><div class="nmi-ft"><button class="nmi-ok" id="nmi-ok">فهمت</button></div>';
@@ -4327,7 +4329,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=216;window.NM_VERSION='21.6';
+window.NM_BUILD=217;window.NM_VERSION='21.7';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
