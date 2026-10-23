@@ -2223,7 +2223,7 @@ var C={
   ['يعني إيه دخل سلبي؟','فلوس بتيجيلك من أصولك من غير ما تشتغل عشانها: إيجار، أرباح بنكية، توزيعات. مرتبك مش داخل هنا.'],
   ['ده إيه؟','متوسط اللي بيدخلّك في الشهر من الأصول اللي دخلها شغال النهارده. هو مش الفلوس اللي وصلتك فعلاً الشهر ده، ومش شهر معيّن، هو «الشهر العادي» في المتوسط.'],
   ['بيتحسب إزاي؟',['<b>الإيجار:</b> بمبلغه الشهري زي ما كاتبه.','<b>أرباح البنك:</b> الرصيد × نسبة الأرباح السنوية ÷ 12.','<b>التوزيعات:</b> صافي توزيعات السنة بعد الضريبة ÷ 12، حتى لو الشركة بتصرف مرة أو مرتين في السنة.','الأصول اللي دخلها بيبدأ بعدين مش داخلة هنا، وبتظهر لوحدها تحت «+… تبدأ من».']],
-  ['مؤكد ومتوقع','الشريط تحت الرقم بيفصل الدخل المؤكد (إيجار، أرباح بنكية، توزيعات معلنة) عن المتوقع (توزيعات لسه ما اتعلنتش، أو متقدّرة بالنسبة). الرقم الكبير هو مجموعهم.'],
+  ['ليه الشريط اللي تحت الرقم لونين؟','لون للفلوس اللي أكيد جاية، زي الإيجار وأرباح البنك. ولون للتوزيعات اللي لسه ما اتعلنتش، فإحنا بنقدّرها. الرقم الكبير هو الاتنين مع بعض.'],
   ['عايز تعرف هيوصلك كام في شهر معيّن؟','شوف «جاي في الطريق» في صفحة الدخل، أو «خريطة الدخل بالشهر» في «العوائد والتوقعات».']]},
  curMonth:{t:'دخلك السلبي الشهر ده',learn:'passive',s:[
   ['مثال','شقة إيجارها 6,000 ج، وشهادة 300,000 ج أرباحها 20% في السنة (يعني 5,000 ج في الشهر)، وسهم صرف توزيعات 1,500 ج الشهر ده.<br>دخلك السلبي الشهر ده = <b>12,500 ج</b>. والشهر الجاي من غير التوزيعات = 11,000 ج.'],
@@ -2231,8 +2231,8 @@ var C={
   ['الرقم ده إيه؟','كل الدخل السلبي بتاع الشهر ده من أوله لآخره: اللي وصلك فعلاً واللي لسه جاي. بيتحدّث لوحده أول كل شهر.'],
   ['بيتحسب منين؟',['<b>الإيجار:</b> بمبلغه الشهري زي ما كاتبه.','<b>أرباح البنك:</b> الرصيد × نسبة الأرباح السنوية ÷ 12.','<b>التوزيعات:</b> اللي ميعاد صرفها في الشهر ده بس، بالمبلغ الصافي بعد الضريبة.','عشان أصل يدخل هنا، شغّل فيه «دخل من الأصل».']],
   ['ليه بيطلع وينزل من شهر للتاني؟','عشان التوزيعات بتتصرف في شهور معيّنة. الشهر اللي فيه توزيعات بيطلع أعلى، واللي مفيهوش بيطلع أقل. عايز رقم ثابت تقارن بيه؟ بص على «المتوسط الشهري» تحته.'],
-  ['مؤكد ومتوقع','الشريط تحت الرقم بيفصل المؤكد (إيجار، أرباح بنكية، توزيعات اتعلنت) عن المتوقع (توزيعات لسه ما اتعلنتش).'],
-  ['وفين مرتبك؟','تحت المتوسط هتلاقي «دخلك كله في الشهر»: مرتبك من ميزانيتي + دخلك السلبي. كل ما نسبة الدخل السلبي تكبر، بتعتمد على شغلك أقل.']]},
+  ['ليه الشريط اللي تحت الرقم لونين؟','لون للفلوس اللي أكيد جاية، زي الإيجار وأرباح البنك. ولون للتوزيعات اللي الشركة لسه ما أعلنتهاش، فإحنا بنقدّرها.<br>مثلًا: 12,500 = 11,000 أكيد + 1,500 متوقع.'],
+  ['والمرتب؟','مش محسوب هنا. هتلاقيه تحت «المتوسط الشهري» في سطر «دخلك كله في الشهر».']]},
  contrib:{t:'تضيف كل شهر',s:[
   ['ده إيه؟','الفلوس اللي بتحطها في أصولك كل شهر من جيبك. دي مش مكسب ولا دخل.'],
   ['مثال','بتحط 2,000 ج كل شهر في شهادة، وبتدفع قسط شقة 5,000 ج.<br>يبقى «تضيف كل شهر» = <b>7,000 ج</b>.'],
@@ -4320,7 +4320,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=213;window.NM_VERSION='21.3';
+window.NM_BUILD=214;window.NM_VERSION='21.4';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
