@@ -1908,8 +1908,8 @@ let gk='';try{gk=localStorage.getItem('namaa-gemini-key')||'';}catch(e){}
 const stTxt=d=>{try{return d instanceof Date?d.toLocaleString('ar-EG',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'}):String(d);}catch(e){return '';}};
 const row=(c)=>h("div",{key:c.code,className:"nm-cur"+(c.enabled||c.locked?"":" off")},
  h("button",{className:`toggle ${c.enabled?'on':''}`,role:"switch","aria-checked":!!c.enabled,"aria-label":"تفعيل "+c.name,onClick:()=>{if(c.locked)return;setCurrencies(currencies.map(x=>x.code===c.code?{...x,enabled:!x.enabled}:x));},disabled:c.locked,style:{opacity:c.locked?0.5:1,cursor:c.locked?'not-allowed':'pointer'}},h("div",{className:"toggle-dot"})),
- h("div",{className:"nm-cur-n"},h("span",{className:"nm-cur-f","aria-hidden":true},c.flag),h("div",{style:{minWidth:0}},h("b",null,c.name),h("small",null,c.code+(c.code==='GOLD24'?(()=>{try{const z=JSON.parse(localStorage.getItem('nm-xau')||'null');return z&&z.usd?' · الأونصة $'+Number(z.usd).toLocaleString('en-US',{maximumFractionDigits:2}):'';}catch(e){return '';}})():'')))),
- c.code==='EGP'?h("span",{className:"nm-cur-base"},"العملة الأساسية"):h("label",{className:"nm-cur-rate"},h("input",{type:"number",inputMode:"decimal",step:"0.01",value:c.rate,"aria-label":"سعر "+c.name+" بالجنيه",onChange:e=>setCurrencies(currencies.map(x=>x.code===c.code?{...x,rate:parseFloat(e.target.value)||0}:x)),onFocus:e=>e.target.select()}),h("span",null,"ج.م")),
+ h("div",{className:"nm-cur-n"},h("span",{className:"nm-cur-f","aria-hidden":true},c.flag),h("div",{style:{minWidth:0}},h("b",null,c.name,DCC&&DCC.code===c.code?h("span",{className:"nm-cur-main"},"الأساسية"):null),h("small",null,c.code+(c.code==='GOLD24'?(()=>{try{const z=JSON.parse(localStorage.getItem('nm-xau')||'null');return z&&z.usd?' · الأونصة $'+Number(z.usd).toLocaleString('en-US',{maximumFractionDigits:2}):'';}catch(e){return '';}})():'')))),
+ c.code==='EGP'?h("span",{className:"nm-cur-base"},DCC?"الأسعار بتتكتب بيه":"العملة الأساسية"):h("label",{className:"nm-cur-rate"},h("input",{type:"number",inputMode:"decimal",step:"0.01",value:c.rate,"aria-label":"سعر "+c.name+" بالجنيه",onChange:e=>setCurrencies(currencies.map(x=>x.code===c.code?{...x,rate:parseFloat(e.target.value)||0}:x)),onFocus:e=>e.target.select()}),h("span",null,"ج.م")),
  !c.locked?h("button",{className:"nm-cur-del","aria-label":"حذف "+c.name,onClick:()=>{if(confirm(`تشيل ${c.name} من القائمة؟`)){setCurrencies(currencies.filter(x=>x.code!==c.code));}}},h(Trash2,{size:15})):h("span",{style:{width:'32px'}}));
 return h("div",{className:"nm-settings",style:{maxWidth:'900px',margin:'0 auto',padding:isMobile?'14px 12px':'28px 20px'}},
  /* 1. prices */
@@ -4262,9 +4262,9 @@ function picker(force){var first=document.querySelector('.nm-cur');if(!first)ret
  if(!box){box=document.createElement('div');box.className='nmdc';host.insertBefore(box,first);}
  box.setAttribute('data-sig',sig);
  var chips=L.map(function(c){var on=c.code===cur||(!r&&c.code==='EGP'),ok=c.rate>0;return '<button type="button" role="radio" aria-checked="'+on+'" class="nmdc-c'+(on?' on':'')+'" data-c="'+c.code+'"'+(ok?'':' disabled')+'><span aria-hidden="true">'+c.flag+'</span>'+(AR[c.code]||c.name)+'</button>';}).join('');
- box.innerHTML='<div class="nmdc-h"><b id="nmdc-t">اعرض فلوسك بـ</b><small>كل الأرقام في التطبيق هتتعرض بالعملة دي بسعر الصرف اللي تحت. أصولك نفسها بتفضل بعملتها.</small></div>'+
+ box.innerHTML='<div class="nmdc-h"><b id="nmdc-t">العملة الأساسية</b><small>كل الأرقام في التطبيق (ثروتك، دخلك، ميزانيتك) هتتعرض بيها. أصولك نفسها بتفضل بعملتها.</small></div>'+
   '<div class="nmdc-cs" role="radiogroup" aria-labelledby="nmdc-t">'+chips+'</div>'+
-  (r?'<div class="nmdc-n">1 '+(AR[r.code]||r.code)+' = '+r.rate+' ج.م. أسعار الصرف وحاسبة العائد المركّب بتفضل بالجنيه.</div>':'<div class="nmdc-n">عملتك مش هنا؟ فعّلها من القايمة تحت أو من «إضافة عملة»، وهتظهر هنا.</div>');
+  (r?'<div class="nmdc-n">1 '+(AR[r.code]||r.code)+' = '+r.rate+' ج.م. أسعار الصرف تحت مكتوبة بالجنيه لأنها جاية من السوق المصري، بتتحدّث لوحدها ومش محتاج تغيّرها.</div>':'<div class="nmdc-n">عملتك مش هنا؟ فعّلها من القايمة تحت أو من «إضافة عملة»، وهتظهر هنا.</div>');
  box.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){var c=b.getAttribute('data-c');if(c!==get()||(c!=='EGP'&&!active()))set(c);};});}
 var raf=0;new MutationObserver(function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;picker();});}).observe(document.body,{childList:true,subtree:true});
 /* لو العملة المختارة اتقفلت أو سعرها اتغيّر: اعيد الرسم */
@@ -4274,7 +4274,7 @@ var css=document.createElement('style');css.textContent=
 '.nmdc{padding:4px 0 16px}.nmdc-h b{display:block;font-size:16px;font-weight:600;color:#222}.nmdc-h small{display:block;font-size:13px;color:#6a6a6a;margin-top:4px;line-height:1.5}'+
 '.nmdc-cs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.nmdc-c{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 14px;border-radius:9999px;border:1px solid #dddddd;background:#fff;font:inherit;font-size:14px;font-weight:500;color:#222;cursor:pointer}'+
 '.nmdc-c.on{border-color:#222;box-shadow:inset 0 0 0 1px #222;background:#f7f7f7}.nmdc-c:disabled{opacity:.45;cursor:not-allowed}.nmdc-c:focus-visible{outline:2px solid #222;outline-offset:2px}'+
-'.nmdc-n{font-size:12.5px;color:#6a6a6a;margin-top:10px;line-height:1.5}'+
+'.nm-cur-main{display:inline-block;margin-inline-start:8px;padding:2px 8px;border-radius:9999px;background:#222;color:#fff;font-size:11px;font-weight:600;vertical-align:middle}.nmdc-n{font-size:12.5px;color:#6a6a6a;margin-top:10px;line-height:1.5}'+
 '.nmdc-toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:99999;transition:opacity .3s;max-width:calc(100% - 32px)}.nmdc-toast.out{opacity:0}';
 document.head.appendChild(css);
 })();
@@ -4519,7 +4519,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=225;window.NM_VERSION='22.5';
+window.NM_BUILD=226;window.NM_VERSION='22.6';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
