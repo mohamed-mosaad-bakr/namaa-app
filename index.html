@@ -849,14 +849,19 @@ const renderTabBar=()=>ReactDOM.createPortal(React.createElement(React.Fragment,
  isMobile&&(activeTab==='home'||activeTab==='assets')&&!fabOpen&&React.createElement("button",{className:"nm-fab","aria-label":"إضافة",onClick:()=>setFabOpen(true)},React.createElement(Plus,{size:26,color:'#fff',strokeWidth:2.4})),
  isMobile&&React.createElement("nav",{className:"nm-tabbar","aria-label":"التنقل"},TABS.map(t=>React.createElement("button",{key:t.id,className:"nm-tab"+(activeTab===t.id?" on":""),onClick:()=>goTab(t.id),"aria-current":activeTab===t.id?"page":undefined},React.createElement(t.icon,{size:23,strokeWidth:activeTab===t.id?2.2:1.7}),React.createElement("span",null,t.label)))),
  fabOpen&&React.createElement(React.Fragment,null,React.createElement("div",{className:"nm-scrim",onClick:()=>setFabOpen(false)}),React.createElement("div",{className:"nm-sheet",role:"dialog","aria-label":"إضافة"},React.createElement("div",{className:"nm-sheet-grab"}),
-   React.createElement("div",{className:"nm-sheet-head"},React.createElement("div",{className:"nm-sheet-title"},"إضافة إلى محفظتك"),React.createElement("button",{className:"menu-bottom-sheet-close",onClick:()=>setFabOpen(false),"aria-label":"إغلاق"},React.createElement(X,{size:20}))),
+   React.createElement("div",{className:"nm-sheet-head"},React.createElement("div",{className:"nm-sheet-title"},"ضيف أو حدّث"),React.createElement("button",{className:"menu-bottom-sheet-close",onClick:()=>setFabOpen(false),"aria-label":"إغلاق"},React.createElement(X,{size:20}))),
    React.createElement("div",{style:{padding:'8px 12px calc(16px + env(safe-area-inset-bottom))'}},
-     fabItem("✍️","أصل جديد","عقار، كاش، ذهب أو أي أصل تدخله بنفسك",()=>{setFabOpen(false);const nid=Math.max(...assets.map(a=>a.id),0)+1;addAsset();goView('overview');openEditor(nid);}),
+     React.createElement("div",{className:"nm-sheet-grp",role:"presentation"},"ضيف أصل"),
+     fabItem("✍️","أصل جديد","عقار، كاش، دهب، شهادة… أي أصل تكتبه بنفسك",()=>{setFabOpen(false);const nid=Math.max(...assets.map(a=>a.id),0)+1;addAsset();goView('overview');openEditor(nid);}),
+     fabItem("📈","سهم من البورصة المصرية","دوّر بالاسم أو الرمز، وسعره بيتحدّث لوحده",()=>{setFabOpen(false);goView('overview');setTimeout(()=>setStockSearchOpen(true),60);}),
+     fabItem("🏦","من تطبيق استثمار","ثاندر، أمتار، فريدة، Safe: بنجهّزلك الأصل وانت تكمّل",()=>{setFabOpen(false);setTimeout(()=>{window.NamaaQuick&&window.NamaaQuick.open();},150);}),
+     React.createElement("div",{className:"nm-sheet-grp",role:"presentation"},"سجّل حركة على أصل عندك"),
+     fabItem("🧾","اشتريت أسهم","زوّدت سهم عندك أو اشتريت جديد: العدد والسعر بس",()=>{setFabOpen(false);setTimeout(()=>{window.NamaaTrade&&window.NamaaTrade.open();},150);}),
      fabItem("⇄","تحويل بين أصولك","من حساب لحساب، أو من دولار لجنيه",()=>{setFabOpen(false);window.NamaaTransfer&&window.NamaaTransfer.open();}),
-     fabItem("📈","سهم من البورصة المصرية","ابحث بالاسم أو الرمز وسعره يتحدث تلقائياً",()=>{setFabOpen(false);goView('overview');setTimeout(()=>setStockSearchOpen(true),60);}),
-     fabItem("🧾","سجّل عملية شراء أسهم","اشتريت سهم جديد أو زوّدت سهم عندك: العدد والسعر بس",()=>{setFabOpen(false);setTimeout(()=>{window.NamaaTrade&&window.NamaaTrade.open();},150);}),
-     fabItem("📷","من صورة","صوّر كشف حساب أو شاشة تطبيق ونماء يقرأها",()=>{setFabOpen(false);setImportError(null);setShowImportModal(true);}),
-     React.createElement("label",{className:"nm-sheet-item"},React.createElement("input",{type:"file",accept:".xlsx,.xls,.csv",style:{display:'none'},onChange:e=>{const f=e.target.files[0];setFabOpen(false);if(f){setShowImportModal(true);addAssetsFromExcel(f);}e.target.value='';}}),React.createElement("span",{className:"nm-sheet-ico"},"📊"),React.createElement("span",{style:{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:'2px'}},React.createElement("span",{style:{fontSize:'15px',fontWeight:600,color:'#222'}},"من ملف Excel"),React.createElement("span",{style:{fontSize:'12px',color:'#6a6a6a'}},"استورد قائمة أصول دفعة واحدة"))),
+     React.createElement("div",{className:"nm-sheet-grp",role:"presentation"},"ضيف كذا أصل مرة واحدة"),
+     fabItem("📷","من صورة","صوّر كشف حساب أو شاشة تطبيق، ونماء يقراها",()=>{setFabOpen(false);setImportError(null);setShowImportModal(true);}),
+     fabItem("✦","بمساعدة Claude أو ChatGPT","ابعتلهم صورة، والزق هنا الكود اللي بيطلّعوه",()=>{setFabOpen(false);setTimeout(()=>{window.NamaaPatch&&window.NamaaPatch.open();},150);}),
+     React.createElement("label",{className:"nm-sheet-item"},React.createElement("input",{type:"file",accept:".xlsx,.xls,.csv",style:{display:'none'},onChange:e=>{const f=e.target.files[0];setFabOpen(false);if(f){setShowImportModal(true);addAssetsFromExcel(f);}e.target.value='';}}),React.createElement("span",{className:"nm-sheet-ico"},"📊"),React.createElement("span",{style:{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:'2px'}},React.createElement("span",{style:{fontSize:'15px',fontWeight:600,color:'#222'}},"من ملف Excel"),React.createElement("span",{style:{fontSize:'12px',color:'#6a6a6a'}},"عندك أصولك في جدول؟ ارفعه مرة واحدة"))),
      React.createElement("button",{className:"nm-sheet-link",onClick:()=>{setFabOpen(false);downloadExcelTemplate();}},"⬇️ تحميل قالب Excel فاضي"))))
 ),document.body);
 const setLayout=v=>{setCardLayout(v);try{localStorage.setItem('namaa-asset-view',v);}catch(e){}};
@@ -2159,7 +2164,8 @@ setTimeout(repair,1200);
 window.NamaaPatch={open:open,help:help,prompt:promptText};
 /* entry chip next to sync */
 function mount(){var b=document.getElementById('nms-btn');if(!b||document.getElementById('nmp-btn'))return;var c=el('<button id="nmp-btn" class="nms-btn" aria-label="تحديث من Claude">✦ Claude</button>');c.onclick=open;b.parentNode.insertBefore(c,b);}
-new MutationObserver(mount).observe(document.documentElement,{childList:true,subtree:true});
+/* 24.2: المدخل اتنقل لشيت «ضيف أو حدّث» (زرار +)؛ الشريحة اللي جنب المزامنة اتشالت */
+var gcss=document.createElement('style');gcss.textContent='.nm-sheet-grp{margin:14px 12px 2px;font-size:12.5px;font-weight:700;color:#6a6a6a}.nm-sheet-grp:first-child{margin-top:2px}';document.head.appendChild(gcss);
 })();
 </script>
 <script>
@@ -4132,7 +4138,7 @@ Storage.prototype.removeItem=function(k){var r=origRm.apply(this,arguments);try{
 try{['setItem','removeItem'].forEach(function(fn){if(Object.prototype.hasOwnProperty.call(localStorage,fn)){var cur=localStorage[fn];localStorage[fn]=function(k){var r=cur.apply(localStorage,arguments);try{q(String(k));}catch(e){}return r;};}});}catch(e){}
 
 /* ضغطات مهمة: بالنص بتاع الزرار (من غير ما نلمس كود React) */
-var CL=[['.nm-fab',null,'add_menu_open'],[null,'أصل جديد','add_menu_select','manual_asset'],[null,'تحويل بين أصولك','add_menu_select','transfer'],[null,'سهم من البورصة','add_menu_select','stock'],[null,'سجّل عملية شراء','add_menu_select','trade'],[null,'من صورة','add_menu_select','image_import'],[null,'من ملف','add_menu_select','file_import'],[null,'تحميل قالب','add_menu_select','template_download'],
+var CL=[['.nm-fab',null,'add_menu_open'],[null,'أصل جديد','add_menu_select','manual_asset'],[null,'تحويل بين أصولك','add_menu_select','transfer'],[null,'سهم من البورصة','add_menu_select','stock'],[null,'سجّل عملية شراء','add_menu_select','trade'],[null,'اشتريت أسهم','add_menu_select','trade'],[null,'من تطبيق استثمار','add_menu_select','quick_platform'],[null,'بمساعدة Claude','add_menu_select','ai_patch'],[null,'من صورة','add_menu_select','image_import'],[null,'من ملف','add_menu_select','file_import'],[null,'تحميل قالب','add_menu_select','template_download'],
  [null,'حدّث الأسعار','price_refresh_click'],[null,'دوّر على تحديث','update_check_manual'],[null,'حمّل ثاندر','partner_click','thndr'],[null,'حمّل أمتار','partner_click','amtar'],[null,'سجّل في فريدة','partner_click','farida'],[null,'حمّل Safe','partner_click','safe']];
 document.addEventListener('click',function(e){try{var el=e.target&&e.target.closest&&e.target.closest('button,a,[role=button],.nm-fab');if(!el)return;
  var tx=(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,60);
@@ -4799,7 +4805,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=241;window.NM_VERSION='24.1';
+window.NM_BUILD=242;window.NM_VERSION='24.2';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
