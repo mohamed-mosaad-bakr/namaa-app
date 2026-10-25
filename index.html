@@ -4455,6 +4455,94 @@ document.head.appendChild(css);
 })();
 </script>
 <script>
+/* NAMAA_TABS v1 — شريط التنقل اللي تحت بقى بتاعك: دوسة مطوّلة على الشريط تفتح «عدّل شريط التنقل».
+   تختار لحد 4 صفحات (أي صفحة من التطبيق: ميزانيتي، خطتي، الدخل…) و«المزيد» ثابتة في الآخر.
+   بنحط أزرارنا جوه nav.nm-tabbar بتاع React (فبيختفي ويظهر معاه في الصفحات الفرعية) ونخفي أزرار React. */
+(function(){
+var KEY='nm-tabs',MAX=4,DEF=['home','assets','income','analysis'];
+var I={
+ home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+ assets:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>',
+ income:'<circle cx="9" cy="9" r="6"/><path d="M15.5 9.5a6 6 0 1 1-6 6"/>',
+ analysis:'<path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/>',
+ budget:'<path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16" cy="14.5" r="1.3"/>',
+ plan:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+ learn:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ zakat:'<path d="M12 3v18"/><path d="M5 8h14"/><path d="m5 8-3 7a4 4 0 0 0 6 0z"/><path d="m19 8-3 7a4 4 0 0 0 6 0z"/>',
+ nimah:'<path d="M12 21c-4-3-8-6-8-11a8 8 0 0 1 16 0c0 5-4 8-8 11z"/><path d="M12 8v6M9 11h6"/>',
+ reports:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+ halal:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+ compound:'<path d="M3 17 9 11l4 4 8-8"/><path d="M15 7h6v6"/>',
+ track:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+ deal:'<path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/>',
+ settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+ tools:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>'};
+/* [id, اسم قصير للشريط, الاسم الكامل, نوع: tab أو more] */
+var P=[['home','الرئيسية','الرئيسية','tab'],['assets','الأصول','الأصول','tab'],['income','الدخل','الدخل السلبي','tab'],['analysis','التحليل','التحليل','tab'],
+ ['budget','ميزانيتي','ميزانيتي','more'],['plan','خطتي','خطتي','more'],['learn','تعلّم','رحلتك مع المال','more'],['cal','التقويم','تقويم الفلوس','more'],['zakat','الزكاة','حاسبة الزكاة','more'],
+ ['nimah','نعمة','نعمة اليوم','more'],['reports','تقريري','تقرير ثروتي','more'],['halal','الحلال','فاحص الحلال','more'],['compound','المركّب','العائد المركّب','more'],['track','المتوقع','المتوقع والحقيقي','more'],['deal','صفقة','حاسبة صفقة عقار','more'],['settings','الإعدادات','الإعدادات','more']];
+var PM={};P.forEach(function(p){PM[p[0]]=p;});
+function get(){var a;try{a=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}if(!Array.isArray(a))return DEF.slice();a=a.filter(function(id,i){return PM[id]&&a.indexOf(id)===i;}).slice(0,MAX);return a.length?a:DEF.slice();}
+function put(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+function svg(id,on){return '<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="'+(on?2.2:1.7)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(I[id]||I.tools)+'</svg>';}
+function activeId(ids){var c=window.__nmCur||{};if(c.tab==='tools'){if(c.view&&ids.indexOf(c.view)>=0)return c.view;return 'tools';}return c.tab||'home';}
+function go(id){var p=PM[id];try{if(id==='tools'||!p)window.__nmTab&&__nmTab('tools');else if(p[3]==='tab')window.__nmTab&&__nmTab(id);else{var c=window.__nmCur||{};if(c.view===id)return;window.__nmOpenMore&&__nmOpenMore(id);}}catch(e){}
+ try{window.scrollTo(0,0);}catch(e){}try{window.NamaaTrack&&NamaaTrack('tabbar_click',{tab:id});}catch(e){}}
+var sig='';
+function paint(force){var c0=window.__nmCur||{},pin=c0.tab==='tools'&&c0.view&&get().indexOf(c0.view)>=0;document.body.classList.toggle('nmtb-pin',!!pin);var nav=document.querySelector('nav.nm-tabbar');if(!nav)return;var box=nav.querySelector(':scope>.nmtb');
+ var ids=get(),all=ids.concat(['tools']),act=activeId(ids),s=all.join(',')+'|'+act;
+ if(box&&!force&&sig===s)return;sig=s;
+ if(!box){box=document.createElement('div');box.className='nmtb';nav.appendChild(box);bindLong(nav);}
+ nav.classList.add('nmtb-on');box.style.gridTemplateColumns='repeat('+all.length+',1fr)';
+ box.innerHTML=all.map(function(id){var on=id===act,lb=id==='tools'?'المزيد':PM[id][1];return '<button type="button" class="nm-tab nmtb-b'+(on?' on':'')+'" data-tb="'+id+'"'+(on?' aria-current="page"':'')+' aria-label="'+(id==='tools'?'المزيد':PM[id][2])+'">'+svg(id,on)+'<span>'+lb+'</span></button>';}).join('');}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tb]');if(!b)return;if(lp.fired){lp.fired=false;e.preventDefault();return;}go(b.getAttribute('data-tb'));setTimeout(function(){paint(true);},60);},true);
+/* دوسة مطوّلة */
+var lp={t:0,fired:false,x:0,y:0};
+function bindLong(nav){if(nav.__nmLong)return;nav.__nmLong=1;
+ nav.addEventListener('pointerdown',function(e){lp.fired=false;lp.x=e.clientX;lp.y=e.clientY;clearTimeout(lp.t);lp.t=setTimeout(function(){lp.fired=true;try{navigator.vibrate&&navigator.vibrate(15);}catch(x){}openEdit('long_press');},550);});
+ ['pointerup','pointercancel','pointerleave'].forEach(function(ev){nav.addEventListener(ev,function(){clearTimeout(lp.t);});});
+ nav.addEventListener('pointermove',function(e){if(Math.abs(e.clientX-lp.x)>10||Math.abs(e.clientY-lp.y)>10)clearTimeout(lp.t);});
+ nav.addEventListener('contextmenu',function(e){e.preventDefault();});}
+/* شيت التعديل */
+function openEdit(src){if(!window.NamaaDialog||!NamaaDialog.sheet)return;var sel=get();
+ function prev(){return '<div class="nmtb-prev" aria-hidden="true">'+sel.concat(['tools']).map(function(id){return '<span>'+svg(id,false)+'<small>'+(id==='tools'?'المزيد':PM[id][1])+'</small></span>';}).join('')+'</div>';}
+ function body(){var up='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>',dn='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  return prev()+'<p class="nmtb-sub">اختار لحد '+MAX+' صفحات تظهر تحت على طول. «المزيد» ثابتة في الآخر وفيها كل الصفحات.</p>'+
+  '<h4 class="nmtb-h">في الشريط ('+sel.length+' من '+MAX+')</h4><ul class="nmtb-l">'+sel.map(function(id,i){return '<li><span class="ic">'+svg(id,false)+'</span><b>'+PM[id][2]+'</b><span class="mv"><button type="button" data-tm="'+id+'" data-d="-1" aria-label="قدّم '+PM[id][2]+'"'+(i===0?' disabled':'')+'>'+up+'</button><button type="button" data-tm="'+id+'" data-d="1" aria-label="أخّر '+PM[id][2]+'"'+(i===sel.length-1?' disabled':'')+'>'+dn+'</button><button type="button" class="rm" data-tr="'+id+'" aria-label="شيل '+PM[id][2]+' من الشريط"'+(sel.length<=1?' disabled':'')+'>شيل</button></span></li>';}).join('')+'<li class="fx"><span class="ic">'+svg('tools',false)+'</span><b>المزيد</b><small>ثابتة</small></li></ul>'+
+  '<h4 class="nmtb-h">ضيف صفحة</h4>'+(sel.length>=MAX?'<p class="nmtb-full">الشريط مليان. شيل صفحة الأول عشان تضيف غيرها.</p>':'')+'<ul class="nmtb-l add">'+P.filter(function(p){return sel.indexOf(p[0])<0;}).map(function(p){return '<li><span class="ic">'+svg(p[0],false)+'</span><b>'+p[2]+'</b><button type="button" class="ad" data-ta="'+p[0]+'"'+(sel.length>=MAX?' disabled':'')+' aria-label="ضيف '+p[2]+' للشريط">＋ ضيف</button></li>';}).join('')+'</ul>'+
+  '<button type="button" class="nmtb-rst" id="nmtb-rst">رجّع الشريط زي الأول</button>';}
+ NamaaDialog.sheet({title:'عدّل شريط التنقل',html:'<div id="nmtb-ed">'+body()+'</div>',onMount:function(root){
+  var ed=root.querySelector('#nmtb-ed');
+  function upd(focusSel){put(sel);paint(true);ed.innerHTML=body();bind();if(focusSel){var f=ed.querySelector(focusSel);if(f&&!f.disabled)f.focus();}}
+  function bind(){
+   ed.querySelectorAll('[data-tm]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-tm'),d=+b.getAttribute('data-d'),i=sel.indexOf(id),j=i+d;if(j<0||j>=sel.length)return;sel.splice(i,1);sel.splice(j,0,id);upd('[data-tm="'+id+'"][data-d="'+d+'"]');};});
+   ed.querySelectorAll('[data-tr]').forEach(function(b){b.onclick=function(){if(sel.length<=1)return;sel=sel.filter(function(x){return x!==b.getAttribute('data-tr');});upd('[data-ta]');};});
+   ed.querySelectorAll('[data-ta]').forEach(function(b){b.onclick=function(){if(sel.length>=MAX)return;sel.push(b.getAttribute('data-ta'));upd('[data-tr="'+b.getAttribute('data-ta')+'"]');try{window.NamaaTrack&&NamaaTrack('tabbar_edit',{added:b.getAttribute('data-ta'),tabs:sel.join(',')});}catch(e){}};});
+   var r=ed.querySelector('#nmtb-rst');r.onclick=function(){sel=DEF.slice();upd();};}
+  bind();}});
+ try{window.NamaaTrack&&NamaaTrack('tabbar_edit_open',{src:src});}catch(e){}
+ try{localStorage.setItem('nm-tabs-hint','1');}catch(e){}}
+window.NamaaTabs={edit:openEdit,get:get};
+/* تلميح مرة واحدة */
+setTimeout(function(){try{if(localStorage.getItem('nm-tabs-hint'))return;if(!document.querySelector('nav.nm-tabbar'))return;localStorage.setItem('nm-tabs-hint','1');
+ var d=document.createElement('div');d.className='nmtb-tip';d.setAttribute('role','status');d.innerHTML='<b>جديد:</b> دوس مطوّل على الشريط اللي تحت واختار الصفحات اللي تفتحها كتير <button type="button">جرّب</button>';document.body.appendChild(d);
+ d.querySelector('button').onclick=function(){d.remove();openEdit('hint');};setTimeout(function(){d.classList.add('out');setTimeout(function(){d.remove();},300);},7000);}catch(e){}},2500);
+var raf=0;new MutationObserver(function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;paint();});}).observe(document.body,{childList:true,subtree:true});
+setInterval(function(){paint();},700);setTimeout(paint,300);
+var css=document.createElement('style');css.textContent=
+'body.nmtb-pin.nm-msub nav.nm-tabbar.nmtb-on{display:grid!important}body.nmtb-pin.nm-msub{padding-bottom:calc(72px + env(safe-area-inset-bottom))}body.nmtb-pin.nm-msub .nmu-pill,body.nmtb-pin.nm-msub .nmu{bottom:calc(84px + env(safe-area-inset-bottom,0px))}nav.nm-tabbar.nmtb-on{grid-template-columns:1fr!important}nav.nm-tabbar.nmtb-on>.nm-tab:not(.nmtb-b){display:none!important}.nmtb{display:grid;width:100%}.nmtb .nm-tab{min-width:0}.nmtb .nm-tab span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}nav.nm-tabbar.nmtb-on{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}'+
+'.nmtb-prev{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:10px 6px;margin:0 0 12px;border-radius:14px;background:#f7f7f7}.nmtb-prev span{display:flex;flex-direction:column;align-items:center;gap:3px;color:#3f3f3f;min-width:0}.nmtb-prev small{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}'+
+'.nmtb-sub{font-size:13px;color:#6a6a6a;margin:0 0 6px;line-height:1.5}.nmtb-h{margin:16px 0 4px;font-size:14px;font-weight:700;color:#222}.nmtb-full{font-size:12.5px;color:#6a6a6a;margin:0 0 4px}'+
+'.nmtb-l{list-style:none;margin:0;padding:0}.nmtb-l li{display:flex;align-items:center;gap:12px;min-height:52px;border-bottom:1px solid #ebebeb}.nmtb-l .ic{flex:none;color:#3f3f3f;display:inline-flex}.nmtb-l b{flex:1;font-size:15px;font-weight:600;color:#222}.nmtb-l li.fx b{color:#6a6a6a;font-weight:500}.nmtb-l li.fx small{font-size:12px;color:#929292}'+
+'.nmtb-l .mv{display:flex;gap:4px;align-items:center}.nmtb-l .mv button{width:36px;height:36px;border-radius:10px;border:1px solid #dddddd;background:#fff;color:#222;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}.nmtb-l .mv button:disabled{opacity:.3;cursor:default}.nmtb-l .mv .rm{width:auto;padding:0 10px;font:inherit;font-size:13px;font-weight:600;color:#c13515}'+
+'.nmtb-l .ad{min-height:36px;padding:0 12px;border-radius:10px;border:1px solid #dddddd;background:#fff;font:inherit;font-size:13px;font-weight:600;color:var(--nm-accent,#1E6B45);cursor:pointer}.nmtb-l .ad:disabled{opacity:.4;cursor:default}'+
+'.nmtb-rst{display:block;width:100%;min-height:44px;margin-top:12px;border:none;background:none;font:inherit;font-size:14px;font-weight:600;color:#222;text-decoration:underline;cursor:pointer}'+
+'.nmtb-tip{position:fixed;left:16px;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:950;background:#222;color:#fff;border-radius:14px;padding:12px 14px;font-size:13.5px;line-height:1.5;display:flex;align-items:center;gap:10px;justify-content:space-between;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:opacity .3s}.nmtb-tip.out{opacity:0}.nmtb-tip button{flex:none;min-height:36px;padding:0 12px;border-radius:10px;border:none;background:#fff;color:#222;font:inherit;font-size:13px;font-weight:700;cursor:pointer}';
+document.head.appendChild(css);
+})();
+</script>
+<script>
 /* NAMAA_ONBOARD v1 — أول مرة: 3 شاشات ترحيب (تتخطى) + كارت «ابدأ مع نماء» في الرئيسية بخطوات بتتعلم لوحدها */
 (function(){
 var OK='nm-onb';
@@ -4694,7 +4782,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=235;window.NM_VERSION='23.5';
+window.NM_BUILD=236;window.NM_VERSION='23.6';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
