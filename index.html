@@ -854,6 +854,7 @@ const renderTabBar=()=>ReactDOM.createPortal(React.createElement(React.Fragment,
      fabItem("✍️","أصل جديد","عقار، كاش، ذهب أو أي أصل تدخله بنفسك",()=>{setFabOpen(false);const nid=Math.max(...assets.map(a=>a.id),0)+1;addAsset();goView('overview');openEditor(nid);}),
      fabItem("⇄","تحويل بين أصولك","من حساب لحساب، أو من دولار لجنيه",()=>{setFabOpen(false);window.NamaaTransfer&&window.NamaaTransfer.open();}),
      fabItem("📈","سهم من البورصة المصرية","ابحث بالاسم أو الرمز وسعره يتحدث تلقائياً",()=>{setFabOpen(false);goView('overview');setTimeout(()=>setStockSearchOpen(true),60);}),
+     fabItem("🧾","سجّل عملية شراء أسهم","اشتريت سهم جديد أو زوّدت سهم عندك: العدد والسعر بس",()=>{setFabOpen(false);setTimeout(()=>{window.NamaaTrade&&window.NamaaTrade.open();},150);}),
      fabItem("📷","من صورة","صوّر كشف حساب أو شاشة تطبيق ونماء يقرأها",()=>{setFabOpen(false);setImportError(null);setShowImportModal(true);}),
      React.createElement("label",{className:"nm-sheet-item"},React.createElement("input",{type:"file",accept:".xlsx,.xls,.csv",style:{display:'none'},onChange:e=>{const f=e.target.files[0];setFabOpen(false);if(f){setShowImportModal(true);addAssetsFromExcel(f);}e.target.value='';}}),React.createElement("span",{className:"nm-sheet-ico"},"📊"),React.createElement("span",{style:{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:'2px'}},React.createElement("span",{style:{fontSize:'15px',fontWeight:600,color:'#222'}},"من ملف Excel"),React.createElement("span",{style:{fontSize:'12px',color:'#6a6a6a'}},"استورد قائمة أصول دفعة واحدة"))),
      React.createElement("button",{className:"nm-sheet-link",onClick:()=>{setFabOpen(false);downloadExcelTemplate();}},"⬇️ تحميل قالب Excel فاضي"))))
@@ -3945,7 +3946,7 @@ Storage.prototype.removeItem=function(k){var r=origRm.apply(this,arguments);try{
 try{['setItem','removeItem'].forEach(function(fn){if(Object.prototype.hasOwnProperty.call(localStorage,fn)){var cur=localStorage[fn];localStorage[fn]=function(k){var r=cur.apply(localStorage,arguments);try{q(String(k));}catch(e){}return r;};}});}catch(e){}
 
 /* ضغطات مهمة: بالنص بتاع الزرار (من غير ما نلمس كود React) */
-var CL=[['.nm-fab',null,'add_menu_open'],[null,'أصل جديد','add_menu_select','manual_asset'],[null,'تحويل بين أصولك','add_menu_select','transfer'],[null,'سهم من البورصة','add_menu_select','stock'],[null,'من صورة','add_menu_select','image_import'],[null,'من ملف','add_menu_select','file_import'],[null,'تحميل قالب','add_menu_select','template_download'],
+var CL=[['.nm-fab',null,'add_menu_open'],[null,'أصل جديد','add_menu_select','manual_asset'],[null,'تحويل بين أصولك','add_menu_select','transfer'],[null,'سهم من البورصة','add_menu_select','stock'],[null,'سجّل عملية شراء','add_menu_select','trade'],[null,'من صورة','add_menu_select','image_import'],[null,'من ملف','add_menu_select','file_import'],[null,'تحميل قالب','add_menu_select','template_download'],
  [null,'حدّث الأسعار','price_refresh_click'],[null,'دوّر على تحديث','update_check_manual'],[null,'حمّل ثاندر','partner_click','thndr'],[null,'حمّل أمتار','partner_click','amtar'],[null,'سجّل في فريدة','partner_click','farida'],[null,'حمّل Safe','partner_click','safe']];
 document.addEventListener('click',function(e){try{var el=e.target&&e.target.closest&&e.target.closest('button,a,[role=button],.nm-fab');if(!el)return;
  var tx=(el.textContent||'').replace(/\s+/g,' ').trim().slice(0,60);
@@ -4153,6 +4154,88 @@ document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&
  var before=all(),force=/ناقص|كمّل \d/.test(b.textContent||''),root=scope(b);
  setTimeout(function(){var after=all();if(!(after>before||force))return;var el=first(root.isConnected===false?document:root);if(el)go(el);},180);},true);
 var css=document.createElement('style');css.textContent='@keyframes nmErrHit{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}.nm-err-hit{animation:nmErrHit .45s ease;border-radius:12px;box-shadow:0 0 0 3px rgba(193,53,21,.18)}@media(prefers-reduced-motion:reduce){.nm-err-hit{animation:none}}';document.head.appendChild(css);
+})();
+</script>
+<script>
+/* NAMAA_TRADE v1 — «سجّل عملية شراء أسهم»: رمز + عدد + سعر. لو السهم عندك: يزوّد العدد ويحسب متوسط الشراء الجديد. لو جديد: يعمله تحت المنصة اللي تختارها. فيه تراجع. */
+(function(){
+var KEY='portfolioData';
+function data(){try{return JSON.parse(localStorage.getItem(KEY)||'null')||{assets:[]};}catch(e){return {assets:[]};}}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}if(typeof window.__nmApply==='function'){try{window.__nmApply(d);}catch(e){}}}
+function num(v){v=String(v==null?'':v).replace(/[٠-٩]/g,function(c){return '٠١٢٣٤٥٦٧٨٩'.indexOf(c);}).replace(/[٫]/g,'.').replace(/[,،\s]/g,'');var n=parseFloat(v);return isFinite(n)?n:0;}
+function f2(n){return Number(n).toLocaleString('en-US',{maximumFractionDigits:2});}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function tr(n,p){try{window.NamaaTrack&&NamaaTrack(n,p);}catch(e){}}
+function stocks(d){return (d.assets||[]).filter(function(a){return a.isStock&&a.stockSymbol;});}
+function parents(d){var A=d.assets||[];return A.filter(function(p){return p.parentId==null&&(p.hasSubAssets||A.some(function(k){return k.parentId===p.id;}))&&A.some(function(k){return k.parentId===p.id&&k.isStock;});});}
+function blank(d,id,par){var y=new Date().getFullYear();return {id:id,parentId:par,hasSubAssets:false,name:'',image:null,tags:['أسهم'],value:0,currency:'EGP',capitalGrowthRate:0,hasCapitalGrowth:false,hasContribution:false,monthlyContribution:0,contribCurrency:'EGP',hasPurchaseValue:false,purchaseValue:0,hasPurchaseDate:false,purchaseDate:'',hasInstallments:false,totalInstallments:0,fullAssetValue:0,installmentsList:[],useShares:true,pricePerShare:0,shareCount:0,avgBuyPrice:0,isStock:true,stockSymbol:'',stockStatus:'active',stockSector:'',stockTerm:'long',brokerFee:0,stockNotes:'',hasYield:false,yieldRate:0,yieldStartM:d.startMonth||1,yieldStartY:d.startYear||y,yieldEndM:d.endMonth||12,yieldEndY:d.endYear||(y+10),useRentGrowth:false,rentGrowthRate:0};}
+function toast(t,undo){var x=document.createElement('div');x.className='nmtr-toast';x.setAttribute('role','status');x.innerHTML='<span>'+esc(t)+'</span>'+(undo?'<button type="button">تراجع</button>':'');document.body.appendChild(x);setTimeout(function(){x.classList.add('on');},20);
+ var gone=false,kill=function(){if(gone)return;gone=true;x.classList.remove('on');setTimeout(function(){x.remove();},300);};
+ if(undo)x.querySelector('button').onclick=function(){undo();kill();tr('trade_undo');};setTimeout(kill,undo?6000:2600);}
+function lookupName(sym,cb){var u='https://scanner.tradingview.com/symbol?symbol=EGX:'+encodeURIComponent(sym)+'&fields=description,close';
+ var done=function(j){if(j&&j.description)cb(j.description,Number(j.close)||0);};
+ try{if(typeof window.__nmGet==='function'){window.__nmGet(u).then(function(h){try{done(JSON.parse(h));}catch(e){}}).catch(function(){});return;}}catch(e){}
+ try{fetch(u).then(function(r){return r.ok?r.json():null;}).then(done).catch(function(){});}catch(e){}}
+
+function open(pre){
+ if(!window.NamaaDialog||!NamaaDialog.sheet)return;
+ var d=data(),S=stocks(d),P=parents(d);
+ var uniq=[];S.forEach(function(a){if(uniq.indexOf(a.stockSymbol)<0)uniq.push(a.stockSymbol);});
+ var defPar=P.length?P.map(function(p){return [p.id,(d.assets||[]).filter(function(k){return k.parentId===p.id&&k.isStock;}).length];}).sort(function(a,b){return b[1]-a[1];})[0][0]:'';
+ var h='<label class="nmd-f"><span class="nmtr-l">رمز السهم</span><input class="nmd-in" id="nmtr-s" dir="ltr" autocapitalize="characters" autocomplete="off" placeholder="مثلًا OLFI" value="'+esc(pre&&pre.sym||'')+'" style="text-align:left"></label>'+
+  (uniq.length?'<div class="nmtr-chips" aria-label="أسهمك">'+uniq.slice(0,12).map(function(s){return '<button type="button" class="nmtr-c" data-sym="'+esc(s)+'">'+esc(s)+'</button>';}).join('')+'</div>':'')+
+  '<div class="nmtr-2"><label class="nmd-f"><span class="nmtr-l">العدد</span><input class="nmd-in" id="nmtr-n" inputmode="numeric" dir="ltr" placeholder="0" style="text-align:left"></label>'+
+  '<label class="nmd-f"><span class="nmtr-l">سعر السهم (ج)</span><input class="nmd-in" id="nmtr-p" inputmode="decimal" dir="ltr" placeholder="0.00" style="text-align:left"></label></div>'+
+  '<label class="nmd-f" id="nmtr-pw"><span class="nmtr-l">في أنهي محفظة؟</span><select class="nmd-in" id="nmtr-par">'+P.map(function(p){return '<option value="'+p.id+'"'+(p.id===defPar?' selected':'')+'>'+esc(p.name)+'</option>';}).join('')+'<option value=""'+(P.length?'':' selected')+'>من غير مجموعة</option></select></label>'+
+  '<div class="nmtr-pv" id="nmtr-pv" aria-live="polite"></div><span class="nmd-err" id="nmtr-e" role="alert"></span>'+
+  '<button type="button" class="nmb-btn" id="nmtr-ok">سجّل الشراء</button>';
+ NamaaDialog.sheet({title:'سجّل عملية شراء أسهم',html:h,onMount:function(root,close){
+  var s=root.querySelector('#nmtr-s'),n=root.querySelector('#nmtr-n'),p=root.querySelector('#nmtr-p'),par=root.querySelector('#nmtr-par'),pw=root.querySelector('#nmtr-pw'),pv=root.querySelector('#nmtr-pv'),er=root.querySelector('#nmtr-e');
+  function sym(){return String(s.value||'').toUpperCase().replace(/[^A-Z0-9.]/g,'');}
+  function existing(){var y=sym();if(!y)return null;var L=stocks(data()).filter(function(a){return a.stockSymbol===y;});if(!L.length)return null;var pid=par.value===''?null:Number(par.value);return L.filter(function(a){return a.parentId===pid;})[0]||L[0];}
+  function upd(){var y=sym(),ex=existing(),q=num(n.value),pr=num(p.value);er.textContent='';
+   pw.style.display=ex?'none':'';
+   if(ex){var c=Number(ex.shareCount)||0,av=Number(ex.avgBuyPrice)||Number(ex.pricePerShare)||0;
+    var h2='<b>عندك '+f2(c)+' سهم '+esc(y)+' · متوسط '+f2(av)+'</b>';
+    if(q>0&&pr>0){var nc=c+q,na=(c*av+q*pr)/nc;h2+='<span>بعد الشراء: <b>'+f2(nc)+' سهم</b> · متوسط جديد <b>'+f2(na)+'</b></span>';}
+    pv.innerHTML=h2;pv.style.display='';}
+   else if(y&&q>0&&pr>0){pv.innerHTML='<b>سهم جديد في محفظتك</b><span>'+f2(q)+' سهم '+esc(y)+' × '+f2(pr)+' = '+f2(q*pr)+' ج</span>';pv.style.display='';}
+   else{pv.innerHTML='';pv.style.display='none';}
+   root.querySelectorAll('[data-sym]').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-sym')===y);});}
+  [s,n,p].forEach(function(x){x.addEventListener('input',upd);});par.addEventListener('change',upd);
+  root.querySelectorAll('[data-sym]').forEach(function(b){b.onclick=function(){s.value=b.getAttribute('data-sym');upd();n.focus();};});
+  n.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();p.focus();}};s.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();n.focus();}};
+  var ok=document.getElementById('nmtr-ok');
+  function go(){var y=sym(),q=num(n.value),pr=num(p.value);
+   if(!y){er.textContent='اكتب رمز السهم، زي OLFI أو COMI.';s.setAttribute('aria-invalid','true');s.focus();return;}s.removeAttribute('aria-invalid');
+   if(!(q>0)){er.textContent='اكتب عدد الأسهم اللي اشتريتها.';n.setAttribute('aria-invalid','true');n.focus();return;}n.removeAttribute('aria-invalid');
+   if(!(pr>0)){er.textContent='اكتب السعر اللي اشتريت بيه.';p.setAttribute('aria-invalid','true');p.focus();return;}p.removeAttribute('aria-invalid');
+   var before=localStorage.getItem(KEY),dd=data(),ex=existing(),msg,isNew=!ex,id;
+   var t={d:new Date().toISOString().slice(0,10),n:q,p:pr};
+   if(ex){var a=dd.assets.filter(function(x){return x.id===ex.id;})[0];var c=Number(a.shareCount)||0,av=Number(a.avgBuyPrice)||Number(a.pricePerShare)||0,nc=c+q,na=(c*av+q*pr)/nc;
+    a.shareCount=nc;a.avgBuyPrice=Math.round(na*10000)/10000;if(!(Number(a.pricePerShare)>0))a.pricePerShare=pr;a.value=nc*Number(a.pricePerShare);
+    if(a.hasPurchaseValue)a.purchaseValue=(Number(a.purchaseValue)||0)+q*pr;a.trades=(a.trades||[]).concat([t]);id=a.id;
+    msg='اتضاف '+f2(q)+' سهم '+y+' · بقوا '+f2(nc)+' بمتوسط '+f2(na);}
+   else{var mx=dd.assets.reduce(function(m,x){return Math.max(m,Number(x.id)||0);},0);var pid=par.value===''?null:Number(par.value);
+    var a2=blank(dd,mx+1,pid);a2.name=y;a2.stockSymbol=y;a2.shareCount=q;a2.pricePerShare=pr;a2.avgBuyPrice=pr;a2.value=q*pr;a2.trades=[t];dd.assets.push(a2);id=a2.id;
+    if(pid!=null){dd.assets.forEach(function(x){if(x.id===pid)x.hasSubAssets=true;});}
+    msg='اتضاف '+y+' لمحفظتك: '+f2(q)+' سهم × '+f2(pr);}
+   save(dd);tr('trade_buy',{is_new:isNew?1:0});
+   close(function(){try{window.NamaaFX&&NamaaFX.play('success');}catch(e){}try{window.__nmTab&&window.__nmTab('assets');}catch(e){}
+    toast(msg,function(){if(before!=null){try{localStorage.setItem(KEY,before);}catch(e){}try{window.__nmApply&&window.__nmApply(JSON.parse(before));}catch(e){}}});
+    if(isNew)lookupName(y,function(nm,close2){var d3=data(),a3=d3.assets.filter(function(x){return x.id===id;})[0];if(!a3||a3.name!==y)return;a3.name=nm;if(close2>0){a3.pricePerShare=close2;a3.value=a3.shareCount*close2;}save(d3);});});}
+  if(ok)ok.onclick=go;p.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();go();}};
+  upd();setTimeout(function(){try{(pre&&pre.sym?n:s).focus();}catch(e){}},260);
+ }});}
+window.NamaaTrade={open:open};
+var css=document.createElement('style');css.textContent=
+'.nmtr-l{display:block;font-size:13px;font-weight:600;color:#3f3f3f;margin-bottom:6px}'+
+'.nmtr-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.nmtr-2 .nmd-f{margin-top:12px}'+
+'.nmtr-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.nmtr-c{min-height:36px;padding:0 12px;border:1px solid #ddd;border-radius:999px;background:#fff;font:inherit;font-size:13px;font-weight:600;color:#222;direction:ltr;cursor:pointer}.nmtr-c.on{border:2px solid #222}'+
+'.nmtr-pv{display:flex;flex-direction:column;gap:4px;margin-top:14px;padding:12px 14px;border-radius:12px;background:#f7f7f7;font-size:13.5px;color:#3f3f3f;line-height:1.6;font-variant-numeric:tabular-nums}.nmtr-pv b{color:#222}'+
+'.nmtr-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);background:#222;color:#fff;padding:10px 12px 10px 16px;border-radius:14px;font-size:13.5px;z-index:99991;transition:opacity .25s ease,transform .25s ease;box-sizing:border-box}.nmtr-toast.on{opacity:1;transform:translate(-50%,0)}.nmtr-toast button{flex:none;border:none;background:none;color:#8fd3a8;font:inherit;font-weight:700;padding:6px 4px;cursor:pointer}'+
+'@media(prefers-reduced-motion:reduce){.nmtr-toast{transition:none}}';
+document.head.appendChild(css);
 })();
 </script>
 <script>
@@ -4395,7 +4478,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=223;window.NM_VERSION='22.3';
+window.NM_BUILD=224;window.NM_VERSION='22.4';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
