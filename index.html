@@ -4621,7 +4621,7 @@ var css=document.createElement('style');css.textContent='.nma-sub{margin:0 0 12p
 /* NAMAA_NUMFMT v1 — خانات المبالغ بتتفصل بفواصل وانت بتكتب: 2000000 → 2,000,000
    بس للأرقام اللي 5 خانات أو أكتر (عشان السنين والنسب والشهور تفضل زي ما هي)، وبس في الأماكن اللي قارئ الأرقام بتاعها بيشيل الفواصل. */
 (function(){
-var SCOPE='.nm-editor,.nmd-sheet,#nm-plan-host,#nm-zakat-host,#nm-budget-host,.nm-inc-goal-edit';
+var SCOPE='.nm-editor,.nmd-sheet,.nmt-sheet,.nml-sheet,#nm-plan-host,#nm-zakat-host,#nm-budget-host,#nm-deal-host,#nm-cal-host,#nm-hist-host,.nm-inc-goal-edit';
 function ok(el){if(!el||el.tagName!=='INPUT'||el.type==='number'||el.type==='date'||el.hasAttribute('data-nofmt'))return false;var im=(el.getAttribute('inputmode')||el.inputMode||'').toLowerCase();if(im!=='decimal'&&im!=='numeric')return false;return !!el.closest(SCOPE);}
 function norm(v){return String(v).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);}).replace(/٫/g,'.');}
 function fmt(v){v=norm(v);var neg=/^\s*-/.test(v),raw=v.replace(/[^0-9.]/g,'');var dots=(raw.match(/\./g)||[]).length;if(dots>1){/* 2.000.000 → grouping dots */raw=raw.replace(/\./g,'');}
@@ -4880,7 +4880,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=249;window.NM_VERSION='24.9';
+window.NM_BUILD=250;window.NM_VERSION='25.0';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
