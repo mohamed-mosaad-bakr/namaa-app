@@ -2147,7 +2147,7 @@ function oldPass(newPass,meta){return new Promise(function(res){var box=document
    }).catch(function(){render('الباسورد القديم غلط');});};
   var nb=box.querySelector('#nms-onew');if(nb)nb.onclick=function(){if(!confirm('تمسح البيانات القديمة من السحابة وتبدأ ببيانات الجهاز ده؟'))return;var salt=newSalt();derive(newPass,salt).then(function(raw){setKey(raw,salt);st.dirty=true;st.xdirty=true;st.remoteTs=0;save();close();return push().then(res,res);});};}
  render();sheet(box);});}
-window.NamaaSync={open:open,pull:pull,encrypted:function(){return !!keyRec();},status:function(){return{auth:!!auth,status:status,err:lastErr,st:st};}};
+window.NamaaSync={open:open,pull:pull,encrypted:function(){return !!keyRec();},status:function(){return{auth:!!auth,email:auth?auth.email:'',enc:!!keyRec(),status:status,err:lastErr,st:st};}};
 /* triggers */
 if(auth)setTimeout(function(){pull(false);},1200);
 setInterval(function(){if(auth&&document.visibilityState==='visible')pull(false);},45000);
@@ -3982,10 +3982,13 @@ new MutationObserver(function(ms){ms.forEach(function(m){for(var i=0;i<m.addedNo
 
 /* ---------- settings control ---------- */
 function row(id,ic,t,sub,on){return '<div class="nm-set-row nmfx-row"><span class="nm-set-ic" aria-hidden="true">'+ic+'</span><span class="nm-set-rt"><b style="font-size:14px;color:#222">'+t+'</b><small style="font-size:12px;color:#6a6a6a;line-height:1.5;white-space:normal">'+sub+'</small></span><button type="button" class="toggle'+(on?' on':'')+'" id="'+id+'" role="switch" aria-checked="'+(on?'true':'false')+'" aria-label="'+t+'"><div class="toggle-dot"></div></button></div>';}
-function setRender(h){h.innerHTML='<h3 class="nm-set-sub">الإحساس</h3><div style="display:flex;flex-direction:column;gap:8px">'+row('nmfx-snd','🔊','الأصوات','صوت خفيف مع اللمس والتأكيد',C.snd)+row('nmfx-mot','✨','الحركات','حركات ناعمة في التنقل والرسايل'+(rm()?' (موبايلك مقلل الحركة)':''),C.mot)+'</div><h3 class="nm-set-sub">البداية</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="nm-set-link" id="nmfx-wel">شوف شاشات الترحيب</button><button type="button" class="nm-set-link" id="nmfx-chk">رجّع خطوات البداية للرئيسية</button></div><h3 class="nm-set-sub">التحديثات</h3><p class="nmfx-v" style="margin:0 0 8px;font-size:14px;color:#3f3f3f">إنت على نسخة نماء <b dir="ltr">'+(window.NM_VERSION||'')+'</b></p><button type="button" class="nm-set-link" id="nmfx-upd">دوّر على تحديث دلوقتي</button><small id="nmfx-us" role="status" style="display:block;margin-top:6px;font-size:13px;color:#6a6a6a"></small>'+(function(){try{var m=JSON.parse(localStorage.getItem('nm-stock-logos')||'{}'),k=Object.keys(m),g=k.filter(function(x){return m[x];}).length,i=window.__nmLogoInfo;if(!k.length&&!i)return '';return '<small style="display:block;margin-top:6px;font-size:12px;color:#929292">لوجو الأسهم: '+g+' من '+k.length+(i&&i.err?' · خطأ: '+String(i.err).replace(/[<>&]/g,'').slice(0,60):'')+'</small>';}catch(e){return '';}})();
+function setRender(h){h.innerHTML='<h3 class="nm-set-sub">الصوت والحركة</h3><div style="display:flex;flex-direction:column;gap:8px">'+row('nmfx-snd','🔊','الأصوات','صوت خفيف مع اللمس والتأكيد',C.snd)+row('nmfx-mot','✨','الحركات','حركات ناعمة في التنقل والرسايل'+(rm()?' (موبايلك مقلل الحركة)':''),C.mot)+'</div><h3 class="nm-set-sub">البداية</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="nm-set-link" id="nmfx-wel">شوف شاشات الترحيب</button><button type="button" class="nm-set-link" id="nmfx-chk">رجّع خطوات البداية للرئيسية</button></div><h3 class="nm-set-sub">التحديثات</h3><p class="nmfx-v" style="margin:0 0 8px;font-size:14px;color:#3f3f3f">إنت على نسخة نماء <b dir="ltr">'+(window.NM_VERSION||'')+'</b></p><button type="button" class="nm-set-link" id="nmfx-upd">دوّر على تحديث دلوقتي</button><small id="nmfx-us" role="status" style="display:block;margin-top:6px;font-size:13px;color:#6a6a6a"></small>'+(function(){try{var m=JSON.parse(localStorage.getItem('nm-stock-logos')||'{}'),k=Object.keys(m),g=k.filter(function(x){return m[x];}).length,i=window.__nmLogoInfo;if(!k.length&&!i)return '';return '<small style="display:block;margin-top:6px;font-size:12px;color:#929292">لوجو الأسهم: '+g+' من '+k.length+(i&&i.err?' · خطأ: '+String(i.err).replace(/[<>&]/g,'').slice(0,60):'')+'</small>';}catch(e){return '';}})();
  h.querySelector('#nmfx-snd').onclick=function(){C.snd=!C.snd;save(C);setRender(h);if(C.snd)play('on');};
  var wb=h.querySelector('#nmfx-wel');if(wb)wb.onclick=function(){try{window.NamaaOnboard&&NamaaOnboard.welcome();}catch(e){}};var cb=h.querySelector('#nmfx-chk');if(cb)cb.onclick=function(){try{window.NamaaOnboard&&NamaaOnboard.show();}catch(e){}cb.textContent='✓ رجعت، هتلاقيها في الرئيسية';};var ub=h.querySelector('#nmfx-upd'),us=h.querySelector('#nmfx-us');if(ub)ub.onclick=function(){if(!window.NamaaUpdate){us.textContent='التحديث التلقائي شغال في تطبيق نماء على الموبايل بس.';return;}us.textContent='بيدوّر…';NamaaUpdate.check(true,function(r){us.textContent=r==='new'?'✓ فيه نسخة جديدة، بتتحمّل تحت دلوقتي':r==='ready'?'✓ النسخة الجديدة جاهزة، دوس «حدّث دلوقتي» تحت':r==='same'?'✓ إنت على آخر نسخة':'ما قدرناش نوصل للسيرفر. اتأكد من النت وجرّب تاني.';});};
- h.querySelector('#nmfx-mot').onclick=function(){C.mot=!C.mot;save(C);applyBody();setRender(h);play(C.mot?'on':'off');};}
+ h.querySelector('#nmfx-mot').onclick=function(){C.mot=!C.mot;save(C);applyBody();setRender(h);play(C.mot?'on':'off');};
+ /* «عن نماء» في الإعدادات (setorg.js) بياخد البداية والتحديثات */
+ var ab=document.getElementById('nmso-about');if(ab){var s0=[].filter.call(h.children,function(e){return e.tagName==='H3'&&e.textContent==='البداية';})[0];if(s0){ab.innerHTML='';while(s0){var nx=s0.nextSibling;ab.appendChild(s0);s0=nx;}}}}
+window.__nmFxRender=function(){var h=document.getElementById('nm-fx-set');if(h)setRender(h);};
 function scan(){var h=document.getElementById('nm-fx-set');if(h&&!h.getAttribute('data-r')){h.setAttribute('data-r','1');setRender(h);}}
 var sch=false;new MutationObserver(function(){if(!sch){sch=true;requestAnimationFrame(function(){sch=false;scan();});}}).observe(document.body,{childList:true,subtree:true});
 setTimeout(scan,400);
@@ -4661,7 +4664,7 @@ function edit(src){if(!window.NamaaDialog||!NamaaDialog.sheet)return;var cur=get
    root.querySelector('#nmn-ok').onclick=go;i.onkeydown=function(e){if(e.key==='Enter')go();};i.oninput=function(){i.removeAttribute('aria-invalid');er.textContent='';};
    var rm=root.querySelector('#nmn-rm');if(rm)rm.onclick=function(){set('');close();};}});}
 /* صف في الإعدادات ← بياناتك */
-function row(force){var sec=document.querySelector('section[aria-labelledby="nm-data-h"]');if(!sec)return;var r=sec.querySelector('#nmn-row'),nm=get();
+function row(force){var sec=document.querySelector('section[aria-labelledby="nm-data-h"]');if(!sec)return;var r=document.getElementById('nmn-row'),nm=get();
  if(r&&!force)return;if(r){r.querySelector('small').textContent=nm||'مش متسجّل';return;}
  var b=document.createElement('button');b.type='button';b.id='nmn-row';b.className='nm-set-row nmn-row';
  b.innerHTML='<span class="nm-set-ic" aria-hidden="true">👤</span><span class="nm-set-rt"><b>اسمك</b><small>'+(nm||'مش متسجّل')+'</small></span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>';
@@ -4671,6 +4674,33 @@ window.addEventListener('storage',function(e){if(e.key===K){try{window.__nmDcRef
 window.addEventListener('nm-extras',function(){try{window.__nmDcRefresh&&window.__nmDcRefresh();}catch(x){}row(true);});
 window.NamaaName={edit:edit,get:get};
 var css=document.createElement('style');css.textContent='.nm-greet-t{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}.nm-greet-name{border:none;background:none;padding:6px 2px;font:inherit;font-size:13px;font-weight:600;color:var(--nm-accent,#1E6B45);text-decoration:underline;cursor:pointer}.nmn-sub{margin:0 0 12px;font-size:13px;color:#6a6a6a;line-height:1.6}.nmn-row{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin:8px 0 12px;padding:10px 12px;border:1px solid #ebebeb;border-radius:12px;background:#fff;font:inherit;text-align:right;color:#222;cursor:pointer}.nmn-row .nm-set-rt{flex:1;display:flex;flex-direction:column;gap:2px}.nmn-row b{font-size:14px}.nmn-row small{font-size:12.5px;color:#6a6a6a}.nmn-row svg{flex:none;color:#6a6a6a}';document.head.appendChild(css);
+})();
+</script>
+<script>
+/* NAMAA_SETORG v1 — ترتيب صفحة الإعدادات: حسابك ← العملات والأسعار ← المظهر ← الصوت والحركة ← بياناتك ← عن نماء ← منطقة الخطر.
+   الترتيب بالـ CSS order (من غير ما نحرّك عناصر React)، وكارتين جداد بنضيفهم: «حسابك» (الاسم + المزامنة) و«عن نماء» (النسخة والتحديثات والبداية). */
+(function(){
+var chv='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>';
+function syncTxt(){var s;try{s=window.NamaaSync&&NamaaSync.status&&NamaaSync.status();}catch(e){}
+ if(!s||!s.auth)return ['مش متفعّلة','فعّلها عشان بياناتك تبقى على الموبايل والكمبيوتر'];
+ if(s.status==='locked')return ['محتاجة الباسورد','اكتب باسورد حسابك مرة واحدة عشان نشفّر بياناتك ونكمّل'];
+ if(s.status==='error')return ['واقفة','دوس عشان تشوف السبب'];
+ return [s.status==='syncing'?'بتزامن دلوقتي…':'شغالة',(s.email||'')+(s.enc?' · 🔒 متشفّرة':'')];}
+function paintSync(){var r=document.getElementById('nmso-sync');if(!r)return;var t=syncTxt(),b=r.querySelector('.st'),sm=r.querySelector('small');if(b.textContent!==t[0])b.textContent=t[0];if(sm.textContent!==t[1])sm.textContent=t[1];r.classList.toggle('warn',/محتاجة|واقفة/.test(t[0]));}
+function run(){var S=document.querySelector('.nm-settings');if(!S)return;
+ if(!S.querySelector(':scope>#nmso-acc')){var a=document.createElement('section');a.id='nmso-acc';a.className='nm-theme nm-set nmso-card';a.setAttribute('aria-labelledby','nmso-acc-h');
+  a.innerHTML='<h3 id="nmso-acc-h">حسابك</h3><div class="nmso-slot"></div><button type="button" class="nm-set-row nmso-row" id="nmso-sync"><span class="nm-set-ic" aria-hidden="true">☁️</span><span class="nm-set-rt"><b>المزامنة بين أجهزتك <span class="st"></span></b><small></small></span>'+chv+'</button>';
+  S.insertBefore(a,S.firstChild);a.querySelector('#nmso-sync').onclick=function(){try{window.NamaaTrack&&NamaaTrack('settings_sync_click',{});window.NamaaSync&&NamaaSync.open();}catch(e){}};paintSync();}
+ var nr=document.getElementById('nmn-row'),slot=S.querySelector('#nmso-acc .nmso-slot');if(nr&&slot&&nr.parentNode!==slot)slot.appendChild(nr);
+ if(!S.querySelector(':scope>#nmso-about-c')){var c=document.createElement('section');c.id='nmso-about-c';c.className='nm-theme nm-set nmso-card';c.setAttribute('aria-labelledby','nmso-ab-h');c.innerHTML='<h3 id="nmso-ab-h">عن نماء</h3><div id="nmso-about"></div>';S.appendChild(c);try{window.__nmFxRender&&__nmFxRender();}catch(e){}}}
+var raf=0;new MutationObserver(function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;run();});}).observe(document.body,{childList:true,subtree:true});
+setInterval(paintSync,1500);
+var css=document.createElement('style');css.textContent=
+'.nm-settings{display:flex;flex-direction:column}.nm-settings>*{order:9}.nm-settings>#nmso-acc{order:1}.nm-settings>section[aria-labelledby="nm-px-h"]{order:2}.nm-settings>section[aria-labelledby="nm-theme-h"]{order:3}.nm-settings>#nm-fx-set{order:4}.nm-settings>section[aria-labelledby="nm-data-h"]{order:5}.nm-settings>#nmso-about-c{order:6}.nm-settings>.nm-set-danger{order:7}.nm-settings>.nm-set-ver{order:8}'+
+'.nm-settings>#nm-fx-set{background:#fff;border-radius:16px;padding:18px 16px;margin:0 0 16px;box-shadow:rgba(0,0,0,.02) 0 0 0 1px,rgba(0,0,0,.04) 0 2px 6px 0}#nm-fx-set>h3.nm-set-sub:first-child{font-size:16px;font-weight:700;color:#222;margin:0 0 12px}'+
+'.nmso-card h3{font-size:16px;font-weight:700;color:#222;margin:0 0 12px}.nmso-card .nmn-row{margin:0 0 8px}.nmso-row{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:10px 12px;border:1px solid #ebebeb;border-radius:12px;background:#fff;font:inherit;text-align:right;color:#222;cursor:pointer}.nmso-row .nm-set-rt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.nmso-row b{font-size:14px}.nmso-row .st{display:inline-block;margin-inline-start:6px;padding:1px 8px;border-radius:9999px;background:#eef5f0;color:#1E6B45;font-size:11px;font-weight:600;vertical-align:middle}.nmso-row.warn .st{background:#fdecea;color:#c13515}.nmso-row small{font-size:12.5px;color:#6a6a6a;line-height:1.5;overflow-wrap:anywhere}.nmso-row>svg{flex:none;color:#6a6a6a}.nmso-row:active{background:#f7f7f7}.nmso-row:focus-visible{outline:2px solid #222;outline-offset:2px}'+
+'#nmso-about>h3.nm-set-sub{font-size:14px;font-weight:600;color:#3f3f3f;margin:14px 0 6px}#nmso-about>h3.nm-set-sub:first-child{margin-top:0}';
+document.head.appendChild(css);
 })();
 </script>
 <script>
@@ -4961,7 +4991,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=253;window.NM_VERSION='25.3';
+window.NM_BUILD=254;window.NM_VERSION='25.4';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
