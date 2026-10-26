@@ -4495,7 +4495,7 @@ function open(pre){
   (uniq.length?'<div class="nmtr-chips" aria-label="أسهمك">'+uniq.slice(0,12).map(function(s){return '<button type="button" class="nmtr-c" data-sym="'+esc(s)+'">'+esc(s)+'</button>';}).join('')+'</div>':'')+
   '<div class="nmtr-2"><label class="nmd-f"><span class="nmtr-l">العدد</span><input class="nmd-in" id="nmtr-n" inputmode="numeric" dir="ltr" placeholder="0" style="text-align:left"></label>'+
   '<label class="nmd-f"><span class="nmtr-l">سعر السهم (ج)</span><input class="nmd-in" id="nmtr-p" inputmode="decimal" dir="ltr" placeholder="0.00" style="text-align:left"></label></div>'+
-  '<label class="nmd-f" id="nmtr-pw"><span class="nmtr-l">في أنهي محفظة؟</span><select class="nmd-in" id="nmtr-par">'+P.map(function(p){return '<option value="'+p.id+'"'+(p.id===defPar?' selected':'')+'>'+esc(p.name)+'</option>';}).join('')+'<option value=""'+(P.length?'':' selected')+'>من غير مجموعة</option></select></label>'+
+  '<label class="nmd-f" id="nmtr-pw"'+(P.length?'':' hidden')+'><span class="nmtr-l">في أنهي حساب تداول؟</span><select class="nmd-in" id="nmtr-par">'+P.map(function(p){return '<option value="'+p.id+'"'+(p.id===defPar?' selected':'')+'>'+esc(p.name)+'</option>';}).join('')+'<option value=""'+(P.length?'':' selected')+'>لوحده (مش جوه حساب)</option></select><small class="nmtr-h">السهم الجديد هيتحط جوه الحساب ده مع باقي أسهمه.</small></label>'+
   '<div class="nmtr-pv" id="nmtr-pv" aria-live="polite"></div><span class="nmd-err" id="nmtr-e" role="alert"></span>'+
   '<button type="button" class="nmb-btn" id="nmtr-ok">سجّل الشراء</button>';
  NamaaDialog.sheet({title:'سجّل عملية شراء أسهم',html:h,onMount:function(root,close){
@@ -4518,7 +4518,7 @@ function open(pre){
   if(!LIST)listLoad(function(){showSug();showHit();});
   function existing(){var y=sym();if(!y)return null;var L=stocks(data()).filter(function(a){return a.stockSymbol===y;});if(!L.length)return null;var pid=par.value===''?null:Number(par.value);return L.filter(function(a){return a.parentId===pid;})[0]||L[0];}
   function upd(){var y=sym(),ex=existing(),q=num(n.value),pr=num(p.value);er.textContent='';
-   pw.style.display=ex?'none':'';
+   pw.style.display=ex||!P.length?'none':'';
    if(ex){var c=Number(ex.shareCount)||0,av=Number(ex.avgBuyPrice)||Number(ex.pricePerShare)||0;
     var h2='<b>عندك '+f2(c)+' سهم '+esc(y)+' · متوسط '+f2(av)+'</b>';
     if(q>0&&pr>0){var nc=c+q,na=(c*av+q*pr)/nc;h2+='<span>بعد الشراء: <b>'+f2(nc)+' سهم</b> · متوسط جديد <b>'+f2(na)+'</b></span>';}
@@ -4556,6 +4556,7 @@ var css=document.createElement('style');css.textContent=
 '.nmtr-find{display:block;margin:2px 0 10px;padding:8px 0;border:none;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--nm-accent,#1E6B45);text-decoration:underline;cursor:pointer}.nmtr-l{display:block;font-size:13px;font-weight:600;color:#3f3f3f;margin-bottom:6px}'+
 '.nmtr-sug{list-style:none;margin:6px 0 0;padding:4px;border:1px solid #ebebeb;border-radius:12px;background:#fff;box-shadow:rgba(0,0,0,.02) 0 0 0 1px,rgba(0,0,0,.04) 0 2px 6px,rgba(0,0,0,.1) 0 4px 8px}.nmtr-sug[hidden]{display:none}.nmtr-sug button{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:6px 10px;border:none;border-radius:8px;background:none;font:inherit;text-align:right;color:#222;cursor:pointer}.nmtr-sug button:active,.nmtr-sug button:focus-visible{background:#f7f7f7;outline:none}.nmtr-sug b{flex:none;min-width:52px;font-size:14px;font-weight:700;text-align:left}.nmtr-sug span{flex:1;min-width:0;font-size:13.5px;color:#3f3f3f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nmtr-sug em{flex:none;font-style:normal;font-size:12.5px;color:#6a6a6a;font-variant-numeric:tabular-nums}'+
 '.nmtr-hit{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;line-height:1.5;color:#3f3f3f}.nmtr-hit[hidden]{display:none}.nmtr-hit.ok svg{flex:none;color:var(--nm-accent,#1E6B45)}.nmtr-hit.ok span{flex:1;min-width:0}.nmtr-hit.no{color:#c13515}.nmtr-hit button{flex:none;min-height:32px;padding:0 10px;border:1px solid #ddd;border-radius:8px;background:#fff;font:inherit;font-size:12.5px;font-weight:600;color:var(--nm-accent,#1E6B45);cursor:pointer}'+
+'.nmtr-h{display:block;margin-top:6px;font-size:12.5px;color:#6a6a6a;line-height:1.5}'+
 '.nmtr-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.nmtr-2 .nmd-f{margin-top:12px}'+
 '.nmtr-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.nmtr-c{min-height:36px;padding:0 12px;border:1px solid #ddd;border-radius:999px;background:#fff;font:inherit;font-size:13px;font-weight:600;color:#222;direction:ltr;cursor:pointer}.nmtr-c.on{border:2px solid #222}'+
 '.nmtr-pv{display:flex;flex-direction:column;gap:4px;margin-top:14px;padding:12px 14px;border-radius:12px;background:#f7f7f7;font-size:13.5px;color:#3f3f3f;line-height:1.6;font-variant-numeric:tabular-nums}.nmtr-pv b{color:#222}'+
@@ -5064,7 +5065,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=259;window.NM_VERSION='25.9';
+window.NM_BUILD=260;window.NM_VERSION='26.0';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
