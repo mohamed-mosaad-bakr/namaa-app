@@ -3831,14 +3831,19 @@ function situ(){var R=[],b=jl('nm-budget')||{},d=jl('portfolioData')||{},A=(d.as
  if(g.indexOf('protect')>=0)R.push({k:'goal_protect',cat:'budget',why:'عشان هدفك في خطتي تحمي فلوسك'});
  if(!A.length)R.push({k:'start',cat:'wealth',why:'عشان لسه بتبدأ'});
  return R;}
-function rec(l){var R=situ();for(var i=0;i<R.length;i++){var r=R[i],cu=CUR[r.k];
+var KW={debt:/(ديون|مديون|قرض|قروض|سداد|تسدّد|تسدد|بطاق(ة|ات) (ال)?ائتمان|كريدت كارد|\bdebt|\bloan)/i,tight:/(ميزاني|مصروف|مصاريف|ادخار|الادخار|توفير|تدبير|\bbudget|\bsaving)/i,nopassive:/(دخل سلبي|الدخل السلبي|دخل شهري|توزيعات|أرباح الأسهم|إيجار|ايجار|\bpassive|\bdividend)/i,goal_growth:/(ثرو|استثمار|الاستثمار|\binvest|\bwealth)/i,goal_protect:/(طوارئ|تأمين|مخاطر|تنويع|حماية|\bemergency|\brisk)/i};KW.goal_income=KW.nopassive;KW.start=KW.goal_growth;
+/* بندوّر في أسامي الحلقات نفسها (المكتبة + حلقات القوايم المتخزّنة) قبل الموضوع العام */
+function byTitle(l,re){var hit=l.v.filter(function(v){return v.k!=='list'&&v.t&&v.st!=='done'&&re.test(v.t);}).sort(function(a,b){return (b.st==='prog')-(a.st==='prog');})[0];if(hit)return {v:hit};
+ var lists=l.v.filter(function(v){return v.k==='list';});for(var i=0;i<lists.length;i++){var p=lists[i],cc=cacheGet('lst:'+p.y);if(!cc||!cc.items)continue;for(var j=0;j<cc.items.length;j++){var it=cc.items[j];if(!it.t||!re.test(it.t))continue;var x=l.v.find(function(v){return v.y===it.y&&v.k!=='list';});if(x&&x.st==='done')continue;return {v:{id:'ep-'+it.y,y:it.y,t:it.t,st:x?x.st:'new',k:'v',pl:p.id,ch:''},ep:{it:it,par:p}};}}return null;}
+function rec(l){var R=situ();for(var i=0;i<R.length;i++){var r=R[i],cu=CUR[r.k],kw=KW[r.k];
+  if(kw){var bt=byTitle(l,kw);if(bt)return {v:bt.v,ep:bt.ep,r:r};}
   if(cu){var have=l.v.find(function(v){return v.y===cu.y;});if(!have)return {v:{id:'rec-'+r.k,y:cu.y,t:cu.t,ch:cu.ch,st:'new',k:'v'},cur:cu,r:r};if(have.st!=='done')return {v:have,r:r};}
   var c=l.v.filter(function(v){return v.c===r.cat&&v.st!=='done'&&!v.chid;}).sort(function(a,b){return (b.st==='prog')-(a.st==='prog');})[0];if(c)return {v:c,r:r};}
  return null;}
 function cardRender(host){var l=L(),c=cont(l),R=rec(l),useR=R&&(R.r.urgent||!c||c.v.st!=='prog');if(useR)c={v:R.v,why:R.r.why};if(!c){host.innerHTML='';host.style.display='none';return;}host.style.display='';var st=stats(l);
  host.innerHTML=contCard(l,c,st,'id="nmv-ho"');
  if(useR&&!host.__recSeen){host.__recSeen=1;try{window.NamaaTrack&&NamaaTrack('learn_rec_view',{reason:R.r.k});}catch(e){}}
- host.querySelector('#nmv-ho').onclick=function(){var vid=c.v.id;if(useR){try{window.NamaaTrack&&NamaaTrack('learn_rec_click',{reason:R.r.k});}catch(e){}if(R.cur){addVideo('https://youtu.be/'+R.cur.y,{t:R.cur.t,c:R.cur.c});var l3=L(),x=l3.v.find(function(v){return v.y===R.cur.y;});if(x){if(!x.ch){x.ch=R.cur.ch;save(l3);}vid=x.id;}}}
+ host.querySelector('#nmv-ho').onclick=function(){var vid=c.v.id;if(useR){try{window.NamaaTrack&&NamaaTrack('learn_rec_click',{reason:R.r.k});}catch(e){}if(R.ep){var EP=R.ep;go('learn');setTimeout(function(){var h2=document.getElementById('nm-learn-host');if(h2){h2.setAttribute('data-r','1');epOpen(h2,EP.it,EP.par,false,{tab:'lib',home:1});}},250);return;}if(R.cur){addVideo('https://youtu.be/'+R.cur.y,{t:R.cur.t,c:R.cur.c});var l3=L(),x=l3.v.find(function(v){return v.y===R.cur.y;});if(x){if(!x.ch){x.ch=R.cur.ch;save(l3);}vid=x.id;}}}
   go('learn');setTimeout(function(){var h2=document.getElementById('nm-learn-host');if(h2){h2.setAttribute('data-r','1');openVid(h2,vid,{tab:'lib',home:1});}},250);};}
 
 function seed(){var l=L();if(l.seed1)return;l.seed1=1;save(l);
@@ -5098,7 +5103,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=264;window.NM_VERSION='26.4';
+window.NM_BUILD=265;window.NM_VERSION='26.5';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
