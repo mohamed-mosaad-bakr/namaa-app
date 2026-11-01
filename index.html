@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=276;window.NM_VERSION='27.6';
+window.NM_BUILD=277;window.NM_VERSION='27.7';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5248,7 +5248,7 @@ setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastC
 })();
 </script>
 <script>
-/* NAMAA_ASK v5 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+/* NAMAA_ASK v6 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
    الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
    من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال للمزود اللي المستخدم يختاره
    (Gemini / ChatGPT / Claude / OpenRouter / خادم متوافق مع OpenAI) بمفتاح المستخدم نفسه، والموديل بيصيغ
@@ -5358,7 +5358,8 @@ async function gemCall(key,body){
  var pref=[],mo='';try{mo=(localStorage.getItem('nma-model-gemini')||'').trim();}catch(e){}
  if(mo)pref=[mo];
  else{var sv='';try{sv=(localStorage.getItem('namaa-gemini-model')||'').trim();}catch(e){}
-  pref=[sv,'gemini-2.5-flash','gemini-flash-latest'].filter(function(x,i,a){return x&&a.indexOf(x)===i;});}
+  /* الأحدث أولًا: جوجل منعت الموديلات القديمة (زي 2.5-flash) عن المفاتيح الجديدة، وبتقترح 3.8-flash */
+  pref=['gemini-3.8-flash',sv,'gemini-flash-latest','gemini-3-flash','gemini-2.5-flash'].filter(function(x,i,a){return x&&a.indexOf(x)===i;});}
  var lastErr=null;
  for(var i=0;i<pref.length;i++){var m=pref[i];
   for(var att=0;att<2;att++){
@@ -5366,7 +5367,12 @@ async function gemCall(key,body){
     var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
     if(r.ok){try{localStorage.setItem('namaa-gemini-model',m);}catch(e){}return r;}
     var be=await badErr(r);
-    if(r.status===404||(r.status===400&&/model|not found/i.test(be.detail||''))){lastErr=be;break;}
+    if(r.status===404||(r.status===400&&/model|not found|no longer available/i.test(be.detail||''))){lastErr=be;
+     var sug=null,mm=(be.detail||'').match(/use models\/(gemini-[\w.\-]+)/);
+     if(mm)sug=mm[1];
+     if(!sug){var all=(be.detail||'').match(/models\/(gemini-[\w.\-]+)/g)||[];for(var si=0;si<all.length;si++){var cand=all[si].slice(7);if(cand!==m&&pref.indexOf(cand)<0){sug=cand;break;}}}
+     if(sug&&sug!==m&&pref.indexOf(sug)<0)pref.splice(i+1,0,sug);
+     break;}
     throw be;
    }catch(e){
     if(e&&e.status)throw e;
