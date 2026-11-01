@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=281;window.NM_VERSION='27.11';
+window.NM_BUILD=282;window.NM_VERSION='27.12';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5248,7 +5248,7 @@ setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastC
 })();
 </script>
 <script>
-/* NAMAA_ASK v10 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+/* NAMAA_ASK v11 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
    الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
    من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال للمزود اللي المستخدم يختاره
    (Gemini / ChatGPT / Claude / OpenRouter / خادم متوافق مع OpenAI) بمفتاح المستخدم نفسه، والموديل بيصيغ
@@ -5327,7 +5327,7 @@ var PROVS=[
  {id:'gemini',name:'Gemini',co:'Google',def:'',hint:'AIza…',url:'https://aistudio.google.com/apikey',pre:/^(AIza|AQ\.)/},
  {id:'openai',name:'ChatGPT',co:'OpenAI',def:'gpt-4o-mini',hint:'sk-…',url:'https://platform.openai.com/api-keys',pre:/^sk-/},
  {id:'anthropic',name:'Claude',co:'Anthropic',def:'claude-haiku-4-5-20251001',hint:'sk-ant-…',url:'https://console.anthropic.com/settings/keys',pre:/^sk-ant-/},
- {id:'openrouter',name:'OpenRouter',co:'موديلات كتير بمفتاح واحد',def:'openai/gpt-4o-mini',hint:'sk-or-…',url:'https://openrouter.ai/keys',pre:/^sk-or-/},
+ {id:'openrouter',name:'OpenRouter',co:'موديلات كتير بمفتاح واحد',def:'meta-llama/llama-3.3-70b-instruct:free',hint:'sk-or-…',url:'https://openrouter.ai/keys',pre:/^sk-or-/},
  {id:'custom',name:'خادم مخصص',co:'متوافق مع OpenAI (Groq / DeepSeek / محلي…)',def:'',hint:'مفتاح الخادم',url:'',pre:null}
 ];
 function prov(){var id='gemini';try{id=localStorage.getItem('nma-provider')||'gemini';}catch(e){}for(var i=0;i<PROVS.length;i++)if(PROVS[i].id===id)return PROVS[i];return PROVS[0];}
@@ -5374,7 +5374,7 @@ async function gemCall(key,body){
     if(r.ok){try{localStorage.setItem('namaa-gemini-model',m);}catch(e){}return r;}
     var be=await badErr(r);
     if(r.status===429){lastErr=be;break;}
-    if(r.status===404||(r.status===400&&/model|not found|no longer available/i.test(be.detail||''))){lastErr=be;
+    if(r.status===404||(r.status===400&&/model|not found|no longer available/i.test(be.detail||''))){if(!lastErr||lastErr.status===404)lastErr=be;
      var sug=null,mm=(be.detail||'').match(/use models\/(gemini-[\w.\-]+)/);
      if(mm)sug=mm[1];
      if(!sug){var all=(be.detail||'').match(/models\/(gemini-[\w.\-]+)/g)||[];for(var si=0;si<all.length;si++){var cand=all[si].slice(7);if(cand!==m&&pref.indexOf(cand)<0){sug=cand;break;}}}
@@ -5383,7 +5383,7 @@ async function gemCall(key,body){
     throw be;
    }catch(e){
     if(e&&e.status)throw e;
-    lastErr=e;if(att===0)await sleepMs(1000);
+    if(!lastErr||!lastErr.status)lastErr=e;if(att===0)await sleepMs(1000);
    }
   }
  }
@@ -5398,7 +5398,10 @@ async function askGemini(p,key,snapTxt,ack,q){
  var contents=[{role:'user',parts:[{text:snapTxt}]},{role:'model',parts:[{text:ack}]}];
  HIST.forEach(function(t){contents.push({role:t.role,parts:[{text:t.text}]});});
  contents.push({role:'user',parts:[{text:q}]});
- var body={systemInstruction:{parts:[{text:SYS}]},contents:contents,generationConfig:{temperature:0.3,maxOutputTokens:1200}};
+ var mo='';try{mo=(localStorage.getItem('nma-model-gemini')||'').trim();}catch(e){}
+ var body;
+ if(/^gemma/i.test(mo)){var c2=contents.slice();c2[0]={role:'user',parts:[{text:SYS+'\n\n'+snapTxt}]};body={contents:c2,generationConfig:{temperature:0.3,maxOutputTokens:1200}};}
+ else body={systemInstruction:{parts:[{text:SYS}]},contents:contents,generationConfig:{temperature:0.3,maxOutputTokens:1200}};
  var r=await gemCall(key,body);
  if(!r.ok)throw await badErr(r);
  var data=await r.json();var parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
