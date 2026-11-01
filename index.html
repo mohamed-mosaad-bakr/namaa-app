@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=279;window.NM_VERSION='27.9';
+window.NM_BUILD=280;window.NM_VERSION='27.10';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5248,7 +5248,7 @@ setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastC
 })();
 </script>
 <script>
-/* NAMAA_ASK v8 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+/* NAMAA_ASK v9 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
    الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
    من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال للمزود اللي المستخدم يختاره
    (Gemini / ChatGPT / Claude / OpenRouter / خادم متوافق مع OpenAI) بمفتاح المستخدم نفسه، والموديل بيصيغ
@@ -5354,17 +5354,23 @@ var SYS='أنت «مساعد نماء»، مساعد داخل تطبيق نما�
 function sleepMs(ms){return new Promise(function(r){setTimeout(r,ms);});}
 async function readErr(r){try{var t=await r.clone().text();if(!t)return '';try{var j=JSON.parse(t);var m=(j.error&&(j.error.message||j.error.code))||j.message||'';if(m)return String(m).slice(0,180);}catch(e){}return t.replace(/\s+/g,' ').slice(0,180);}catch(e){return '';}}
 async function badErr(r){var e=new Error('api');e.status=r.status;e.detail=await readErr(r);return e;}
+function netMs(def){try{var v=Number(window.__nmaNetTimeout);if(v>0)return v;}catch(e){}return def;}
+function fetchT(url,opts,defMs){var ms=netMs(defMs||20000);
+ if(!('AbortController' in window))return fetch(url,opts);
+ var ac=new AbortController();var to=setTimeout(function(){try{ac.abort();}catch(e){}},ms);
+ var o2={};for(var k in opts)o2[k]=opts[k];o2.signal=ac.signal;
+ return fetch(url,o2).then(function(r){clearTimeout(to);return r;},function(e){clearTimeout(to);throw e;});}
 async function gemCall(key,body){
  var pref=[],mo='';try{mo=(localStorage.getItem('nma-model-gemini')||'').trim();}catch(e){}
  if(mo)pref=[mo];
  else{var sv='';try{sv=(localStorage.getItem('namaa-gemini-model')||'').trim();}catch(e){}
   /* الأحدث أولًا: جوجل منعت الموديلات القديمة (زي 2.5-flash) عن المفاتيح الجديدة، وبتقترح 3.8-flash */
   pref=['gemini-3.8-flash',sv,'gemini-flash-latest','gemini-3-flash','gemini-2.5-flash'].filter(function(x,i,a){return x&&a.indexOf(x)===i;});}
- var lastErr=null;
- for(var i=0;i<pref.length;i++){var m=pref[i];
+ var lastErr=null,t0=Date.now();
+ for(var i=0;i<pref.length;i++){if(Date.now()-t0>90000)break;var m=pref[i];
   for(var att=0;att<2;att++){
    try{
-    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+    var r=await fetchT('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)},20000);
     if(r.ok){try{localStorage.setItem('namaa-gemini-model',m);}catch(e){}return r;}
     var be=await badErr(r);
     if(r.status===404||(r.status===400&&/model|not found|no longer available/i.test(be.detail||''))){lastErr=be;
@@ -5382,7 +5388,7 @@ async function gemCall(key,body){
  }
  if(lastErr&&!lastErr.status){
   /* محاولة أخيرة: المفتاح في الرابط من غير هيدر مخصص — بتنفع لو الويب فيو/الشبكة بتخنق الطلبات اللي بهيدر */
-  try{var rf=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(pref[0])+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  try{var rf=await fetchT('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(pref[0])+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},20000);
    if(rf.ok){try{localStorage.setItem('namaa-gemini-model',pref[0]);}catch(e){}return rf;}
    throw await badErr(rf);}catch(e2){if(e2&&e2.status)throw e2;}
  }
@@ -5402,7 +5408,7 @@ async function askOpenAIStyle(p,key,snapTxt,ack,q){
  var msgs=[{role:'system',content:SYS},{role:'user',content:snapTxt},{role:'assistant',content:ack}];
  HIST.forEach(function(t){msgs.push({role:t.role==='model'?'assistant':'user',content:t.text});});
  msgs.push({role:'user',content:q});
- var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:msgs,temperature:0.3,max_tokens:1200})});
+ var r=await fetchT(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:msgs,temperature:0.3,max_tokens:1200})},45000);
  if(!r.ok)throw await badErr(r);
  var data=await r.json();var c=(((data.choices||[])[0]||{}).message||{}).content;
  return typeof c==='string'?c.trim():'';}
@@ -5410,7 +5416,7 @@ async function askAnthropic(p,key,snapTxt,ack,q){
  var msgs=[{role:'user',content:snapTxt},{role:'assistant',content:ack}];
  HIST.forEach(function(t){msgs.push({role:t.role==='model'?'assistant':'user',content:t.text});});
  msgs.push({role:'user',content:q});
- var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:pModel(p),max_tokens:1200,temperature:0.3,system:SYS,messages:msgs})});
+ var r=await fetchT('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:pModel(p),max_tokens:1200,temperature:0.3,system:SYS,messages:msgs})},45000);
  if(!r.ok)throw await badErr(r);
  var data=await r.json();
  return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text||'';}).join('').trim();}
@@ -5422,11 +5428,11 @@ async function ping(p,key,base,model){
   var r=await gemCall(key,body);
   if(!r.ok)throw await badErr(r);return true;}
  if(p.id==='anthropic'){
-  var r2=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model||p.def,max_tokens:16,temperature:0,messages:[{role:'user',content:msg}]})});
+  var r2=await fetchT('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model||p.def,max_tokens:16,temperature:0,messages:[{role:'user',content:msg}]})},20000);
   if(!r2.ok)throw await badErr(r2);return true;}
  var url=p.id==='openai'?'https://api.openai.com/v1/chat/completions':p.id==='openrouter'?'https://openrouter.ai/api/v1/chat/completions':String(base||'').replace(/\/+$/,'')+'/chat/completions';
  if(!model){var e0=new Error('nomodel');e0.status=-2;throw e0;}
- var r3=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'user',content:msg}],temperature:0,max_tokens:16})});
+ var r3=await fetchT(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'user',content:msg}],temperature:0,max_tokens:16})},20000);
  if(!r3.ok)throw await badErr(r3);return true;}
 function toastOk(msg){try{if(window.NamaaSnack)NamaaSnack(msg,{kind:'ok',ms:3500});}catch(e){}}
 async function ask(q){
@@ -5444,7 +5450,7 @@ async function ask(q){
  if(HIST.length>12)HIST=HIST.slice(-12);
  return ans;}
 function md(t){var h=esc(t);h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');h=h.replace(/^\s*[-•]\s+/gm,'• ');return h.replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>');}
-function errMsg(e){if(e&&e.status===0)return 'لسه مخترتش مزود ومفتاح شغالين. افتح الإعدادات وكملها.';if(e&&e.status===-3)return 'حصلت مشكلة وأنا بجهّز بيانات حسابك من الجهاز — دي مش مشكلة اتصال. جرّب تاني، ولو اتكررت بلّغنا.';if(e&&e.status===-2)return 'المزود ده محتاج اسم موديل — اكتبه من الإعدادات.';if(e&&e.status===404)return 'اسم الموديل مش متاح عند المزود ده. غيّره من الإعدادات.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال عند المزود ده (ممكن يكون غلط أو رصيده/صلاحياته خلصت). راجع الإعدادات.';if(e&&e.status===429){if(/credit|billing|insufficient_quota/i.test(e.detail||''))return 'حسابك عند المزود ده معندوش رصيد API — اشحن رصيد من صفحة الفواتير بتاعته، أو بدّل لمزود تاني (Gemini مجاني).';return 'وصلت لحد استخدام المزود دلوقتي، جرّب كمان شوية.';}if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';if(e&&e.status>=500)return 'المزود عنده عطل مؤقت دلوقتي (خطأ '+e.status+') — جرّب كمان شوية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
+function errMsg(e){if(e&&e.status===0)return 'لسه مخترتش مزود ومفتاح شغالين. افتح الإعدادات وكملها.';if(e&&e.name==='AbortError')return 'المزود مأخدش وقت طويل ومردش (مهلة الاتصال خلصت) — جرّب تاني.';if(e&&e.status===-3)return 'حصلت مشكلة وأنا بجهّز بيانات حسابك من الجهاز — دي مش مشكلة اتصال. جرّب تاني، ولو اتكررت بلّغنا.';if(e&&e.status===-2)return 'المزود ده محتاج اسم موديل — اكتبه من الإعدادات.';if(e&&e.status===404)return 'اسم الموديل مش متاح عند المزود ده. غيّره من الإعدادات.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال عند المزود ده (ممكن يكون غلط أو رصيده/صلاحياته خلصت). راجع الإعدادات.';if(e&&e.status===429){if(/credit|billing|insufficient_quota/i.test(e.detail||''))return 'حسابك عند المزود ده معندوش رصيد API — اشحن رصيد من صفحة الفواتير بتاعته، أو بدّل لمزود تاني (Gemini مجاني).';return 'وصلت لحد استخدام المزود دلوقتي، جرّب كمان شوية.';}if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';if(e&&e.status>=500)return 'المزود عنده عطل مؤقت دلوقتي (خطأ '+e.status+') — جرّب كمان شوية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
 /* ---------- الواجهة ---------- */
 var SPARK='<svg class="sp" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><defs><linearGradient id="nmaig2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".5" stop-color="#E0458B"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path fill="url(#nmaig2)" d="M12 2.5c.5 4.6 2.9 7 7.5 7.5-4.6.5-7 2.9-7.5 7.5-.5-4.6-2.9-7-7.5-7.5 4.6-.5 7-2.9 7.5-7.5z"/><path fill="url(#nmaig2)" d="M19 15.5c.2 1.8 1.1 2.7 2.9 2.9-1.8.2-2.7 1.1-2.9 2.9-.2-1.8-1.1-2.7-2.9-2.9 1.8-.2 2.7-1.1 2.9-2.9z"/></svg>';
 var CHIPS=['صافي ثروتي كام؟','دخلي السلبي كام وبييجي منين؟','ديوني هتخلص إمتى؟','ثروتي متوزعة إزاي؟','بصرف أكتر من دخلي؟','أكتر حاجة بصرف عليها إيه الشهر ده؟'];
@@ -5503,8 +5509,9 @@ function viewSetup(box){
    if(g.mo)localStorage.setItem('nma-model-'+g.p.id,g.mo);else localStorage.removeItem('nma-model-'+g.p.id);
    if(g.p.id==='gemini')localStorage.setItem('namaa-gemini-key',g.k);}catch(e){}}
  function runTest(g,done){tres.className='nma-testres';tres.textContent='بنجرّب الاتصال بـ '+g.p.name+'…';saveB.disabled=true;testB.disabled=true;
-  ping(g.p,g.k,g.bs,g.mo||g.p.def).then(function(){tres.className='nma-testres ok';tres.textContent='✓ الاتصال شغال — '+g.p.name+' رد بنجاح.';saveB.disabled=false;testB.disabled=false;done(true);})
-  .catch(function(e){tres.className='nma-testres bad';tres.textContent='✗ الاختبار فشل: '+errMsg(e)+(e&&e.detail?' — '+e.detail:'');saveB.disabled=false;testB.disabled=false;done(false);});}
+  var wd=setTimeout(function(){if(tres.textContent.indexOf('بنجرّب')===0)tres.textContent+=' (لسه بنحاول…)';},30000);
+  ping(g.p,g.k,g.bs,g.mo||g.p.def).then(function(){clearTimeout(wd);tres.className='nma-testres ok';tres.textContent='✓ الاتصال شغال — '+g.p.name+' رد بنجاح.';saveB.disabled=false;testB.disabled=false;done(true);})
+  .catch(function(e){clearTimeout(wd);tres.className='nma-testres bad';tres.textContent='✗ الاختبار فشل: '+errMsg(e)+(e&&e.detail?' — '+e.detail:'');saveB.disabled=false;testB.disabled=false;done(false);});}
  testB.onclick=function(){var g=gather();if(!valid(g))return;skipB.style.display='none';runTest(g,function(ok){if(ok)toastOk('تم الربط بـ '+g.p.name+' بنجاح ✓');});};
  saveB.onclick=function(){var g=gather();if(!valid(g))return;persist(g);track('ask_setup',{prov:g.p.id});
   runTest(g,function(ok){if(ok){toastOk('تم الربط بـ '+g.p.name+' بنجاح ✓');track('ask_test_ok',{prov:g.p.id});viewChat(box);}else{track('ask_test_fail',{prov:g.p.id});skipB.style.display='block';}});};
