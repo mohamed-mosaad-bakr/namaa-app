@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=272;window.NM_VERSION='27.2';
+window.NM_BUILD=273;window.NM_VERSION='27.3';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5248,10 +5248,10 @@ setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastC
 })();
 </script>
 <script>
-/* NAMAA_ASK v1 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+/* NAMAA_ASK v2 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
    الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
-   من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال لـ Gemini
-   بمفتاح المستخدم نفسه (نفس مفتاح استيراد الأصول من صورة، محفوظ على الجهاز بس)، والموديل بيصيغ
+   من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال للمزود اللي المستخدم يختاره
+   (Gemini / ChatGPT / Claude / OpenRouter / خادم متوافق مع OpenAI) بمفتاح المستخدم نفسه، والموديل بيصيغ
    الإجابة من الأرقام الجاهزة — ممنوع يحسب أو يخترع. مفيش أي تعديل على البيانات من المساعد. */
 (function(){
 var KEYK='namaa-gemini-key',CONK='nm-ask-consent';
@@ -5322,31 +5322,80 @@ function snapshot(){
  if(lastTx.length){o.push('== آخر الحركات ==');
   lastTx.forEach(function(t){o.push('- '+String(t.d||'')+': '+(t.n||t.cn||t.cat||'حركة')+' '+(t.inc?'+':'−')+money(Math.abs(Number(t.amt)||0)));});}
  return {text:o.join('\n'),net:net,tot:tot,debts:debtsTot,pas:pas};}
-/* ---------- Gemini بنفس نمط التطبيق (مفتاح المستخدم + fallback للموديلات) ---------- */
-function getKey(){try{return (localStorage.getItem(KEYK)||'').trim();}catch(e){return '';}}
-function keyOk(k){return k.length>=20&&/^(AIza|AQ\.)/.test(k);}
+/* ---------- المزودون: أي مفتاح ينفع (Gemini / OpenAI / Claude / OpenRouter / خادم متوافق مع OpenAI) ---------- */
+var PROVS=[
+ {id:'gemini',name:'Gemini',co:'Google',def:'',hint:'AIza…',url:'https://aistudio.google.com/apikey',pre:/^(AIza|AQ\.)/},
+ {id:'openai',name:'ChatGPT',co:'OpenAI',def:'gpt-4o-mini',hint:'sk-…',url:'https://platform.openai.com/api-keys',pre:/^sk-/},
+ {id:'anthropic',name:'Claude',co:'Anthropic',def:'claude-haiku-4-5-20251001',hint:'sk-ant-…',url:'https://console.anthropic.com/settings/keys',pre:/^sk-ant-/},
+ {id:'openrouter',name:'OpenRouter',co:'موديلات كتير بمفتاح واحد',def:'openai/gpt-4o-mini',hint:'sk-or-…',url:'https://openrouter.ai/keys',pre:/^sk-or-/},
+ {id:'custom',name:'خادم مخصص',co:'متوافق مع OpenAI (Groq / DeepSeek / محلي…)',def:'',hint:'مفتاح الخادم',url:'',pre:null}
+];
+function prov(){var id='gemini';try{id=localStorage.getItem('nma-provider')||'gemini';}catch(e){}for(var i=0;i<PROVS.length;i++)if(PROVS[i].id===id)return PROVS[i];return PROVS[0];}
+function pKey(p){try{var k=localStorage.getItem('nma-key-'+p.id)||'';if(!k&&p.id==='gemini')k=localStorage.getItem('namaa-gemini-key')||'';return String(k).trim();}catch(e){return '';}}
+function pModel(p){try{return (localStorage.getItem('nma-model-'+p.id)||'').trim()||p.def;}catch(e){return p.def;}}
+function pBase(){try{return (localStorage.getItem('nma-base-custom')||'').trim().replace(/\/+$/,'');}catch(e){return '';}}
+function keyOkP(p,k){if(!k)return false;if(p.pre)return k.length>=16&&p.pre.test(k);return k.length>=8;}
+function provReady(){var p=prov();if(!keyOkP(p,pKey(p)))return false;if(p.id==='custom'&&!/^https?:\/\/.+/.test(pBase()))return false;if(p.id==='custom'&&!pModel(p))return false;return true;}
 function gemFetch(o){if(window.__nmGem)return window.__nmGem(o);
  window.__nmGem=async function(o){var B='https://generativelanguage.googleapis.com/v1beta/models/';var saved='';try{saved=localStorage.getItem('namaa-gemini-model')||'';}catch(e){}
   var q=[saved,'gemini-flash-latest','gemini-3.8-flash','gemini-3-flash','gemini-2.5-flash'].filter(function(x,i,a){return x&&a.indexOf(x)===i;});
   var r,tried={};while(q.length){var m=q.shift();if(tried[m])continue;tried[m]=1;r=await fetch(B+m+':generateContent',o);if(r.ok){try{localStorage.setItem('namaa-gemini-model',m);}catch(e){}return r;}if(r.status!==404&&r.status!==400)return r;var t=await r.clone().text();var s=t.match(/use models\/(gemini-[\w.\-]+)/);if(s&&!tried[s[1]])q.unshift(s[1]);if(r.status===400&&!/model/i.test(t))return r;}return r;};
  return window.__nmGem(o);}
+var css2=document.createElement('style');css2.textContent=
+'.nma-provs{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}'+
+'.nma-prov{display:flex;align-items:center;gap:10px;border:1.5px solid #e4e4e4;border-radius:14px;padding:11px 13px;cursor:pointer;background:#fff}'+
+'.nma-prov.on{border-color:var(--nm-accent,#1E6B45);background:var(--nm-accent-soft,#EAF4EC)}'+
+'.nma-prov input{width:20px;height:20px;flex:none;accent-color:var(--nm-accent,#1E6B45)}'+
+'.nma-prov .pt{flex:1;min-width:0}.nma-prov b{display:block;font-size:15px;color:#222}.nma-prov small{font-size:12.5px;color:#6a6a6a}'+
+'.nma-set{display:block;margin:2px auto 0;min-height:40px;border:none;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--nm-accent,#1E6B45);text-decoration:underline;cursor:pointer}';
+document.head.appendChild(css2);
 var HIST=[];
 var SYS='أنت «مساعد نماء»، مساعد داخل تطبيق نماء لإدارة المال الشخصي في مصر. المستخدم هيسألك عن حسابه.\nقواعد صارمة:\n1) جاوب بالعربي بلهجة مصرية بسيطة وودودة، وباختصار مفيد.\n2) اعتمد فقط على «بيانات الحساب» في أول رسالة من المستخدم. الأرقام فيها محسوبة من التطبيق نفسه: ممنوع تخترع أرقامًا أو تحسب أرقامًا مالية جديدة غير مكتوبة فيها (مسموح بس تجمع/تطرح رقمين مكتوبين لو السؤال محتاج، وقول إنها عملية بسيطة عليهم).\n3) اقتبس الأرقام زي ما هي مكتوبة بالفواصل والعملة، ولو المعلومة مش موجودة في البيانات قول «دي مش باينة عندي في بياناتك» واقترح على المستخدم يضيفها من التطبيق.\n4) ممنوع توصي بشراء أو بيع أصل بعينه أو تقدم وعدًا بعائد؛ مسموح تشرح الوضع الحالي وتقترح خطوات عامة تعليمية، ولو السؤال محتاج قرار مالي كبير اقترح يستشير مختص.\n5) لو السؤال بره حساب المستخدم والتمويل الشخصي عمومًا، اعتذر بلطف ورجّعه لحسابه.\n6) نسّق الإجابة بنقط قصيرة لو بتعدّد، وبلاش جداول.';
-async function ask(q){
- var key=getKey();if(!keyOk(key)){var e0=new Error('nokey');e0.status=0;throw e0;}
- var snap=snapshot();
- var contents=[{role:'user',parts:[{text:'دي بيانات حسابي الحالية (محسوبة من التطبيق):\n'+snap.text}]},{role:'model',parts:[{text:'تمام، وصلتني بيانات حسابك الحالية. اسألني عنها.'}]}].concat(HIST).concat([{role:'user',parts:[{text:q}]}]);
- var r=await gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({systemInstruction:{parts:[{text:SYS}]},contents:contents,generationConfig:{temperature:0.3,maxOutputTokens:1200}})});
+async function askGemini(p,key,snapTxt,ack,q){
+ var contents=[{role:'user',parts:[{text:snapTxt}]},{role:'model',parts:[{text:ack}]}];
+ HIST.forEach(function(t){contents.push({role:t.role,parts:[{text:t.text}]});});
+ contents.push({role:'user',parts:[{text:q}]});
+ var body={systemInstruction:{parts:[{text:SYS}]},contents:contents,generationConfig:{temperature:0.3,maxOutputTokens:1200}};
+ var r,mo=pModel(p);
+ if(mo)r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(mo)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+ else r=await gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+ if(!r.ok){var e=new Error('api');e.status=r.status;throw e;}
+ var data=await r.json();var parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
+ return parts.map(function(x){return x.text||'';}).join('').trim();}
+async function askOpenAIStyle(p,key,snapTxt,ack,q){
+ var url=p.id==='openai'?'https://api.openai.com/v1/chat/completions':p.id==='openrouter'?'https://openrouter.ai/api/v1/chat/completions':pBase()+'/chat/completions';
+ var model=pModel(p);if(!model){var e0=new Error('nomodel');e0.status=-2;throw e0;}
+ var msgs=[{role:'system',content:SYS},{role:'user',content:snapTxt},{role:'assistant',content:ack}];
+ HIST.forEach(function(t){msgs.push({role:t.role==='model'?'assistant':'user',content:t.text});});
+ msgs.push({role:'user',content:q});
+ var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:msgs,temperature:0.3,max_tokens:1200})});
+ if(!r.ok){var e=new Error('api');e.status=r.status;throw e;}
+ var data=await r.json();var c=(((data.choices||[])[0]||{}).message||{}).content;
+ return typeof c==='string'?c.trim():'';}
+async function askAnthropic(p,key,snapTxt,ack,q){
+ var msgs=[{role:'user',content:snapTxt},{role:'assistant',content:ack}];
+ HIST.forEach(function(t){msgs.push({role:t.role==='model'?'assistant':'user',content:t.text});});
+ msgs.push({role:'user',content:q});
+ var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:pModel(p),max_tokens:1200,temperature:0.3,system:SYS,messages:msgs})});
  if(!r.ok){var e=new Error('api');e.status=r.status;throw e;}
  var data=await r.json();
- var parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
- var ans=parts.map(function(p){return p.text||'';}).join('').trim();
+ return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text||'';}).join('').trim();}
+async function ask(q){
+ var p=prov(),key=pKey(p);
+ if(!provReady()){var e0=new Error('nosetup');e0.status=0;throw e0;}
+ var snap=snapshot();
+ var snapTxt='دي بيانات حسابي الحالية (محسوبة من التطبيق):\n'+snap.text;
+ var ack='تمام، وصلتني بيانات حسابك الحالية. اسألني عنها.';
+ var ans;
+ if(p.id==='gemini')ans=await askGemini(p,key,snapTxt,ack,q);
+ else if(p.id==='anthropic')ans=await askAnthropic(p,key,snapTxt,ack,q);
+ else ans=await askOpenAIStyle(p,key,snapTxt,ack,q);
  if(!ans){var e2=new Error('empty');e2.status=-1;throw e2;}
- HIST.push({role:'user',parts:[{text:q}]},{role:'model',parts:[{text:ans}]});
+ HIST.push({role:'user',text:q},{role:'model',text:ans});
  if(HIST.length>12)HIST=HIST.slice(-12);
  return ans;}
 function md(t){var h=esc(t);h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');h=h.replace(/^\s*[-•]\s+/gm,'• ');return h.replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>');}
-function errMsg(e){if(e&&e.status===0)return 'محتاج مفتاح Gemini الأول.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال (ممكن يكون غلط أو صلاحياته خلصت). جرّب مفتاح تاني.';if(e&&e.status===429)return 'وصلت لحد الاستخدام المجاني دلوقتي، جرّب كمان شوية.';if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
+function errMsg(e){if(e&&e.status===0)return 'لسه مخترتش مزود ومفتاح شغالين. افتح الإعدادات وكملها.';if(e&&e.status===-2)return 'المزود ده محتاج اسم موديل — اكتبه من الإعدادات.';if(e&&e.status===404)return 'اسم الموديل مش متاح عند المزود ده. غيّره من الإعدادات.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال عند المزود ده (ممكن يكون غلط أو رصيده/صلاحياته خلصت). راجع الإعدادات.';if(e&&e.status===429)return 'وصلت لحد استخدام المزود دلوقتي، جرّب كمان شوية.';if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
 /* ---------- الواجهة ---------- */
 var SPARK='<svg class="sp" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><defs><linearGradient id="nmaig2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".5" stop-color="#E0458B"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path fill="url(#nmaig2)" d="M12 2.5c.5 4.6 2.9 7 7.5 7.5-4.6.5-7 2.9-7.5 7.5-.5-4.6-2.9-7-7.5-7.5 4.6-.5 7-2.9 7.5-7.5z"/><path fill="url(#nmaig2)" d="M19 15.5c.2 1.8 1.1 2.7 2.9 2.9-1.8.2-2.7 1.1-2.9 2.9-.2-1.8-1.1-2.7-2.9-2.9 1.8-.2 2.7-1.1 2.9-2.9z"/></svg>';
 var CHIPS=['صافي ثروتي كام؟','دخلي السلبي كام وبييجي منين؟','ديوني هتخلص إمتى؟','ثروتي متوزعة إزاي؟','بصرف أكتر من دخلي؟','أكتر حاجة بصرف عليها إيه الشهر ده؟'];
@@ -5357,30 +5406,47 @@ function open(src){
  NamaaDialog.sheet({title:'اسأل نماء',html:'<div id="nma-root"></div>',onMount:function(root,close){
   var box=root.querySelector('#nma-root');if(!box)return;
   if(!consented())return viewConsent(box,close);
-  if(!keyOk(getKey()))return viewKey(box);
+  if(!provReady())return viewSetup(box);
   viewChat(box);}});}
 function viewConsent(box,close){
  box.innerHTML='<div class="nma-intro"><span class="nma-ic">'+SPARK+'</span><h4>مساعد بيجاوب من بيانات حسابك</h4>'+
- '<p>عشان يجاوبك، نماء بيبعت لـ Google Gemini (بمفتاحك انت) <b>ملخص محسوب</b> من حسابك: صافي الثروة والدخل السلبي والديون، أسماء أصولك وقيمتها، توزيع ثروتك وخطتك، وملخص مصاريف الشهر وآخر 10 حركات.</p>'+
+ '<p>عشان يجاوبك، نماء بيبعت لمزود الذكاء الاصطناعي اللي تختاره — Gemini أو ChatGPT أو Claude أو غيرهم — وبمفتاحك انت، <b>ملخص محسوب</b> من حسابك: صافي الثروة والدخل السلبي والديون، أسماء أصولك وقيمتها، توزيع ثروتك وخطتك، وملخص مصاريف الشهر وآخر 10 حركات.</p>'+
  '<p>الأرقام التطبيق بيحسبها هنا على جهازك، والمساعد بيصيغ الإجابة بس. المساعد <b>قراءة فقط</b> — مش بيعدّل ولا بيمسح أي حاجة، والمحادثة مش بتتحفظ بعد ما تقفلها.</p>'+
- '<p class="nma-warn">الملخص ده بيخرج من جهازك لجوجل عشان الإجابة تتولّد. لو مش مرتاح لده، اختار «لأ».</p></div>'+
+ '<p class="nma-warn">الملخص ده بيخرج من جهازك للمزود اللي اخترته عشان الإجابة تتولّد. لو مش مرتاح لده، اختار «لأ».</p></div>'+
  '<button type="button" class="nmb-btn" id="nma-ok">موافق، ابدأ</button><button type="button" class="nmb-btn sec" id="nma-no">لأ، إلغاء</button>';
  box.querySelector('#nma-no').onclick=function(){close();};
  box.querySelector('#nma-ok').onclick=function(){try{localStorage.setItem(CONK,'1');}catch(e){}track('ask_consent',{});
   close(function(){setTimeout(function(){open('consent');},60);});};}
-function viewKey(box){
- box.innerHTML='<div class="nma-intro"><span class="nma-ic">'+SPARK+'</span><h4>محتاج مفتاح Gemini (مجاني)</h4>'+
- '<p>المساعد بيشتغل بمفتاح Gemini بتاعك — نفس المفتاح اللي بيستخدمه استيراد الأصول من صورة، ومحفوظ على جهازك بس.</p>'+
- '<p>تجيبه منين؟ من <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> ببلاش: اعمل مفتاح والصقه هنا.</p></div>'+
- '<label class="nmd-f"><span class="nmb-fl">مفتاح Gemini</span><input class="nmd-in" id="nma-key" type="password" autocomplete="off" placeholder="AIza…" dir="ltr"></label>'+
- '<span class="nmd-err" id="nma-kerr" role="alert"></span>'+
- '<button type="button" class="nmb-btn" id="nma-ksave">احفظ وابدأ</button>';
- var inp=box.querySelector('#nma-key'),er=box.querySelector('#nma-kerr');
- box.querySelector('#nma-ksave').onclick=function(){
-  var k=(inp.value||'').trim();
-  if(!keyOk(k)){er.textContent='المفتاح ده شكله مش صح — لازم يبدأ بـ AIza أو AQ. ويكون أطول من كده.';inp.focus();return;}
-  try{localStorage.setItem(KEYK,k);}catch(e){}
-  track('ask_key_saved',{});
+function viewSetup(box){
+ var cur=prov();
+ var rows=PROVS.map(function(p){return '<label class="nma-prov'+(p.id===cur.id?' on':'')+'"><input type="radio" name="nma-prov" value="'+p.id+'"'+(p.id===cur.id?' checked':'')+'><span class="pt"><b>'+esc(p.name)+'</b><small>'+esc(p.co)+'</small></span></label>';}).join('');
+ box.innerHTML='<div class="nma-intro"><span class="nma-ic">'+SPARK+'</span><h4>اختار مزود الذكاء الاصطناعي</h4>'+
+ '<p>المساعد بيشتغل بمفتاحك عند أي مزود من دول — اختار اللي عندك مفتاحه. المفتاح بيتحفظ على جهازك بس، وبيانات حسابك بتتبعت للمزود اللي اخترته عشان يولّد الإجابة.</p>'+
+ '<p class="nma-warn">لاحظ: مفاتيح الـ API دي منفصلة عن اشتراك ChatGPT Plus أو Claude الشهري، وأغلب المزودين بيحاسب على الاستخدام — وGemini وOpenRouter عندهم حدود مجانية.</p></div>'+
+ '<div class="nma-provs" id="nma-provs">'+rows+'</div>'+
+ '<div id="nma-pfields"></div>'+
+ '<span class="nmd-err" id="nma-serr" role="alert"></span>'+
+ '<button type="button" class="nmb-btn" id="nma-ssave">احفظ وابدأ</button>';
+ var fields=box.querySelector('#nma-pfields'),er=box.querySelector('#nma-serr');
+ function sel(){var r=box.querySelector('input[name="nma-prov"]:checked');var f=PROVS.filter(function(p){return r&&p.id===r.value;});return f[0]||PROVS[0];}
+ function drawFields(){var p=sel();
+  box.querySelectorAll('.nma-prov').forEach(function(l){var i=l.querySelector('input');l.classList.toggle('on',!!i&&i.value===p.id);});
+  var k='',mo='',bs='';try{k=localStorage.getItem('nma-key-'+p.id)||(p.id==='gemini'?(localStorage.getItem('namaa-gemini-key')||''):'');mo=localStorage.getItem('nma-model-'+p.id)||'';bs=localStorage.getItem('nma-base-custom')||'';}catch(e){}
+  fields.innerHTML=
+   (p.id==='custom'?'<label class="nmd-f"><span class="nmb-fl">رابط الخادم (Base URL)</span><input class="nmd-in" id="nma-base" type="url" autocomplete="off" dir="ltr" placeholder="https://api.groq.com/openai/v1" value="'+esc(bs)+'"></label>':'')+
+   '<label class="nmd-f"><span class="nmb-fl">مفتاح '+esc(p.name)+'</span><input class="nmd-in" id="nma-key" type="password" autocomplete="off" dir="ltr" placeholder="'+esc(p.hint)+'" value="'+esc(k)+'"></label>'+
+   '<label class="nmd-f"><span class="nmb-fl">الموديل (اختياري)</span><input class="nmd-in" id="nma-model" type="text" autocomplete="off" dir="ltr" placeholder="'+(p.def?esc(p.def):'بيتختار تلقائيًا')+'" value="'+esc(mo)+'"></label>'+
+   (p.url?'<p class="nma-note">معندكش مفتاح؟ هاته من <a href="'+p.url+'" target="_blank" rel="noopener">صفحة مفاتيح '+esc(p.co)+'</a>.</p>':'<p class="nma-note">الخادم لازم يكون متوافق مع OpenAI API (بيستقبل طلبات على /chat/completions).</p>');}
+ box.querySelectorAll('input[name="nma-prov"]').forEach(function(r){r.onchange=drawFields;});
+ drawFields();
+ box.querySelector('#nma-ssave').onclick=function(){
+  var p=sel(),k=(box.querySelector('#nma-key').value||'').trim(),mo=(box.querySelector('#nma-model').value||'').trim();
+  if(!keyOkP(p,k)){er.textContent='المفتاح شكله مش صح لمزود '+p.name+' — اتأكد إنك لزقته كامل.';return;}
+  if(p.id==='custom'){var bs=(box.querySelector('#nma-base').value||'').trim().replace(/\/+$/,'');if(!/^https?:\/\/.+/.test(bs)){er.textContent='اكتب رابط الخادم (Base URL) صح الأول.';return;}if(!mo){er.textContent='المزود المخصص محتاج اسم موديل — اكتبه فوق.';return;}try{localStorage.setItem('nma-base-custom',bs);}catch(e){}}
+  try{localStorage.setItem('nma-provider',p.id);localStorage.setItem('nma-key-'+p.id,k);
+   if(mo)localStorage.setItem('nma-model-'+p.id,mo);else localStorage.removeItem('nma-model-'+p.id);
+   if(p.id==='gemini')localStorage.setItem('namaa-gemini-key',k);}catch(e){}
+  track('ask_setup',{prov:p.id});
   viewChat(box);};}
 function viewChat(box){
  box.innerHTML='<div class="nma-msgs" id="nma-msgs" aria-live="polite"></div>'+
@@ -5388,11 +5454,12 @@ function viewChat(box){
  '<div class="nma-inrow"><textarea id="nma-in" rows="1" placeholder="اسأل عن حسابك…" aria-label="سؤالك"></textarea>'+
  '<button type="button" class="nma-send" id="nma-send" aria-label="ابعت"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>'+
  '<p class="nma-note">قراءة بس — مش بيعدّل حاجة في حسابك. دي إجابات مولّدة بالذكاء الاصطناعي وممكن تغلط، فاراجع الأرقام المهمة من صفحات التطبيق.</p>'+
+ '<button type="button" class="nma-set" id="nma-goset">المزود الحالي: '+esc(prov().name)+' — تغيير الإعدادات</button>'+
  '<button type="button" class="nma-clear" id="nma-clear">امسح المحادثة</button>';
  var msgs=box.querySelector('#nma-msgs'),inp=box.querySelector('#nma-in'),send=box.querySelector('#nma-send'),busy=false;
  function bubble(cls,html){var d=document.createElement('div');d.className='nma-m '+cls;d.innerHTML=html;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;}
  function renderHist(){msgs.innerHTML='';bubble('a','أهلًا! أنا مساعد نماء. بصيت على حسابك وأقدر أجاوبك عن صافي ثروتك، أصولك، ديونك، دخلك السلبي، ومصاريفك. اسألني أو اختار سؤال جاهز تحت.');
-  HIST.forEach(function(t){bubble(t.role==='user'?'u':'a',t.role==='user'?esc(t.parts[0].text):md(t.parts[0].text));});}
+  HIST.forEach(function(t){bubble(t.role==='user'?'u':'a',t.role==='user'?esc(t.text):md(t.text));});}
  renderHist();
  function doSend(q){
   q=(q||'').trim();if(!q||busy)return;busy=true;send.disabled=true;
@@ -5401,11 +5468,12 @@ function viewChat(box){
   track('ask_send',{});
   ask(q).then(function(ans){ty.remove();bubble('a',md(ans));track('ask_answer',{});})
   .catch(function(e){ty.remove();var b=bubble('err',esc(errMsg(e)));track('ask_error',{status:String(e&&e.status||'')});
-   if(e&&(e.status===400||e.status===401||e.status===403||e.status===0)){var kb=document.createElement('button');kb.type='button';kb.className='nma-kfix';kb.textContent='غيّر المفتاح';kb.onclick=function(){viewKey(box);};b.appendChild(kb);}})
+   if(e&&(e.status===0||e.status===400||e.status===401||e.status===403||e.status===404||e.status===-2)){var kb=document.createElement('button');kb.type='button';kb.className='nma-kfix';kb.textContent='راجع الإعدادات';kb.onclick=function(){viewSetup(box);};b.appendChild(kb);}})
   .then(function(){busy=false;send.disabled=false;try{inp.focus();}catch(e){}});}
  send.onclick=function(){doSend(inp.value);};
  inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend(inp.value);}};
  box.querySelectorAll('.nma-chip').forEach(function(ch){ch.onclick=function(){doSend(ch.textContent);};});
+ box.querySelector('#nma-goset').onclick=function(){viewSetup(box);};
  box.querySelector('#nma-clear').onclick=function(){HIST=[];renderHist();};}
 /* ---------- مداخل: الرئيسية و«المزيد» ---------- */
 function homeCard(){var host=document.getElementById('nm-learn-card');if(!host||!host.parentNode||document.getElementById('nma-home'))return;
