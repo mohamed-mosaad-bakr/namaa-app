@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=274;window.NM_VERSION='27.4';
+window.NM_BUILD=275;window.NM_VERSION='27.5';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5248,7 +5248,7 @@ setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastC
 })();
 </script>
 <script>
-/* NAMAA_ASK v3 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+/* NAMAA_ASK v4 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
    الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
    من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال للمزود اللي المستخدم يختاره
    (Gemini / ChatGPT / Claude / OpenRouter / خادم متوافق مع OpenAI) بمفتاح المستخدم نفسه، والموديل بيصيغ
@@ -5347,19 +5347,22 @@ var css2=document.createElement('style');css2.textContent=
 '.nma-prov.on{border-color:var(--nm-accent,#1E6B45);background:var(--nm-accent-soft,#EAF4EC)}'+
 '.nma-prov input{width:20px;height:20px;flex:none;accent-color:var(--nm-accent,#1E6B45)}'+
 '.nma-prov .pt{flex:1;min-width:0}.nma-prov b{display:block;font-size:15px;color:#222}.nma-prov small{font-size:12.5px;color:#6a6a6a}'+
-'.nma-testres{font-size:13.5px;line-height:1.7;margin:10px 2px 0;min-height:20px;color:#6a6a6a}.nma-testres.ok{color:#14743C;font-weight:600}.nma-testres.bad{color:#B42318}'+'.nma-set{display:block;margin:2px auto 0;min-height:40px;border:none;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--nm-accent,#1E6B45);text-decoration:underline;cursor:pointer}';
+'.nma-edet{display:block;margin-top:6px;font-size:12px;opacity:.85}'+'.nma-testres{font-size:13.5px;line-height:1.7;margin:10px 2px 0;min-height:20px;color:#6a6a6a}.nma-testres.ok{color:#14743C;font-weight:600}.nma-testres.bad{color:#B42318}'+'.nma-set{display:block;margin:2px auto 0;min-height:40px;border:none;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--nm-accent,#1E6B45);text-decoration:underline;cursor:pointer}';
 document.head.appendChild(css2);
 var HIST=[];
 var SYS='أنت «مساعد نماء»، مساعد داخل تطبيق نماء لإدارة المال الشخصي في مصر. المستخدم هيسألك عن حسابه.\nقواعد صارمة:\n1) جاوب بالعربي بلهجة مصرية بسيطة وودودة، وباختصار مفيد.\n2) اعتمد فقط على «بيانات الحساب» في أول رسالة من المستخدم. الأرقام فيها محسوبة من التطبيق نفسه: ممنوع تخترع أرقامًا أو تحسب أرقامًا مالية جديدة غير مكتوبة فيها (مسموح بس تجمع/تطرح رقمين مكتوبين لو السؤال محتاج، وقول إنها عملية بسيطة عليهم).\n3) اقتبس الأرقام زي ما هي مكتوبة بالفواصل والعملة، ولو المعلومة مش موجودة في البيانات قول «دي مش باينة عندي في بياناتك» واقترح على المستخدم يضيفها من التطبيق.\n4) ممنوع توصي بشراء أو بيع أصل بعينه أو تقدم وعدًا بعائد؛ مسموح تشرح الوضع الحالي وتقترح خطوات عامة تعليمية، ولو السؤال محتاج قرار مالي كبير اقترح يستشير مختص.\n5) لو السؤال بره حساب المستخدم والتمويل الشخصي عمومًا، اعتذر بلطف ورجّعه لحسابه.\n6) نسّق الإجابة بنقط قصيرة لو بتعدّد، وبلاش جداول.';
+function sleepMs(ms){return new Promise(function(r){setTimeout(r,ms);});}
+async function readErr(r){try{var t=await r.clone().text();if(!t)return '';try{var j=JSON.parse(t);var m=(j.error&&(j.error.message||j.error.code))||j.message||'';if(m)return String(m).slice(0,180);}catch(e){}return t.replace(/\s+/g,' ').slice(0,180);}catch(e){return '';}}
+async function badErr(r){var e=new Error('api');e.status=r.status;e.detail=await readErr(r);return e;}
 async function askGemini(p,key,snapTxt,ack,q){
  var contents=[{role:'user',parts:[{text:snapTxt}]},{role:'model',parts:[{text:ack}]}];
  HIST.forEach(function(t){contents.push({role:t.role,parts:[{text:t.text}]});});
  contents.push({role:'user',parts:[{text:q}]});
  var body={systemInstruction:{parts:[{text:SYS}]},contents:contents,generationConfig:{temperature:0.3,maxOutputTokens:1200}};
  var r,mo=pModel(p);
- if(mo)r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(mo)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
- else r=await gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
- if(!r.ok){var e=new Error('api');e.status=r.status;throw e;}
+ async function once(){if(mo)return fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(mo)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});return gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});}
+ try{r=await once();}catch(netE){await sleepMs(1200);r=await once();}
+ if(!r.ok)throw await badErr(r);
  var data=await r.json();var parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
  return parts.map(function(x){return x.text||'';}).join('').trim();}
 async function askOpenAIStyle(p,key,snapTxt,ack,q){
@@ -5369,7 +5372,7 @@ async function askOpenAIStyle(p,key,snapTxt,ack,q){
  HIST.forEach(function(t){msgs.push({role:t.role==='model'?'assistant':'user',content:t.text});});
  msgs.push({role:'user',content:q});
  var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:msgs,temperature:0.3,max_tokens:1200})});
- if(!r.ok){var e=new Error('api');e.status=r.status;throw e;}
+ if(!r.ok)throw await badErr(r);
  var data=await r.json();var c=(((data.choices||[])[0]||{}).message||{}).content;
  return typeof c==='string'?c.trim():'';}
 async function askAnthropic(p,key,snapTxt,ack,q){
@@ -5377,29 +5380,29 @@ async function askAnthropic(p,key,snapTxt,ack,q){
  HIST.forEach(function(t){msgs.push({role:t.role==='model'?'assistant':'user',content:t.text});});
  msgs.push({role:'user',content:q});
  var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:pModel(p),max_tokens:1200,temperature:0.3,system:SYS,messages:msgs})});
- if(!r.ok){var e=new Error('api');e.status=r.status;throw e;}
+ if(!r.ok)throw await badErr(r);
  var data=await r.json();
  return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text||'';}).join('').trim();}
 async function ping(p,key,base,model){
  var msg='رد بكلمة واحدة بس: تم';
- function bad(r){var e=new Error('api');e.status=r.status;return e;}
+
  if(p.id==='gemini'){
   var body={contents:[{role:'user',parts:[{text:msg}]}],generationConfig:{temperature:0,maxOutputTokens:16}};
   var r;if(model)r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
   else r=await gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
-  if(!r.ok)throw bad(r);return true;}
+  if(!r.ok)throw await badErr(r);return true;}
  if(p.id==='anthropic'){
   var r2=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model||p.def,max_tokens:16,temperature:0,messages:[{role:'user',content:msg}]})});
-  if(!r2.ok)throw bad(r2);return true;}
+  if(!r2.ok)throw await badErr(r2);return true;}
  var url=p.id==='openai'?'https://api.openai.com/v1/chat/completions':p.id==='openrouter'?'https://openrouter.ai/api/v1/chat/completions':String(base||'').replace(/\/+$/,'')+'/chat/completions';
  if(!model){var e0=new Error('nomodel');e0.status=-2;throw e0;}
  var r3=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'user',content:msg}],temperature:0,max_tokens:16})});
- if(!r3.ok)throw bad(r3);return true;}
+ if(!r3.ok)throw await badErr(r3);return true;}
 function toastOk(msg){try{if(window.NamaaSnack)NamaaSnack(msg,{kind:'ok',ms:3500});}catch(e){}}
 async function ask(q){
  var p=prov(),key=pKey(p);
  if(!provReady()){var e0=new Error('nosetup');e0.status=0;throw e0;}
- var snap=snapshot();
+ var snap;try{snap=snapshot();}catch(se){var es=new Error('snap');es.status=-3;es.detail=String(se&&se.message||se).slice(0,140);throw es;}
  var snapTxt='دي بيانات حسابي الحالية (محسوبة من التطبيق):\n'+snap.text;
  var ack='تمام، وصلتني بيانات حسابك الحالية. اسألني عنها.';
  var ans;
@@ -5411,7 +5414,7 @@ async function ask(q){
  if(HIST.length>12)HIST=HIST.slice(-12);
  return ans;}
 function md(t){var h=esc(t);h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');h=h.replace(/^\s*[-•]\s+/gm,'• ');return h.replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>');}
-function errMsg(e){if(e&&e.status===0)return 'لسه مخترتش مزود ومفتاح شغالين. افتح الإعدادات وكملها.';if(e&&e.status===-2)return 'المزود ده محتاج اسم موديل — اكتبه من الإعدادات.';if(e&&e.status===404)return 'اسم الموديل مش متاح عند المزود ده. غيّره من الإعدادات.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال عند المزود ده (ممكن يكون غلط أو رصيده/صلاحياته خلصت). راجع الإعدادات.';if(e&&e.status===429)return 'وصلت لحد استخدام المزود دلوقتي، جرّب كمان شوية.';if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
+function errMsg(e){if(e&&e.status===0)return 'لسه مخترتش مزود ومفتاح شغالين. افتح الإعدادات وكملها.';if(e&&e.status===-3)return 'حصلت مشكلة وأنا بجهّز بيانات حسابك من الجهاز — دي مش مشكلة اتصال. جرّب تاني، ولو اتكررت بلّغنا.';if(e&&e.status===-2)return 'المزود ده محتاج اسم موديل — اكتبه من الإعدادات.';if(e&&e.status===404)return 'اسم الموديل مش متاح عند المزود ده. غيّره من الإعدادات.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال عند المزود ده (ممكن يكون غلط أو رصيده/صلاحياته خلصت). راجع الإعدادات.';if(e&&e.status===429)return 'وصلت لحد استخدام المزود دلوقتي، جرّب كمان شوية.';if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';if(e&&e.status>=500)return 'المزود عنده عطل مؤقت دلوقتي (خطأ '+e.status+') — جرّب كمان شوية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
 /* ---------- الواجهة ---------- */
 var SPARK='<svg class="sp" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><defs><linearGradient id="nmaig2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".5" stop-color="#E0458B"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path fill="url(#nmaig2)" d="M12 2.5c.5 4.6 2.9 7 7.5 7.5-4.6.5-7 2.9-7.5 7.5-.5-4.6-2.9-7-7.5-7.5 4.6-.5 7-2.9 7.5-7.5z"/><path fill="url(#nmaig2)" d="M19 15.5c.2 1.8 1.1 2.7 2.9 2.9-1.8.2-2.7 1.1-2.9 2.9-.2-1.8-1.1-2.7-2.9-2.9 1.8-.2 2.7-1.1 2.9-2.9z"/></svg>';
 var CHIPS=['صافي ثروتي كام؟','دخلي السلبي كام وبييجي منين؟','ديوني هتخلص إمتى؟','ثروتي متوزعة إزاي؟','بصرف أكتر من دخلي؟','أكتر حاجة بصرف عليها إيه الشهر ده؟'];
@@ -5470,7 +5473,7 @@ function viewSetup(box){
    if(g.p.id==='gemini')localStorage.setItem('namaa-gemini-key',g.k);}catch(e){}}
  function runTest(g,done){tres.className='nma-testres';tres.textContent='بنجرّب الاتصال بـ '+g.p.name+'…';saveB.disabled=true;testB.disabled=true;
   ping(g.p,g.k,g.bs,g.mo||g.p.def).then(function(){tres.className='nma-testres ok';tres.textContent='✓ الاتصال شغال — '+g.p.name+' رد بنجاح.';saveB.disabled=false;testB.disabled=false;done(true);})
-  .catch(function(e){tres.className='nma-testres bad';tres.textContent='✗ الاختبار فشل: '+errMsg(e);saveB.disabled=false;testB.disabled=false;done(false);});}
+  .catch(function(e){tres.className='nma-testres bad';tres.textContent='✗ الاختبار فشل: '+errMsg(e)+(e&&e.detail?' — '+e.detail:'');saveB.disabled=false;testB.disabled=false;done(false);});}
  testB.onclick=function(){var g=gather();if(!valid(g))return;skipB.style.display='none';runTest(g,function(ok){if(ok)toastOk('تم الربط بـ '+g.p.name+' بنجاح ✓');});};
  saveB.onclick=function(){var g=gather();if(!valid(g))return;persist(g);track('ask_setup',{prov:g.p.id});
   runTest(g,function(ok){if(ok){toastOk('تم الربط بـ '+g.p.name+' بنجاح ✓');track('ask_test_ok',{prov:g.p.id});viewChat(box);}else{track('ask_test_fail',{prov:g.p.id});skipB.style.display='block';}});};
@@ -5494,7 +5497,8 @@ function viewChat(box){
   var ty=bubble('a nma-typing','<i></i><i></i><i></i>');
   track('ask_send',{});
   ask(q).then(function(ans){ty.remove();bubble('a',md(ans));track('ask_answer',{});})
-  .catch(function(e){ty.remove();var b=bubble('err',esc(errMsg(e)));track('ask_error',{status:String(e&&e.status||'')});
+  .catch(function(e){ty.remove();var b=bubble('err',esc(errMsg(e)));track('ask_error',{status:String(e&&e.status||''),detail:String(e&&e.detail||'').slice(0,120)});
+   if(e&&e.detail){var dt=document.createElement('small');dt.className='nma-edet';dt.textContent='تفاصيل من المزود: '+e.detail;b.appendChild(dt);}
    if(e&&(e.status===0||e.status===400||e.status===401||e.status===403||e.status===404||e.status===-2)){var kb=document.createElement('button');kb.type='button';kb.className='nma-kfix';kb.textContent='راجع الإعدادات';kb.onclick=function(){viewSetup(box);};b.appendChild(kb);}})
   .then(function(){busy=false;send.disabled=false;try{inp.focus();}catch(e){}});}
  send.onclick=function(){doSend(inp.value);};
