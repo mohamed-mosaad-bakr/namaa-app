@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=277;window.NM_VERSION='27.7';
+window.NM_BUILD=278;window.NM_VERSION='27.8';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5248,7 +5248,7 @@ setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastC
 })();
 </script>
 <script>
-/* NAMAA_ASK v6 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+/* NAMAA_ASK v7 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
    الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
    من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال للمزود اللي المستخدم يختاره
    (Gemini / ChatGPT / Claude / OpenRouter / خادم متوافق مع OpenAI) بمفتاح المستخدم نفسه، والموديل بيصيغ
@@ -5438,7 +5438,7 @@ async function ask(q){
  if(HIST.length>12)HIST=HIST.slice(-12);
  return ans;}
 function md(t){var h=esc(t);h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');h=h.replace(/^\s*[-•]\s+/gm,'• ');return h.replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>');}
-function errMsg(e){if(e&&e.status===0)return 'لسه مخترتش مزود ومفتاح شغالين. افتح الإعدادات وكملها.';if(e&&e.status===-3)return 'حصلت مشكلة وأنا بجهّز بيانات حسابك من الجهاز — دي مش مشكلة اتصال. جرّب تاني، ولو اتكررت بلّغنا.';if(e&&e.status===-2)return 'المزود ده محتاج اسم موديل — اكتبه من الإعدادات.';if(e&&e.status===404)return 'اسم الموديل مش متاح عند المزود ده. غيّره من الإعدادات.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال عند المزود ده (ممكن يكون غلط أو رصيده/صلاحياته خلصت). راجع الإعدادات.';if(e&&e.status===429)return 'وصلت لحد استخدام المزود دلوقتي، جرّب كمان شوية.';if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';if(e&&e.status>=500)return 'المزود عنده عطل مؤقت دلوقتي (خطأ '+e.status+') — جرّب كمان شوية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
+function errMsg(e){if(e&&e.status===0)return 'لسه مخترتش مزود ومفتاح شغالين. افتح الإعدادات وكملها.';if(e&&e.status===-3)return 'حصلت مشكلة وأنا بجهّز بيانات حسابك من الجهاز — دي مش مشكلة اتصال. جرّب تاني، ولو اتكررت بلّغنا.';if(e&&e.status===-2)return 'المزود ده محتاج اسم موديل — اكتبه من الإعدادات.';if(e&&e.status===404)return 'اسم الموديل مش متاح عند المزود ده. غيّره من الإعدادات.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال عند المزود ده (ممكن يكون غلط أو رصيده/صلاحياته خلصت). راجع الإعدادات.';if(e&&e.status===429){if(/credit|billing|insufficient_quota/i.test(e.detail||''))return 'حسابك عند المزود ده معندوش رصيد API — اشحن رصيد من صفحة الفواتير بتاعته، أو بدّل لمزود تاني (Gemini مجاني).';return 'وصلت لحد استخدام المزود دلوقتي، جرّب كمان شوية.';}if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';if(e&&e.status>=500)return 'المزود عنده عطل مؤقت دلوقتي (خطأ '+e.status+') — جرّب كمان شوية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
 /* ---------- الواجهة ---------- */
 var SPARK='<svg class="sp" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><defs><linearGradient id="nmaig2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".5" stop-color="#E0458B"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path fill="url(#nmaig2)" d="M12 2.5c.5 4.6 2.9 7 7.5 7.5-4.6.5-7 2.9-7.5 7.5-.5-4.6-2.9-7-7.5-7.5 4.6-.5 7-2.9 7.5-7.5z"/><path fill="url(#nmaig2)" d="M19 15.5c.2 1.8 1.1 2.7 2.9 2.9-1.8.2-2.7 1.1-2.9 2.9-.2-1.8-1.1-2.7-2.9-2.9 1.8-.2 2.7-1.1 2.9-2.9z"/></svg>';
 var CHIPS=['صافي ثروتي كام؟','دخلي السلبي كام وبييجي منين؟','ديوني هتخلص إمتى؟','ثروتي متوزعة إزاي؟','بصرف أكتر من دخلي؟','أكتر حاجة بصرف عليها إيه الشهر ده؟'];
