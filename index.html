@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=271;window.NM_VERSION='27.1';
+window.NM_BUILD=272;window.NM_VERSION='27.2';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5245,6 +5245,207 @@ var tries=0;(function wait(){if(boot())return;tries++;setTimeout(wait,tries<40?2
 /* in-session: look again every 3 minutes while the app is open, and whenever you come back to it */
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&Date.now()-lastCheck>60*1000)check();});
 setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastCheck>170*1000)check();},30*1000);
+})();
+</script>
+<script>
+/* NAMAA_ASK v1 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+   الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
+   من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال لـ Gemini
+   بمفتاح المستخدم نفسه (نفس مفتاح استيراد الأصول من صورة، محفوظ على الجهاز بس)، والموديل بيصيغ
+   الإجابة من الأرقام الجاهزة — ممنوع يحسب أو يخترع. مفيش أي تعديل على البيانات من المساعد. */
+(function(){
+var KEYK='namaa-gemini-key',CONK='nm-ask-consent';
+function ld(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v;}catch(e){return d;}}
+function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function rnd(n){return Math.round(Number(n)||0);}
+function fmt(n){try{if(window.NamaaNumFmt&&NamaaNumFmt.fmt)return NamaaNumFmt.fmt(rnd(n));}catch(e){}return rnd(n).toLocaleString('en-US');}
+function money(n){return fmt(n)+' ج.م';}
+function track(ev,pr){try{window.NamaaTrack&&NamaaTrack(ev,pr||{});}catch(e){}}
+/* نفس دوال القيمة (lv/rate/egp) المنسوخة في موديولات الزكاة والخطة — عشان أرقامنا تطابق التطبيق */
+function rate(d,c){if(!c||c==='EGP')return 1;var x=(d.currencies||[]).find(function(k){return k.code===c;});var r=x&&Number(x.rate);if(r>0)return r;var e=d.exchangeRates||{};if(c==='GOLD24')return Number(e.goldKarat24)||0;if(c==='GOLD21')return Number(e.goldKarat21)||(Number(e.goldKarat24)||0)*21/24;if(c==='SILVER')return Number(e.silver)||0;return Number(e[c])||1;}
+function lv(a){return (a.useShares&&Number(a.shareCount)>0&&Number(a.pricePerShare)>0)?Number(a.shareCount)*Number(a.pricePerShare):(Number(a.value)||0);}
+function egp(d,a){return lv(a)*rate(d,a.currency||'EGP');}
+function leaves(d){return (d.assets||[]).filter(function(a){return !a.hasSubAssets;});}
+function typeOf(a){var c=a.currency||'';if(a.commodityType==='gold'||c.indexOf('GOLD')===0||/ذهب|دهب/.test(a.name||''))return 'دهب';if(a.commodityType==='silver'||c.indexOf('SILVER')===0||/فضة/.test(a.name||''))return 'فضة';if(a.isStock||a.stockSymbol)return 'أسهم';if(a.useShares)return 'وحدات/أسهم';if(/عقار|شقة|شقه|أرض|ارض|محل/.test(a.name||''))return 'عقار';if(/كاش|نقد|بنك|حساب|محفظ|توفير|شهاد|وديع/.test(a.name||''))return 'كاش/بنك';return 'أصل';}
+function passive(d){var now=new Date(),ix=now.getFullYear()*12+(now.getMonth()+1),s=0;
+ leaves(d).forEach(function(a){if(!a.hasYield)return;var si=Number(a.yieldStartY)*12+Number(a.yieldStartM),ei=Number(a.yieldEndY)*12+Number(a.yieldEndM);if(si&&ix<si)return;if(ei&&ix>ei)return;
+  if((a.useFixedYield||a.incomeMode==='payments')&&Number(a.fixedYieldAmount)>0)s+=Number(a.fixedYieldAmount)*rate(d,a.yieldCurrency||a.currency||'EGP');
+  else if(Number(a.yieldRate)>0)s+=egp(d,a)*Number(a.yieldRate)/100/12;});
+ return s;}
+var MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function addMonthsTxt(n){var t=new Date();t.setMonth(t.getMonth()+n);return MON[t.getMonth()]+' '+t.getFullYear();}
+function snapshot(){
+ var d=ld('portfolioData',{});if(!d||typeof d!=='object')d={};
+ var b=ld('nm-budget',{});if(!b||typeof b!=='object')b={};b.tx=b.tx||[];b.debts=b.debts||[];b.lent=b.lent||[];
+ var L=leaves(d),tot=0;L.forEach(function(a){tot+=egp(d,a);});
+ var debtsTot=0,lent=0,debtList=[],monthly=null;
+ try{if(window.NamaaBudget){debtsTot=NamaaBudget.debts();lent=NamaaBudget.lent();debtList=NamaaBudget.debtList();monthly=NamaaBudget.monthly();}}catch(e){}
+ if(!debtList.length&&b.debts.length){debtsTot=b.debts.reduce(function(s,x){return s+Math.max(0,Number(x.left)||0);},0);lent=b.lent.reduce(function(s,x){return s+Math.max(0,Number(x.left)||0);},0);debtList=b.debts.filter(function(x){return Number(x.left)>0;}).map(function(x){return {n:x.n,left:Number(x.left)||0,monthly:Number(x.monthly)||0};});}
+ var pas=passive(d),net=tot-debtsTot;
+ var now=new Date(),ymk=now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2);
+ var txm=b.tx.filter(function(t){return String(t.d||'').slice(0,7)===ymk;});
+ var incM=0,expM=0,cats={};
+ txm.forEach(function(t){var a=Math.abs(Number(t.amt)||0);if(t.inc)incM+=a;else{expM+=a;var c=t.cn||t.cat||'أخرى';cats[c]=(cats[c]||0)+a;}});
+ var topCats=Object.keys(cats).sort(function(x,y){return cats[y]-cats[x];}).slice(0,5);
+ var lastTx=b.tx.slice().sort(function(x,y){return String(y.d||'').localeCompare(String(x.d||''));}).slice(0,10);
+ var payTot=0,maxMon=0;debtList.forEach(function(x){payTot+=Number(x.monthly)||0;if(x.monthly>0)maxMon=Math.max(maxMon,Math.ceil(x.left/x.monthly));});
+ var o=[];
+ o.push('التاريخ: '+now.getDate()+' '+MON[now.getMonth()]+' '+now.getFullYear());
+ o.push('== أرقام محسوبة من التطبيق (بالجنيه المصري) ==');
+ o.push('إجمالي قيمة الأصول: '+money(tot)+' ('+L.length+' أصل)');
+ o.push('إجمالي الديون المتبقية: '+money(debtsTot));
+ o.push('صافي الثروة (الأصول − الديون): '+money(net));
+ if(lent>0)o.push('سلف ليك عند الناس (برا صافي الثروة): '+money(lent));
+ o.push('الدخل السلبي الشهري (بحساب التطبيق): '+money(pas)+'، يعني '+money(pas*12)+' في السنة');
+ if(monthly)o.push('الميزانية الشهرية التقديرية: دخل '+money(monthly.income)+' ومصاريف '+money(monthly.expenses)+' (فائض/عجز '+money(monthly.income-monthly.expenses)+')');
+ o.push('حركات الشهر الحالي ('+MON[now.getMonth()]+'): دخل فعلي '+money(incM)+' ومصروف فعلي '+money(expM));
+ o.push('صافي الشهر لحد دلوقتي: '+money(incM-expM)+' من '+txm.length+' حركة');
+ if(topCats.length)o.push('أكبر بنود مصاريف الشهر: '+topCats.map(function(c){return c+' '+money(cats[c]);}).join('، '));
+ if(debtList.length){o.push('== الديون ==');o.push('إجمالي القسط الشهري لكل الديون: '+money(payTot)+(maxMon?'، ولو فضلت تدفع بنفس الأقساط آخر دين يخلص بعد '+maxMon+' شهر تقريبًا ('+addMonthsTxt(maxMon)+')':''));
+  debtList.forEach(function(x){o.push('- '+(x.n||'دين')+': متبقي '+money(x.left)+(x.monthly>0?'، قسط '+money(x.monthly)+' شهريًا، يخلص بعد '+Math.ceil(x.left/x.monthly)+' شهر تقريبًا ('+addMonthsTxt(Math.ceil(x.left/x.monthly))+')':'، من غير قسط شهري مسجل'));});}
+ try{if(window.NamaaPlan&&NamaaPlan.has()){var dr=NamaaPlan.drift();
+  if(dr&&dr.items)o.push('== توزيع الثروة الحالي مقابل خطتك ==\n'+dr.items.map(function(it){return it.n+': حاليًا '+it.cur+'% وهدف الخطة '+it.tgt+'%';}).join('، '));
+  var nx=NamaaPlan.next();if(nx)o.push('الخطوة الجاية في خطتك: '+nx);}}catch(e){}
+ var og=ld('nm-onb',{}),goals=(og&&og.goals)||[];
+ var pg=ld('nm-plan',{}),pgoals=(pg&&pg.answers&&pg.answers.goals)||[];
+ var GM={worth:'أعرف صافي ثروتي',budget:'أنظّم مصاريفي',plan:'أخطط استثماري',income:'أبني دخل سلبي',zakat:'أطلّع زكاتي صح',growth:'أكبّر ثروتي',protect:'أحمي فلوسي'};
+ var gl=goals.concat(pgoals).filter(function(g,i,a){return GM[g]&&a.indexOf(g)===i;}).map(function(g){return GM[g];});
+ if(gl.length)o.push('أهداف المستخدم: '+gl.join('، '));
+ if(L.length){o.push('== الأصول (الأكبر أولًا) ==');
+  var byId={};(d.assets||[]).forEach(function(a){byId[a.id]=a;});
+  L.slice().sort(function(x,y){return egp(d,y)-egp(d,x);}).slice(0,15).forEach(function(a){
+   var v=egp(d,a),par=a.parentId!=null?byId[a.parentId]:null;
+   var s='- '+(par?par.name+' / ':'')+(a.name||'أصل')+' ('+typeOf(a)+'): '+money(v)+(tot>0?' ('+Math.round(v/tot*100)+'% من الأصول)':'');
+   if(a.hasYield){if((a.useFixedYield||a.incomeMode==='payments')&&Number(a.fixedYieldAmount)>0)s+='، عائد ثابت '+money(Number(a.fixedYieldAmount)*rate(d,a.yieldCurrency||a.currency||'EGP'))+' شهريًا';else if(Number(a.yieldRate)>0)s+='، عائد '+a.yieldRate+'% سنويًا';}
+   if(a.hasPurchaseValue&&Number(a.purchaseValue)>0){var pb=Number(a.purchaseValue)*rate(d,a.currency||'EGP');s+='، اتشترى بـ '+money(pb)+'، الفرق دلوقتي '+(v-pb>=0?'+':'')+money(v-pb);}
+   o.push(s);});}
+ if(lastTx.length){o.push('== آخر الحركات ==');
+  lastTx.forEach(function(t){o.push('- '+String(t.d||'')+': '+(t.n||t.cn||t.cat||'حركة')+' '+(t.inc?'+':'−')+money(Math.abs(Number(t.amt)||0)));});}
+ return {text:o.join('\n'),net:net,tot:tot,debts:debtsTot,pas:pas};}
+/* ---------- Gemini بنفس نمط التطبيق (مفتاح المستخدم + fallback للموديلات) ---------- */
+function getKey(){try{return (localStorage.getItem(KEYK)||'').trim();}catch(e){return '';}}
+function keyOk(k){return k.length>=20&&/^(AIza|AQ\.)/.test(k);}
+function gemFetch(o){if(window.__nmGem)return window.__nmGem(o);
+ window.__nmGem=async function(o){var B='https://generativelanguage.googleapis.com/v1beta/models/';var saved='';try{saved=localStorage.getItem('namaa-gemini-model')||'';}catch(e){}
+  var q=[saved,'gemini-flash-latest','gemini-3.8-flash','gemini-3-flash','gemini-2.5-flash'].filter(function(x,i,a){return x&&a.indexOf(x)===i;});
+  var r,tried={};while(q.length){var m=q.shift();if(tried[m])continue;tried[m]=1;r=await fetch(B+m+':generateContent',o);if(r.ok){try{localStorage.setItem('namaa-gemini-model',m);}catch(e){}return r;}if(r.status!==404&&r.status!==400)return r;var t=await r.clone().text();var s=t.match(/use models\/(gemini-[\w.\-]+)/);if(s&&!tried[s[1]])q.unshift(s[1]);if(r.status===400&&!/model/i.test(t))return r;}return r;};
+ return window.__nmGem(o);}
+var HIST=[];
+var SYS='أنت «مساعد نماء»، مساعد داخل تطبيق نماء لإدارة المال الشخصي في مصر. المستخدم هيسألك عن حسابه.\nقواعد صارمة:\n1) جاوب بالعربي بلهجة مصرية بسيطة وودودة، وباختصار مفيد.\n2) اعتمد فقط على «بيانات الحساب» في أول رسالة من المستخدم. الأرقام فيها محسوبة من التطبيق نفسه: ممنوع تخترع أرقامًا أو تحسب أرقامًا مالية جديدة غير مكتوبة فيها (مسموح بس تجمع/تطرح رقمين مكتوبين لو السؤال محتاج، وقول إنها عملية بسيطة عليهم).\n3) اقتبس الأرقام زي ما هي مكتوبة بالفواصل والعملة، ولو المعلومة مش موجودة في البيانات قول «دي مش باينة عندي في بياناتك» واقترح على المستخدم يضيفها من التطبيق.\n4) ممنوع توصي بشراء أو بيع أصل بعينه أو تقدم وعدًا بعائد؛ مسموح تشرح الوضع الحالي وتقترح خطوات عامة تعليمية، ولو السؤال محتاج قرار مالي كبير اقترح يستشير مختص.\n5) لو السؤال بره حساب المستخدم والتمويل الشخصي عمومًا، اعتذر بلطف ورجّعه لحسابه.\n6) نسّق الإجابة بنقط قصيرة لو بتعدّد، وبلاش جداول.';
+async function ask(q){
+ var key=getKey();if(!keyOk(key)){var e0=new Error('nokey');e0.status=0;throw e0;}
+ var snap=snapshot();
+ var contents=[{role:'user',parts:[{text:'دي بيانات حسابي الحالية (محسوبة من التطبيق):\n'+snap.text}]},{role:'model',parts:[{text:'تمام، وصلتني بيانات حسابك الحالية. اسألني عنها.'}]}].concat(HIST).concat([{role:'user',parts:[{text:q}]}]);
+ var r=await gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({systemInstruction:{parts:[{text:SYS}]},contents:contents,generationConfig:{temperature:0.3,maxOutputTokens:1200}})});
+ if(!r.ok){var e=new Error('api');e.status=r.status;throw e;}
+ var data=await r.json();
+ var parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
+ var ans=parts.map(function(p){return p.text||'';}).join('').trim();
+ if(!ans){var e2=new Error('empty');e2.status=-1;throw e2;}
+ HIST.push({role:'user',parts:[{text:q}]},{role:'model',parts:[{text:ans}]});
+ if(HIST.length>12)HIST=HIST.slice(-12);
+ return ans;}
+function md(t){var h=esc(t);h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');h=h.replace(/^\s*[-•]\s+/gm,'• ');return h.replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>');}
+function errMsg(e){if(e&&e.status===0)return 'محتاج مفتاح Gemini الأول.';if(e&&(e.status===400||e.status===401||e.status===403))return 'المفتاح مش شغال (ممكن يكون غلط أو صلاحياته خلصت). جرّب مفتاح تاني.';if(e&&e.status===429)return 'وصلت لحد الاستخدام المجاني دلوقتي، جرّب كمان شوية.';if(e&&e.status===-1)return 'المساعد مرجعش بإجابة، جرّب تسأل بصياغة تانية.';return 'مش قادر أوصل للمساعد دلوقتي — اتأكد من النت وجرّب تاني.';}
+/* ---------- الواجهة ---------- */
+var SPARK='<svg class="sp" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><defs><linearGradient id="nmaig2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".5" stop-color="#E0458B"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path fill="url(#nmaig2)" d="M12 2.5c.5 4.6 2.9 7 7.5 7.5-4.6.5-7 2.9-7.5 7.5-.5-4.6-2.9-7-7.5-7.5 4.6-.5 7-2.9 7.5-7.5z"/><path fill="url(#nmaig2)" d="M19 15.5c.2 1.8 1.1 2.7 2.9 2.9-1.8.2-2.7 1.1-2.9 2.9-.2-1.8-1.1-2.7-2.9-2.9 1.8-.2 2.7-1.1 2.9-2.9z"/></svg>';
+var CHIPS=['صافي ثروتي كام؟','دخلي السلبي كام وبييجي منين؟','ديوني هتخلص إمتى؟','ثروتي متوزعة إزاي؟','بصرف أكتر من دخلي؟','أكتر حاجة بصرف عليها إيه الشهر ده؟'];
+function consented(){try{return localStorage.getItem(CONK)==='1';}catch(e){return false;}}
+function open(src){
+ if(!window.NamaaDialog||!NamaaDialog.sheet)return;
+ track('ask_open',{src:src||''});
+ NamaaDialog.sheet({title:'اسأل نماء',html:'<div id="nma-root"></div>',onMount:function(root,close){
+  var box=root.querySelector('#nma-root');if(!box)return;
+  if(!consented())return viewConsent(box,close);
+  if(!keyOk(getKey()))return viewKey(box);
+  viewChat(box);}});}
+function viewConsent(box,close){
+ box.innerHTML='<div class="nma-intro"><span class="nma-ic">'+SPARK+'</span><h4>مساعد بيجاوب من بيانات حسابك</h4>'+
+ '<p>عشان يجاوبك، نماء بيبعت لـ Google Gemini (بمفتاحك انت) <b>ملخص محسوب</b> من حسابك: صافي الثروة والدخل السلبي والديون، أسماء أصولك وقيمتها، توزيع ثروتك وخطتك، وملخص مصاريف الشهر وآخر 10 حركات.</p>'+
+ '<p>الأرقام التطبيق بيحسبها هنا على جهازك، والمساعد بيصيغ الإجابة بس. المساعد <b>قراءة فقط</b> — مش بيعدّل ولا بيمسح أي حاجة، والمحادثة مش بتتحفظ بعد ما تقفلها.</p>'+
+ '<p class="nma-warn">الملخص ده بيخرج من جهازك لجوجل عشان الإجابة تتولّد. لو مش مرتاح لده، اختار «لأ».</p></div>'+
+ '<button type="button" class="nmb-btn" id="nma-ok">موافق، ابدأ</button><button type="button" class="nmb-btn sec" id="nma-no">لأ، إلغاء</button>';
+ box.querySelector('#nma-no').onclick=function(){close();};
+ box.querySelector('#nma-ok').onclick=function(){try{localStorage.setItem(CONK,'1');}catch(e){}track('ask_consent',{});
+  close(function(){setTimeout(function(){open('consent');},60);});};}
+function viewKey(box){
+ box.innerHTML='<div class="nma-intro"><span class="nma-ic">'+SPARK+'</span><h4>محتاج مفتاح Gemini (مجاني)</h4>'+
+ '<p>المساعد بيشتغل بمفتاح Gemini بتاعك — نفس المفتاح اللي بيستخدمه استيراد الأصول من صورة، ومحفوظ على جهازك بس.</p>'+
+ '<p>تجيبه منين؟ من <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> ببلاش: اعمل مفتاح والصقه هنا.</p></div>'+
+ '<label class="nmd-f"><span class="nmb-fl">مفتاح Gemini</span><input class="nmd-in" id="nma-key" type="password" autocomplete="off" placeholder="AIza…" dir="ltr"></label>'+
+ '<span class="nmd-err" id="nma-kerr" role="alert"></span>'+
+ '<button type="button" class="nmb-btn" id="nma-ksave">احفظ وابدأ</button>';
+ var inp=box.querySelector('#nma-key'),er=box.querySelector('#nma-kerr');
+ box.querySelector('#nma-ksave').onclick=function(){
+  var k=(inp.value||'').trim();
+  if(!keyOk(k)){er.textContent='المفتاح ده شكله مش صح — لازم يبدأ بـ AIza أو AQ. ويكون أطول من كده.';inp.focus();return;}
+  try{localStorage.setItem(KEYK,k);}catch(e){}
+  track('ask_key_saved',{});
+  viewChat(box);};}
+function viewChat(box){
+ box.innerHTML='<div class="nma-msgs" id="nma-msgs" aria-live="polite"></div>'+
+ '<div class="nma-chips" role="group" aria-label="أسئلة مقترحة">'+CHIPS.map(function(c){return '<button type="button" class="nma-chip">'+esc(c)+'</button>';}).join('')+'</div>'+
+ '<div class="nma-inrow"><textarea id="nma-in" rows="1" placeholder="اسأل عن حسابك…" aria-label="سؤالك"></textarea>'+
+ '<button type="button" class="nma-send" id="nma-send" aria-label="ابعت"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>'+
+ '<p class="nma-note">قراءة بس — مش بيعدّل حاجة في حسابك. دي إجابات مولّدة بالذكاء الاصطناعي وممكن تغلط، فاراجع الأرقام المهمة من صفحات التطبيق.</p>'+
+ '<button type="button" class="nma-clear" id="nma-clear">امسح المحادثة</button>';
+ var msgs=box.querySelector('#nma-msgs'),inp=box.querySelector('#nma-in'),send=box.querySelector('#nma-send'),busy=false;
+ function bubble(cls,html){var d=document.createElement('div');d.className='nma-m '+cls;d.innerHTML=html;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;}
+ function renderHist(){msgs.innerHTML='';bubble('a','أهلًا! أنا مساعد نماء. بصيت على حسابك وأقدر أجاوبك عن صافي ثروتك، أصولك، ديونك، دخلك السلبي، ومصاريفك. اسألني أو اختار سؤال جاهز تحت.');
+  HIST.forEach(function(t){bubble(t.role==='user'?'u':'a',t.role==='user'?esc(t.parts[0].text):md(t.parts[0].text));});}
+ renderHist();
+ function doSend(q){
+  q=(q||'').trim();if(!q||busy)return;busy=true;send.disabled=true;
+  bubble('u',esc(q));inp.value='';
+  var ty=bubble('a nma-typing','<i></i><i></i><i></i>');
+  track('ask_send',{});
+  ask(q).then(function(ans){ty.remove();bubble('a',md(ans));track('ask_answer',{});})
+  .catch(function(e){ty.remove();var b=bubble('err',esc(errMsg(e)));track('ask_error',{status:String(e&&e.status||'')});
+   if(e&&(e.status===400||e.status===401||e.status===403||e.status===0)){var kb=document.createElement('button');kb.type='button';kb.className='nma-kfix';kb.textContent='غيّر المفتاح';kb.onclick=function(){viewKey(box);};b.appendChild(kb);}})
+  .then(function(){busy=false;send.disabled=false;try{inp.focus();}catch(e){}});}
+ send.onclick=function(){doSend(inp.value);};
+ inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend(inp.value);}};
+ box.querySelectorAll('.nma-chip').forEach(function(ch){ch.onclick=function(){doSend(ch.textContent);};});
+ box.querySelector('#nma-clear').onclick=function(){HIST=[];renderHist();};}
+/* ---------- مداخل: الرئيسية و«المزيد» ---------- */
+function homeCard(){var host=document.getElementById('nm-learn-card');if(!host||!host.parentNode||document.getElementById('nma-home'))return;
+ var b=document.createElement('button');b.type='button';b.id='nma-home';b.className='nma-home';
+ b.innerHTML='<span class="nma-hic">'+SPARK+'</span><span class="nma-htx"><b>اسأل نماء</b><small>اسأل عن ثروتك وديونك ودخلك — بيجاوب من بيانات حسابك</small></span><svg class="chv" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>';
+ b.onclick=function(){open('home');};
+ host.parentNode.insertBefore(b,host);}
+function moreRow(){var m=document.querySelector('.nm-more');if(!m||m.querySelector('#nma-more'))return;
+ var r=document.createElement('button');r.type='button';r.id='nma-more';r.className='nm-ban nma-ban';
+ r.innerHTML='<span class="nm-ban-ic">'+SPARK+'</span><span class="nm-ban-tx"><b>اسأل نماء</b><small>مساعد بيجاوب عن حسابك من بياناتك</small></span><span class="nm-ban-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></span>';
+ r.onclick=function(){open('more');};
+ var st=m.querySelector(':scope>.nm-ban-set');
+ if(st)st.parentNode.insertBefore(r,st);else m.appendChild(r);}
+var raf=0;new MutationObserver(function(){if(!raf)raf=requestAnimationFrame(function(){raf=0;homeCard();moreRow();});}).observe(document.body,{childList:true,subtree:true});
+setTimeout(function(){homeCard();moreRow();},800);
+window.NamaaAsk={open:open,snapshot:snapshot,ask:ask};
+var css=document.createElement('style');css.textContent=
+'.nma-home{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;margin:0 0 12px;border:1.5px solid transparent;border-radius:16px;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(120deg,#7C5CFF,#E0458B,#F59E0B) border-box;box-shadow:0 1px 2px rgba(0,0,0,.04);font:inherit;text-align:right;cursor:pointer;color:#222}'+
+'.nma-hic{flex:none;width:40px;height:40px;border-radius:12px;background:#F5F2FF;display:flex;align-items:center;justify-content:center}'+
+'.nma-htx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.nma-htx b{font-size:15.5px}.nma-htx small{font-size:12.5px;color:#6a6a6a;line-height:1.5}.nma-home .chv{flex:none;color:#6a6a6a}'+
+'.nma-ban{background-image:linear-gradient(120deg,#2E1A6E,#7C5CFF,#B83A7E)}'+
+'.nma-intro h4{margin:0 0 8px;font-size:17px;color:#222}.nma-intro p{margin:0 0 10px;font-size:14px;color:#3f3f3f;line-height:1.8}.nma-intro a{color:var(--nm-accent,#1E6B45);font-weight:700}'+
+'.nma-ic{display:flex;width:52px;height:52px;border-radius:16px;background:#F5F2FF;align-items:center;justify-content:center;margin-bottom:12px}.nma-ic svg{width:28px;height:28px}'+
+'.nma-warn{background:#FFF7E6;border-radius:12px;padding:10px 12px;color:#7A4B00}'+
+'.nma-msgs{height:44vh;min-height:220px;overflow-y:auto;overscroll-behavior:contain;padding:4px 2px 8px}'+
+'.nma-m{max-width:88%;width:fit-content;padding:10px 13px;border-radius:16px;font-size:14.5px;line-height:1.75;color:#222;margin:0 0 8px;background:#F7F7F7;word-break:break-word}'+
+'.nma-m.u{background:var(--nm-accent-soft,#EAF4EC);margin-inline-start:auto;border-start-end-radius:4px}'+
+'.nma-m.a{border-start-start-radius:4px}.nma-m.err{background:#FEF3F2;color:#7A271A}'+
+'.nma-typing{display:flex;gap:5px;align-items:center;padding:14px 13px}.nma-typing i{width:7px;height:7px;border-radius:50%;background:#9a9a9a;animation:nma-blink 1.1s ease-in-out infinite}.nma-typing i:nth-child(2){animation-delay:.18s}.nma-typing i:nth-child(3){animation-delay:.36s}@keyframes nma-blink{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}'+
+'.nma-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:2px -4px 10px;padding:2px 4px}.nma-chips::-webkit-scrollbar{display:none}'+
+'.nma-chip{flex:none;min-height:36px;padding:0 13px;border:1px solid #dddddd;border-radius:999px;background:#fff;font:inherit;font-size:13px;font-weight:600;color:#222;cursor:pointer;white-space:nowrap}'+
+'.nma-inrow{display:flex;gap:8px;align-items:flex-end}'+
+'.nma-inrow textarea{flex:1;min-width:0;box-sizing:border-box;max-height:110px;border:1px solid #dddddd;border-radius:16px;padding:11px 14px;font:inherit;font-size:15px;color:#222;background:#fff;resize:none}'+
+'.nma-inrow textarea:focus{outline:none;border:2px solid #222;padding:10px 13px}'+
+'.nma-send{flex:none;width:46px;height:46px;border:none;border-radius:50%;background:var(--nm-accent,#1E6B45);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}.nma-send:disabled{opacity:.5}'+
+'.nma-note{font-size:12px;color:#6a6a6a;line-height:1.6;margin:10px 2px 0}'+
+'.nma-clear{display:block;margin:8px auto 0;min-height:40px;border:none;background:none;font:inherit;font-size:13px;font-weight:600;color:#6a6a6a;text-decoration:underline;cursor:pointer}'+
+'.nma-kfix{display:block;margin-top:8px;min-height:38px;padding:0 14px;border-radius:10px;border:1px solid currentColor;background:none;font:inherit;font-size:13.5px;font-weight:700;color:#7A271A;cursor:pointer}'+
+'@media (prefers-reduced-motion:reduce){.nma-typing i{animation:none}}';
+document.head.appendChild(css);
 })();
 </script>
 </body>
