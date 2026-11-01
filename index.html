@@ -5188,7 +5188,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=275;window.NM_VERSION='27.5';
+window.NM_BUILD=276;window.NM_VERSION='27.6';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5248,7 +5248,7 @@ setInterval(function(){if(document.visibilityState==='visible'&&Date.now()-lastC
 })();
 </script>
 <script>
-/* NAMAA_ASK v4 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
+/* NAMAA_ASK v5 — «اسأل نماء»: مساعد قراءة فقط بيجاوب عن حساب المستخدم.
    الفكرة الآمنة: التطبيق نفسه بيحسب كل الأرقام (صافي ثروة، دخل سلبي، ديون، مصاريف الشهر، التوزيع)
    من نفس دوال القيمة اللي باقي الموديولات بتستخدمها، وبيبعت «لقطة» ملخصة + السؤال للمزود اللي المستخدم يختاره
    (Gemini / ChatGPT / Claude / OpenRouter / خادم متوافق مع OpenAI) بمفتاح المستخدم نفسه، والموديل بيصيغ
@@ -5354,14 +5354,33 @@ var SYS='أنت «مساعد نماء»، مساعد داخل تطبيق نما�
 function sleepMs(ms){return new Promise(function(r){setTimeout(r,ms);});}
 async function readErr(r){try{var t=await r.clone().text();if(!t)return '';try{var j=JSON.parse(t);var m=(j.error&&(j.error.message||j.error.code))||j.message||'';if(m)return String(m).slice(0,180);}catch(e){}return t.replace(/\s+/g,' ').slice(0,180);}catch(e){return '';}}
 async function badErr(r){var e=new Error('api');e.status=r.status;e.detail=await readErr(r);return e;}
+async function gemCall(key,body){
+ var pref=[],mo='';try{mo=(localStorage.getItem('nma-model-gemini')||'').trim();}catch(e){}
+ if(mo)pref=[mo];
+ else{var sv='';try{sv=(localStorage.getItem('namaa-gemini-model')||'').trim();}catch(e){}
+  pref=[sv,'gemini-2.5-flash','gemini-flash-latest'].filter(function(x,i,a){return x&&a.indexOf(x)===i;});}
+ var lastErr=null;
+ for(var i=0;i<pref.length;i++){var m=pref[i];
+  for(var att=0;att<2;att++){
+   try{
+    var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+    if(r.ok){try{localStorage.setItem('namaa-gemini-model',m);}catch(e){}return r;}
+    var be=await badErr(r);
+    if(r.status===404||(r.status===400&&/model|not found/i.test(be.detail||''))){lastErr=be;break;}
+    throw be;
+   }catch(e){
+    if(e&&e.status)throw e;
+    lastErr=e;if(att===0)await sleepMs(1000);
+   }
+  }
+ }
+ throw lastErr||new Error('net');}
 async function askGemini(p,key,snapTxt,ack,q){
  var contents=[{role:'user',parts:[{text:snapTxt}]},{role:'model',parts:[{text:ack}]}];
  HIST.forEach(function(t){contents.push({role:t.role,parts:[{text:t.text}]});});
  contents.push({role:'user',parts:[{text:q}]});
  var body={systemInstruction:{parts:[{text:SYS}]},contents:contents,generationConfig:{temperature:0.3,maxOutputTokens:1200}};
- var r,mo=pModel(p);
- async function once(){if(mo)return fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(mo)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});return gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});}
- try{r=await once();}catch(netE){await sleepMs(1200);r=await once();}
+ var r=await gemCall(key,body);
  if(!r.ok)throw await badErr(r);
  var data=await r.json();var parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
  return parts.map(function(x){return x.text||'';}).join('').trim();}
@@ -5388,8 +5407,7 @@ async function ping(p,key,base,model){
 
  if(p.id==='gemini'){
   var body={contents:[{role:'user',parts:[{text:msg}]}],generationConfig:{temperature:0,maxOutputTokens:16}};
-  var r;if(model)r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
-  else r=await gemFetch({method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+  var r=await gemCall(key,body);
   if(!r.ok)throw await badErr(r);return true;}
  if(p.id==='anthropic'){
   var r2=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model||p.def,max_tokens:16,temperature:0,messages:[{role:'user',content:msg}]})});
