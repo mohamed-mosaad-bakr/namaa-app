@@ -5189,7 +5189,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=283;window.NM_VERSION='27.13';
+window.NM_BUILD=284;window.NM_VERSION='27.13';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5328,11 +5328,14 @@ var PROVS=[
  {id:'gemini',name:'Gemini',co:'Google',def:'',hint:'AIza…',url:'https://aistudio.google.com/apikey',pre:/^(AIza|AQ\.)/},
  {id:'openai',name:'ChatGPT',co:'OpenAI',def:'gpt-4o-mini',hint:'sk-…',url:'https://platform.openai.com/api-keys',pre:/^sk-/},
  {id:'anthropic',name:'Claude',co:'Anthropic',def:'claude-haiku-4-5-20251001',hint:'sk-ant-…',url:'https://console.anthropic.com/settings/keys',pre:/^sk-ant-/},
- {id:'openrouter',name:'OpenRouter',co:'موديلات كتير بمفتاح واحد',def:'meta-llama/llama-3.3-70b-instruct:free',hint:'sk-or-…',url:'https://openrouter.ai/keys',pre:/^sk-or-/},
+ {id:'openrouter',name:'OpenRouter',co:'موديلات كتير بمفتاح واحد',def:'openrouter/free',hint:'sk-or-…',url:'https://openrouter.ai/keys',pre:/^sk-or-/},
  {id:'custom',name:'خادم مخصص',co:'متوافق مع OpenAI (Groq / DeepSeek / محلي…)',def:'',hint:'مفتاح الخادم',url:'',pre:null}
 ];
 function prov(){var id='gemini';try{id=localStorage.getItem('nma-provider')||'gemini';}catch(e){}for(var i=0;i<PROVS.length;i++)if(PROVS[i].id===id)return PROVS[i];return PROVS[0];}
 function pKey(p){try{var k=localStorage.getItem('nma-key-'+p.id)||'';if(!k&&p.id==='gemini')k=localStorage.getItem('namaa-gemini-key')||'';return String(k).trim();}catch(e){return '';}}
+/* OpenRouter: الموديلات المجانية بتتشال وتتغيّر كتير. لو المستخدم ماحددش موديل (أو سايب الافتراضي القديم)، نبعت قايمة بدائل مجانية والـ API بيجرّب اللي بعده لوحده لو الأول مش متاح */
+var OR_FREE=['openrouter/free','google/gemma-4-31b-it:free','nvidia/nemotron-3.5-super-vl:free'],OR_OLD=/^meta-llama\/llama-3\.3-70b-instruct:free$/;
+function orModels(m){m=String(m||'').trim();if(!m||OR_OLD.test(m)||m==='openrouter/free')return {models:OR_FREE};if(/:free$/.test(m))return {models:[m].concat(OR_FREE.filter(function(x){return x!==m;})).slice(0,3)};return {model:m};}
 function pModel(p){try{return (localStorage.getItem('nma-model-'+p.id)||'').trim()||p.def;}catch(e){return p.def;}}
 function pBase(){try{return (localStorage.getItem('nma-base-custom')||'').trim().replace(/\/+$/,'');}catch(e){return '';}}
 function keyOkP(p,k){if(!k)return false;if(p.pre)return k.length>=16&&p.pre.test(k);return k.length>=8;}
@@ -5413,7 +5416,7 @@ async function askOpenAIStyle(p,key,snapTxt,ack,q){
  var msgs=[{role:'system',content:SYS},{role:'user',content:snapTxt},{role:'assistant',content:ack}];
  HIST.forEach(function(t){msgs.push({role:t.role==='model'?'assistant':'user',content:t.text});});
  msgs.push({role:'user',content:q});
- var r=await fetchT(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:msgs,temperature:0.3,max_tokens:1200})},45000);
+ var r=await fetchT(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(Object.assign(p.id==='openrouter'?orModels(model):{model:model},{messages:msgs,temperature:0.3,max_tokens:1200}))},45000);
  if(!r.ok)throw await badErr(r);
  var data=await r.json();var c=(((data.choices||[])[0]||{}).message||{}).content;
  return typeof c==='string'?c.trim():'';}
@@ -5437,7 +5440,7 @@ async function ping(p,key,base,model){
   if(!r2.ok)throw await badErr(r2);return true;}
  var url=p.id==='openai'?'https://api.openai.com/v1/chat/completions':p.id==='openrouter'?'https://openrouter.ai/api/v1/chat/completions':String(base||'').replace(/\/+$/,'')+'/chat/completions';
  if(!model){var e0=new Error('nomodel');e0.status=-2;throw e0;}
- var r3=await fetchT(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'user',content:msg}],temperature:0,max_tokens:16})},20000);
+ var r3=await fetchT(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(Object.assign(p.id==='openrouter'?orModels(model):{model:model},{messages:[{role:'user',content:msg}],temperature:0,max_tokens:16}))},20000);
  if(!r3.ok)throw await badErr(r3);return true;}
 function toastOk(msg){try{if(window.NamaaSnack)NamaaSnack(msg,{kind:'ok',ms:3500});}catch(e){}}
 async function ask(q){
