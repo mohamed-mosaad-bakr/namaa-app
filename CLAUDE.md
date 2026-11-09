@@ -11,3 +11,8 @@ Release rules:
 - Never use the `‹` / `›` glyphs for arrows/chevrons — in RTL text they get bidi-mirrored and point the wrong way. Use an inline SVG chevron (`<path d="m15 18-6-6 6-6"/>` = forward/left, `m9 18 6-6-6-6` = back/right). `make_release.py` refuses to build if either glyph is in the release.
 
 For architecture, modules, data keys, GA events, the release helper (`tools/release.py`) and the APK process, read `HANDOFF.md` first.
+
+Working mode (owner's standing rule): planning and execution are separate.
+- The repo pins `"model": "opusplan"` in `.claude/settings.json`: Opus in plan mode, Sonnet when executing.
+- For any non-trivial change (new feature, redesign, anything touching data/sync/APK), start in plan mode: read HANDOFF.md, inspect the code, and present a short plan (what changes, where, risks, how it will be tested). Implement only after the owner approves the plan.
+- Tiny changes (a word, a color, a one-line fix) can go straight to execution.
