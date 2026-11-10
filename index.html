@@ -5243,7 +5243,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=288;window.NM_VERSION='28.8';
+window.NM_BUILD=289;window.NM_VERSION='28.9';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5387,13 +5387,13 @@ function snapshot(){
  return {text:o.join('\n'),net:net,tot:tot,debts:debtsTot,pas:pas};}
 /* ---------- المزودون: أي مفتاح ينفع (Gemini / OpenAI / Claude / OpenRouter / خادم متوافق مع OpenAI) ---------- */
 var PROVS=[
+ {id:'openrouter',name:'OpenRouter',co:'ببلاش ومن غير كارت، وبيختار الموديل لوحده',rec:'الأسهل',def:'openrouter/free',hint:'sk-or-…',url:'https://openrouter.ai/keys',pre:/^sk-or-/},
  {id:'gemini',name:'Gemini',co:'Google',def:'',hint:'AIza…',url:'https://aistudio.google.com/apikey',pre:/^(AIza|AQ\.)/},
  {id:'openai',name:'ChatGPT',co:'OpenAI',def:'gpt-4o-mini',hint:'sk-…',url:'https://platform.openai.com/api-keys',pre:/^sk-/},
  {id:'anthropic',name:'Claude',co:'Anthropic',def:'claude-haiku-4-5-20251001',hint:'sk-ant-…',url:'https://console.anthropic.com/settings/keys',pre:/^sk-ant-/},
- {id:'openrouter',name:'OpenRouter',co:'موديلات كتير بمفتاح واحد',def:'openrouter/free',hint:'sk-or-…',url:'https://openrouter.ai/keys',pre:/^sk-or-/},
  {id:'custom',name:'خادم مخصص',co:'متوافق مع OpenAI (Groq / DeepSeek / محلي…)',def:'',hint:'مفتاح الخادم',url:'',pre:null}
 ];
-function prov(){var id='gemini';try{id=localStorage.getItem('nma-provider')||'gemini';}catch(e){}for(var i=0;i<PROVS.length;i++)if(PROVS[i].id===id)return PROVS[i];return PROVS[0];}
+function prov(){var id='openrouter';try{id=localStorage.getItem('nma-provider')||(localStorage.getItem('namaa-gemini-key')?'gemini':'openrouter');}catch(e){}for(var i=0;i<PROVS.length;i++)if(PROVS[i].id===id)return PROVS[i];return PROVS[0];}
 function pKey(p){try{var k=localStorage.getItem('nma-key-'+p.id)||'';if(!k&&p.id==='gemini')k=localStorage.getItem('namaa-gemini-key')||'';return String(k).trim();}catch(e){return '';}}
 /* OpenRouter: الموديلات المجانية بتتشال وتتغيّر كتير. لو المستخدم ماحددش موديل (أو سايب الافتراضي القديم)، نبعت قايمة بدائل مجانية والـ API بيجرّب اللي بعده لوحده لو الأول مش متاح */
 var OR_FREE=['openrouter/free','google/gemma-4-31b-it:free','nvidia/nemotron-3.5-super-vl:free'],OR_OLD=/^meta-llama\/llama-3\.3-70b-instruct:free$/;
@@ -5412,7 +5412,7 @@ var css2=document.createElement('style');css2.textContent=
 '.nma-prov{display:flex;align-items:center;gap:10px;border:1.5px solid #e4e4e4;border-radius:14px;padding:11px 13px;cursor:pointer;background:#fff}'+
 '.nma-prov.on{border-color:var(--nm-accent,#1E6B45);background:var(--nm-accent-soft,#EAF4EC)}'+
 '.nma-prov input{width:20px;height:20px;flex:none;accent-color:var(--nm-accent,#1E6B45)}'+
-'.nma-prov .pt{flex:1;min-width:0}.nma-prov b{display:block;font-size:15px;color:#222}.nma-prov small{font-size:12.5px;color:#6a6a6a}'+
+'.nma-prov .pt{flex:1;min-width:0}.nma-prov b{display:block;font-size:15px;color:#222}.nma-prov small{font-size:12.5px;color:#6a6a6a}.nma-rec{font-style:normal;font-size:11px;font-weight:700;color:#fff;background:var(--nm-accent,#1E6B45);border-radius:999px;padding:2px 8px;margin-inline-start:6px;vertical-align:2px}.nma-steps{background:#f7f7f7;border-radius:12px;padding:12px 14px;margin:2px 0 12px;font-size:13.5px;color:#3f3f3f;line-height:1.7}.nma-steps>b{display:block;color:#222;font-size:14px;margin-bottom:4px}.nma-steps ol{margin:0;padding-inline-start:20px}.nma-steps li{margin:2px 0}.nma-steps a{color:var(--nm-accent,#1E6B45);font-weight:600}.nma-steps code{background:#fff;border:1px solid #ddd;border-radius:6px;padding:0 5px;font-size:12.5px}.nma-steps small{display:block;margin-top:6px;color:#6a6a6a;font-size:12px}'+
 '.nma-edet{display:block;margin-top:6px;font-size:12px;opacity:.85}'+'.nma-testres{font-size:13.5px;line-height:1.7;margin:10px 2px 0;min-height:20px;color:#6a6a6a}.nma-testres.ok{color:#14743C;font-weight:600}.nma-testres.bad{color:#B42318}'+'.nma-set{display:block;margin:2px auto 0;min-height:40px;border:none;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--nm-accent,#1E6B45);text-decoration:underline;cursor:pointer}';
 document.head.appendChild(css2);
 var HIST=[];
@@ -5544,7 +5544,7 @@ function viewConsent(box,close){
   close(function(){setTimeout(function(){open('consent');},60);});};}
 function viewSetup(box){
  var cur=prov();
- var rows=PROVS.map(function(p){return '<label class="nma-prov'+(p.id===cur.id?' on':'')+'"><input type="radio" name="nma-prov" value="'+p.id+'"'+(p.id===cur.id?' checked':'')+'><span class="pt"><b>'+esc(p.name)+'</b><small>'+esc(p.co)+'</small></span></label>';}).join('');
+ var rows=PROVS.map(function(p){return '<label class="nma-prov'+(p.id===cur.id?' on':'')+'"><input type="radio" name="nma-prov" value="'+p.id+'"'+(p.id===cur.id?' checked':'')+'><span class="pt"><b>'+esc(p.name)+(p.rec?' <em class="nma-rec">'+esc(p.rec)+'</em>':'')+'</b><small>'+esc(p.co)+'</small></span></label>';}).join('');
  box.innerHTML='<div class="nma-intro"><span class="nma-ic">'+SPARK+'</span><h4>اختار مزود الذكاء الاصطناعي</h4>'+
  '<p>المساعد بيشتغل بمفتاحك عند أي مزود من دول — اختار اللي عندك مفتاحه. المفتاح بيتحفظ على جهازك بس، وبيانات حسابك بتتبعت للمزود اللي اخترته عشان يولّد الإجابة.</p>'+
  '<p class="nma-warn">لاحظ: مفاتيح الـ API دي منفصلة عن اشتراك ChatGPT Plus أو Claude الشهري، وأغلب المزودين بيحاسب على الاستخدام — وGemini وOpenRouter عندهم حدود مجانية.</p></div>'+
@@ -5562,10 +5562,11 @@ function viewSetup(box){
   box.querySelectorAll('.nma-prov').forEach(function(l){var i=l.querySelector('input');l.classList.toggle('on',!!i&&i.value===p.id);});
   var k='',mo='',bs='';try{k=localStorage.getItem('nma-key-'+p.id)||(p.id==='gemini'?(localStorage.getItem('namaa-gemini-key')||''):'');mo=localStorage.getItem('nma-model-'+p.id)||'';bs=localStorage.getItem('nma-base-custom')||'';}catch(e){}
   fields.innerHTML=
+   (p.id==='openrouter'?'<div class="nma-steps"><b>تجيب المفتاح إزاي؟ (دقيقتين)</b><ol>'+'<li>افتح <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> وسجّل دخول بجوجل. ببلاش ومن غير كارت.</li>'+'<li>دوس <b dir="ltr">Create API Key</b>، اكتب أي اسم زي «نماء»، وسيب باقي الخانات زي ما هي.</li>'+'<li>انسخ المفتاح اللي بيبدأ بـ <code dir="ltr">sk-or-</code> والصقه تحت. بيظهر مرة واحدة بس، فانسخه علطول.</li>'+'<li>سيب خانة الموديل فاضية، ونماء هيختار موديل مجاني لوحده.</li></ol>'+'<small>الموديلات المجانية ليها حد يومي لعدد الأسئلة، وكفاية للاستخدام العادي.</small></div>':'')+
    (p.id==='custom'?'<label class="nmd-f"><span class="nmb-fl">رابط الخادم (Base URL)</span><input class="nmd-in" id="nma-base" type="url" autocomplete="off" dir="ltr" placeholder="https://api.groq.com/openai/v1" value="'+esc(bs)+'"></label>':'')+
    '<label class="nmd-f"><span class="nmb-fl">مفتاح '+esc(p.name)+'</span><input class="nmd-in" id="nma-key" type="password" autocomplete="off" dir="ltr" placeholder="'+esc(p.hint)+'" value="'+esc(k)+'"></label>'+
-   '<label class="nmd-f"><span class="nmb-fl">الموديل (اختياري)</span><input class="nmd-in" id="nma-model" type="text" autocomplete="off" dir="ltr" placeholder="'+(p.def?esc(p.def):'بيتختار تلقائيًا')+'" value="'+esc(mo)+'"></label>'+
-   (p.url?'<p class="nma-note">معندكش مفتاح؟ هاته من <a href="'+p.url+'" target="_blank" rel="noopener">صفحة مفاتيح '+esc(p.co)+'</a>.</p>':'<p class="nma-note">الخادم لازم يكون متوافق مع OpenAI API (بيستقبل طلبات على /chat/completions).</p>');}
+   '<label class="nmd-f"><span class="nmb-fl">الموديل (اختياري)</span><input class="nmd-in" id="nma-model" type="text" autocomplete="off" dir="ltr" placeholder="'+(p.id==='openrouter'?'سيبها فاضية، بيختار مجاني لوحده':p.def?esc(p.def):'بيتختار تلقائيًا')+'" value="'+esc(mo)+'"></label>'+
+   (p.id==='openrouter'?'':p.url?'<p class="nma-note">معندكش مفتاح؟ هاته من <a href="'+p.url+'" target="_blank" rel="noopener">صفحة مفاتيح '+esc(p.co)+'</a>.</p>':'<p class="nma-note">الخادم لازم يكون متوافق مع OpenAI API (بيستقبل طلبات على /chat/completions).</p>');}
  box.querySelectorAll('input[name="nma-prov"]').forEach(function(r){r.onchange=drawFields;});
  drawFields();
  var tres=box.querySelector('#nma-tres'),skipB=box.querySelector('#nma-skip'),saveB=box.querySelector('#nma-ssave'),testB=box.querySelector('#nma-test');
