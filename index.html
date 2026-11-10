@@ -1244,6 +1244,14 @@ const renderHome=()=>{if(homeSub==='earners')return renderEarners();
  const leaves=assets.filter(a=>!a.hasSubAssets);
  const roots=assets.filter(a=>a.parentId==null);
  const netWorth=roots.reduce((t,a)=>t+valueOf(a),0);
+ /* صافي الثروة = فلوسك اللي حطيتها + زيادة في القيمة (على الورق). التكلفة من سعر الشراء أو متوسط سعر السهم؛ الكاش والحسابات تكلفتها = قيمتها */
+ const wSplit=(dt)=>{const CR=/كاش|نقد|بنك|بنوك|حساب|محفظ|توفير|شهاد|وديع|cash|bank/i;let gain=0,known=0;const miss=[];
+  leaves.forEach(a=>{const v=toEGP(Number(a.value)||0,a.currency);let c=null;
+   if(a.hasPurchaseValue&&Number(a.purchaseValue)>0)c=toEGP(Number(a.purchaseValue),a.currency);
+   else if(a.useShares&&Number(a.avgBuyPrice)>0&&Number(a.shareCount)>0)c=toEGP(Number(a.avgBuyPrice)*Number(a.shareCount),a.currency);
+   else if(a.hasInstallments)c=v; /* بالتقسيط: قيمته = اللي اتدفع */
+   if(c!=null){gain+=v-c;known++;}else if(v>0&&!(CR.test(a.name||'')||(a.tags||[]).some(t=>CR.test(String(t)))))miss.push(a);});
+  if(!known)return null;return {gain,mine:netWorth-dt-gain,miss};};
  const monthlyIncome=leaves.reduce((t,a)=>t+incomeOf(a),0);
  const contrib=assets.filter(a=>a.hasContribution).reduce((t,a)=>t+toEGP(Number(a.monthlyContribution)||0,a.contribCurrency||'EGP'),0);
  const goal=Number(passiveIncomeGoal)||0;const goalPct=goal>0?Math.min(100,(((()=>{const p=avgP();return p.has&&p.v>0?p.v:monthlyIncome;})()))/goal*100):0;
@@ -1267,7 +1275,11 @@ const renderHome=()=>{if(homeSub==='earners')return renderEarners();
   React.createElement("div",{className:"nm-span",id:"nm-nimah-card",key:"nmhc"}),
   React.createElement("div",{className:"nm-span",style:{...card,padding:isMobile?'22px 20px 18px':'28px'}},
    React.createElement("div",{style:{fontSize:'13px',color:'#6a6a6a',fontWeight:500}},"صافي ثروتك"),
-   (()=>{let dt=0;try{dt=window.NamaaBudget?window.NamaaBudget.debts():0;}catch(e){}return React.createElement(React.Fragment,null,React.createElement("div",{style:{fontSize:isMobile?'36px':'44px',fontWeight:800,letterSpacing:'-0.5px',color:(netWorth-dt)<0?'#B42318':'#222',margin:'4px 0 18px',lineHeight:1.15,fontVariantNumeric:'tabular-nums'}},egp(netWorth-dt)),dt>0&&React.createElement("div",{className:"nm-nw-debt"},"أصولك ",egp(netWorth)," ناقص ديون ",egp(dt)));})(),
+   (()=>{let dt=0;try{dt=window.NamaaBudget?window.NamaaBudget.debts():0;}catch(e){}return React.createElement(React.Fragment,null,React.createElement("div",{style:{fontSize:isMobile?'36px':'44px',fontWeight:800,letterSpacing:'-0.5px',color:(netWorth-dt)<0?'#B42318':'#222',margin:'4px 0 18px',lineHeight:1.15,fontVariantNumeric:'tabular-nums'}},egp(netWorth-dt)),dt>0&&React.createElement("div",{className:"nm-nw-debt"},"أصولك ",egp(netWorth)," ناقص ديون ",egp(dt)),(()=>{const sp=wSplit(dt);if(!sp)return null;const R={display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:'10px',fontSize:'13.5px',color:'#3f3f3f',lineHeight:1.5},B={fontWeight:700,fontVariantNumeric:'tabular-nums'};
+     return React.createElement("div",{className:"nm-nw-split",style:{margin:'-6px 0 16px',padding:'10px 12px',borderRadius:'12px',background:'#f7f7f7',display:'flex',flexDirection:'column',gap:'4px'}},
+      React.createElement("div",{style:R},React.createElement("span",null,"فلوسك اللي حطيتها"),React.createElement("span",{style:{...B,color:'#222'}},egp(sp.mine))),
+      React.createElement("div",{style:R},React.createElement("span",null,"زيادة في القيمة ",React.createElement("small",{style:{color:'#6a6a6a'}},"(على الورق)")),React.createElement("span",{style:{...B,color:sp.gain<0?'#B42318':'#008A05'},dir:"ltr"},sp.gain>0?'+':'',egp(sp.gain))),
+      sp.miss.length>0&&React.createElement("button",{type:"button",onClick:()=>{try{window.NamaaTrack&&NamaaTrack('networth_split_missing',{n:sp.miss.length});}catch(e){}openEditor(sp.miss[0].id);},style:{alignSelf:'flex-start',marginTop:'2px',padding:'4px 0',minHeight:'32px',border:'none',background:'none',font:'inherit',fontSize:'12.5px',color:'var(--nm-accent)',fontWeight:600,textDecoration:'underline',cursor:'pointer',textAlign:'right'}},sp.miss.length===1?'أصل واحد من غير سعر شراء، فقيمته كلها محسوبة فلوسك. ضيف سعره':sp.miss.length+' أصول من غير سعر شراء، فقيمتها كلها محسوبة فلوسك. ضيف أسعارها'));})());})(),
    React.createElement("div",{style:{display:'grid',gridTemplateColumns:'1fr 1fr',borderTop:'1px solid #ebebeb',paddingTop:'14px'}},
     (()=>{const mi=monthInc(nowIdx);const ap=avgP();return React.createElement("div",null,React.createElement("div",{style:{fontSize:'12px',color:'#6a6a6a',marginBottom:'4px'}},"دخل سلبي · "+MN[nowIdx-Math.floor((nowIdx-1)/12)*12-1]),React.createElement("div",{style:{fontSize:'19px',fontWeight:700,color:'#008A05'}},egp(mi.t)),incSplit(mi.t,'sm',mi.e));})(),
     React.createElement("div",{style:{borderInlineStart:'1px solid #ebebeb',paddingInlineStart:'16px'}},React.createElement("div",{style:{fontSize:'12px',color:'#6a6a6a',marginBottom:'4px'}},"تضيف كل شهر"),React.createElement("div",{style:{fontSize:'19px',fontWeight:700,color:'#222'}},egp(contrib))))),
@@ -5189,7 +5201,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=285;window.NM_VERSION='27.13';
+window.NM_BUILD=286;window.NM_VERSION='27.13';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5537,16 +5549,15 @@ function viewChat(box){
  '<div class="nma-chips" role="group" aria-label="أسئلة مقترحة">'+CHIPS.map(function(c){return '<button type="button" class="nma-chip">'+esc(c)+'</button>';}).join('')+'</div>'+
  '<div class="nma-inrow"><textarea id="nma-in" rows="1" placeholder="اسأل عن حسابك…" aria-label="سؤالك"></textarea>'+
  '<button type="button" class="nma-send" id="nma-send" aria-label="ابعت"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>'+
- '<p class="nma-note">قراءة بس — مش بيعدّل حاجة في حسابك. دي إجابات مولّدة بالذكاء الاصطناعي وممكن تغلط، فاراجع الأرقام المهمة من صفحات التطبيق.</p>'+
- '<button type="button" class="nma-set" id="nma-goset">المزود الحالي: '+esc(prov().name)+' — تغيير الإعدادات</button>'+
- '<button type="button" class="nma-clear" id="nma-clear">امسح المحادثة</button>';
- var msgs=box.querySelector('#nma-msgs'),inp=box.querySelector('#nma-in'),send=box.querySelector('#nma-send'),busy=false;
+ '';
+ var msgs=box.querySelector('#nma-msgs'),inp=box.querySelector('#nma-in'),send=box.querySelector('#nma-send'),busy=false,chipsEl=box.querySelector('.nma-chips');
+ function chipsShow(on){if(chipsEl)chipsEl.hidden=!on;}
  function bubble(cls,html){var d=document.createElement('div');d.className='nma-m '+cls;d.innerHTML=html;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;}
- function renderHist(){msgs.innerHTML='';bubble('a','أهلًا! أنا مساعد نماء. بصيت على حسابك وأقدر أجاوبك عن صافي ثروتك، أصولك، ديونك، دخلك السلبي، ومصاريفك. اسألني أو اختار سؤال جاهز تحت.');
+ function renderHist(){msgs.innerHTML='';bubble('a','أهلًا! أنا مساعد نماء. بصيت على حسابك وأقدر أجاوبك عن صافي ثروتك، أصولك، ديونك، دخلك السلبي، ومصاريفك. اسألني أو اختار سؤال جاهز تحت.<small class="nma-wnote">قراءة بس، مش بيعدّل حاجة. وممكن يغلط، فراجع الأرقام المهمة من صفحات التطبيق.</small>');chipsShow(!HIST.length);
   HIST.forEach(function(t){bubble(t.role==='user'?'u':'a',t.role==='user'?esc(t.text):md(t.text));});}
  renderHist();
  function doSend(q){
-  q=(q||'').trim();if(!q||busy)return;busy=true;send.disabled=true;
+  q=(q||'').trim();if(!q||busy)return;busy=true;send.disabled=true;chipsShow(false);
   bubble('u',esc(q));inp.value='';
   var ty=bubble('a nma-typing','<i></i><i></i><i></i>');
   track('ask_send',{});
@@ -5558,8 +5569,18 @@ function viewChat(box){
  send.onclick=function(){doSend(inp.value);};
  inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend(inp.value);}};
  box.querySelectorAll('.nma-chip').forEach(function(ch){ch.onclick=function(){doSend(ch.textContent);};});
- box.querySelector('#nma-goset').onclick=function(){viewSetup(box);};
- box.querySelector('#nma-clear').onclick=function(){HIST=[];renderHist();};}
+ /* ⋯ فوق جنب ×: المزود ومسح المحادثة، بعيد عن خانة الكتابة */
+ var sh=box.closest('.nmd-sheet'),hd=sh&&sh.querySelector('.nmd-ch'),cx=hd&&hd.querySelector('.nmd-cx'),old=hd&&hd.querySelector('.nma-mbtn');if(old)old.remove();var oldm=sh&&sh.querySelector('.nma-menu');if(oldm)oldm.remove();
+ if(hd&&cx){var mb=document.createElement('button');mb.type='button';mb.className='nma-mbtn';mb.setAttribute('aria-label','خيارات المحادثة');mb.setAttribute('aria-haspopup','menu');mb.setAttribute('aria-expanded','false');
+  mb.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';hd.insertBefore(mb,cx);
+  var mn=document.createElement('div');mn.className='nma-menu';mn.setAttribute('role','menu');mn.hidden=true;
+  mn.innerHTML='<button type="button" role="menuitem" data-a="set"><b>تغيير المزود</b><small>دلوقتي: '+esc(prov().name)+'</small></button><button type="button" role="menuitem" data-a="clr"><b>امسح المحادثة</b></button>';
+  if(getComputedStyle(sh).position==='static')sh.style.position='relative';sh.appendChild(mn);
+  function mshow(on){mn.hidden=!on;mb.setAttribute('aria-expanded',String(on));if(on){var r=mb.getBoundingClientRect(),rs=sh.getBoundingClientRect();mn.style.top=(r.bottom-rs.top+6)+'px';mn.style.left=Math.max(8,r.left-rs.left)+'px';}}
+  mb.onclick=function(e){e.stopPropagation();mshow(mn.hidden);};
+  sh.addEventListener('click',function(e){if(!mn.hidden&&!mn.contains(e.target)&&e.target!==mb&&!mb.contains(e.target))mshow(false);});
+  mn.querySelector('[data-a="set"]').onclick=function(){mshow(false);mb.remove();mn.remove();viewSetup(box);};
+  mn.querySelector('[data-a="clr"]').onclick=function(){mshow(false);HIST=[];renderHist();track('ask_clear',{});};}}
 /* ---------- مداخل: الرئيسية و«المزيد» ---------- */
 function homeCard(){var host=document.getElementById('nm-learn-card');if(!host||!host.parentNode||document.getElementById('nma-home'))return;
  var b=document.createElement('button');b.type='button';b.id='nma-home';b.className='nma-home';
@@ -5594,7 +5615,9 @@ var css=document.createElement('style');css.textContent=
 '.nma-inrow textarea{flex:1;min-width:0;box-sizing:border-box;max-height:110px;border:1px solid #dddddd;border-radius:16px;padding:11px 14px;font:inherit;font-size:15px;color:#222;background:#fff;resize:none}'+
 '.nma-inrow textarea:focus{outline:none;border:2px solid #222;padding:10px 13px}'+
 '.nma-send{flex:none;width:46px;height:46px;border:none;border-radius:50%;background:var(--nm-accent,#1E6B45);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}.nma-send:disabled{opacity:.5}'+
-'.nma-note{font-size:12px;color:#6a6a6a;line-height:1.6;margin:10px 2px 0}'+
+'.nma-wnote{display:block;margin-top:8px;font-size:12px;line-height:1.55;color:#6a6a6a}.nma-chips[hidden]{display:none}'+
+'.nma-mbtn{flex:none;width:40px;height:40px;border:none;border-radius:50%;background:#f2f2f2;color:#222;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-inline-start:auto;margin-inline-end:8px}.nma-mbtn:focus-visible{outline:2px solid #222;outline-offset:2px}'+
+'.nma-menu{position:absolute;z-index:5;min-width:200px;background:#fff;border-radius:14px;padding:6px;box-shadow:rgba(0,0,0,.02) 0 0 0 1px,rgba(0,0,0,.04) 0 2px 6px,rgba(0,0,0,.12) 0 8px 20px}.nma-menu[hidden]{display:none}.nma-menu button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:48px;padding:8px 12px;border:none;border-radius:10px;background:none;font:inherit;text-align:right;color:#222;cursor:pointer}.nma-menu button:active,.nma-menu button:focus-visible{background:#f7f7f7;outline:none}.nma-menu b{font-size:14.5px;font-weight:600}.nma-menu small{font-size:12px;color:#6a6a6a}'+
 '.nma-clear{display:block;margin:8px auto 0;min-height:40px;border:none;background:none;font:inherit;font-size:13px;font-weight:600;color:#6a6a6a;text-decoration:underline;cursor:pointer}'+
 '.nma-kfix{display:block;margin-top:8px;min-height:38px;padding:0 14px;border-radius:10px;border:1px solid currentColor;background:none;font:inherit;font-size:13.5px;font-weight:700;color:#7A271A;cursor:pointer}'+
 '@media (prefers-reduced-motion:reduce){.nma-typing i{animation:none}}';
