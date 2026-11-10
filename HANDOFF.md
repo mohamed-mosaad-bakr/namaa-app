@@ -24,11 +24,12 @@
    - `NAMAA_TRADE` شراء أسهم (بحث بالرمز أو الاسم من TradingView). `NAMAA_TRANSFER` تحويل بين الأصول (وحسابات التداول عن طريق «رصيد كاش»).
    - `NAMAA_ONBOARD` البداية (5 صفحات بالسحب + أسئلة). `NAMAA_TABS` الشريط اللي تحت (قابل للتخصيص). `NAMAA_SETORG` ترتيب الإعدادات.
    - `NAMAA_SNACK` الرسالة الصغيرة تحت + «تراجع». `NAMAA_DIALOGS` شيتات التأكيد بدل confirm/alert. `NAMAA_FX` الحركات والأصوات. `NAMAA_GA` Google Analytics. `NAMAA_ASK` «اسأل نماء».
+   - `NAMAA_SMARTLOOK` (في الـ `<head>`) تسجيل جلسات Smartlook: الأرقام نجوم، الخانات والـ IP مش بيتسجلوا، وأي نص كتبه المستخدم (من `portfolioData`/`nm-budget`/`nm-plan`/`nm-name`) والشات بيتعلّم `data-sl="mask"`. التعريف برقم عشوائي `nm-slid`. بيقف لو `nm-hide` شغال. كل `NamaaTrack` بيتبعت كمان كـ `smartlook('track')`. **أي شاشة جديدة فيها نص شخصي مش جاي من المفاتيح دي لازم تاخد `data-sl="mask"`.**
    - الباقي واضح من التعليق اللي في أول كل موديول.
 3. **بين React والموديولات** فيه hooks على `window`: `__nmTab`, `__nmOpenMore(view)`, `__nmEdit(id)`, `__nmApply(data)`, `__nmDcRefresh()` (يعيد رسم React)، `__nmDC(n)`/`__nmCU()` (عملة العرض).
 
 ### البيانات (كلها في localStorage على الموبايل، مفيش سيرفر غير المزامنة)
-`portfolioData` الأصول والعملات · `nm-budget` الميزانية والديون · `nm-plan` خطتي · `nm-learn` تعلّم · `nm-dcur` عملة العرض · `nm-tabs` الشريط · `nm-name` الاسم · `nm-ek` مفتاح التشفير (ماينفعش يتزامن).
+`portfolioData` الأصول والعملات · `nm-budget` الميزانية والديون · `nm-plan` خطتي · `nm-learn` تعلّم · `nm-dcur` عملة العرض · `nm-tabs` الشريط · `nm-name` الاسم · `nm-ek` مفتاح التشفير (ماينفعش يتزامن) · `nm-slid` رقم Smartlook العشوائي.
 
 ## خطوات أي تعديل ونشره
 1. عدّل `index.html` (استبدال نص فريد، ومتعدّلش في حاجة مش متأكد منها).

@@ -330,6 +330,48 @@ select.input {
 <meta name="apple-mobile-web-app-title" content="نماء">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="نماء">
+<script>
+/* NAMAA_SMARTLOOK v1 — تسجيل جلسات Smartlook بخصوصية: الأرقام بتتبدل بنجوم (الافتراضي)، الخانات مش بتتسجل، مفيش IP،
+   وأي نص المستخدم كتبه (أسماء أصول/ديون/مصاريف/اسمه) والشات بيتعلّم data-sl="mask". التعريف برقم عشوائي، مش إيميل.
+   لو وضع إخفاء المبالغ (nm-hide) شغال التسجيل بيقف. الأحداث بتتبعت بنفس أسماء GA4. */
+(function(){try{
+ if(window.smartlook)return;
+ var d=document,o=window.smartlook=function(){o.api.push(arguments)};o.api=[];
+ var c=d.createElement('script');c.async=true;c.type='text/javascript';c.charset='utf-8';c.src='https://web-sdk.smartlook.com/recorder.js';
+ d.getElementsByTagName('head')[0].appendChild(c);
+ smartlook('init','432b2b25bdf787cbaff644fd4f0c5531f3867896',{region:'eu'});
+ smartlook('record',{forms:false,numbers:false,emails:false});
+ var id;try{id=localStorage.getItem('nm-slid');if(!id){id='u'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);localStorage.setItem('nm-slid',id);}}catch(e){}
+ if(id)smartlook('identify',id);
+ /* نصوص المستخدم */
+ var KEYS=['portfolioData','nm-budget','nm-plan','nm-name'],SKIP=/^(id|currency|code|type|commodityType|kind|cat|icon|color|dueDate|date|month|start|end|status|freq|unit)$/i,
+  sens=[],last='',paused=false,MASKSEL='.nma-msgs,.nma-u,.nma-m,.nma-htx,.nma-key,.nma-model';
+ function collect(){var raw='';KEYS.forEach(function(k){try{raw+=(localStorage.getItem(k)||'')+'\u0001';}catch(e){}});
+  if(raw===last)return false;last=raw;var set={};
+  function walk(v,k){if(v==null)return;if(typeof v==='string'){if(k&&SKIP.test(k))return;var t=v.trim();if(t.length>=(/^[\x00-\x7f]+$/.test(t)?3:2)&&!/^\d{4}-\d\d-\d\dT/.test(t)&&!/^[\d\s.,:\-\/+%]+$/.test(t)&&!/^[A-Z]{3}$/.test(t)&&!/^https?:/.test(t))set[t]=1;}
+   else if(Array.isArray(v))v.forEach(function(x){walk(x,k)});else if(typeof v==='object')Object.keys(v).forEach(function(x){walk(v[x],x)});}
+  KEYS.forEach(function(k){var r;try{r=localStorage.getItem(k);}catch(e){}if(!r)return;try{walk(JSON.parse(r),null);}catch(e){walk(r,null);}});
+  sens=Object.keys(set).sort(function(a,b){return b.length-a.length});return true;}
+ function hit(t){t=t&&t.trim();if(!t)return false;for(var i=0;i<sens.length;i++)if(t.indexOf(sens[i])>-1)return true;return false;}
+ function markEl(el){if(el&&el.nodeType===1&&el.getAttribute('data-sl')!=='mask')el.setAttribute('data-sl','mask');}
+ function scan(root){if(!root)return;if(root.nodeType===3){if(hit(root.nodeValue))markEl(root.parentNode);return;}
+  if(root.nodeType!==1)return;if(root.matches&&root.matches(MASKSEL))markEl(root);
+  try{root.querySelectorAll(MASKSEL).forEach(markEl);}catch(e){}
+  var w=d.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),n;while((n=w.nextNode()))if(hit(n.nodeValue))markEl(n.parentNode);}
+ function check(){if(collect()&&d.body)scan(d.body);
+  var h=false;try{h=localStorage.getItem('nm-hide')==='1';}catch(e){}
+  if(h&&!paused){paused=true;smartlook('pause');}else if(!h&&paused){paused=false;smartlook('resume');}}
+ collect();
+ var mo=new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){var m=ms[i];
+  if(m.type==='characterData'){if(hit(m.target.nodeValue))markEl(m.target.parentNode);}else for(var j=0;j<m.addedNodes.length;j++)scan(m.addedNodes[j]);}});
+ function start(){mo.observe(d.body,{childList:true,subtree:true,characterData:true});check();scan(d.body);setInterval(check,2000);}
+ if(d.body)start();else d.addEventListener('DOMContentLoaded',start);
+ /* الأحداث: نفس أسماء GA4 */
+ var tries=0;(function wrap(){var T=window.NamaaTrack;if(typeof T==='function'&&!T.__sl){var W=function(n,p){var r=T.apply(this,arguments);try{smartlook('track',String(n),p||{});}catch(e){}return r;};W.__sl=1;window.NamaaTrack=W;}
+  else if(tries++<40)setTimeout(wrap,250);})();
+ window.NamaaSL={list:function(){return sens.slice()},rescan:function(){last='';check();},sens:function(){return sens.length;}};
+}catch(e){}})();
+</script>
 </head>
 <body>
 <div id="loader" class="nm-sp" role="img" aria-label="نماء، بيفتح">
@@ -5201,7 +5243,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=286;window.NM_VERSION='27.13';
+window.NM_BUILD=287;window.NM_VERSION='27.13';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
