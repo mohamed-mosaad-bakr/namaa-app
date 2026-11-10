@@ -18,6 +18,9 @@ def main():
     html, n = re.subn(r'window\.NM_BUILD=\d+;', 'window.NM_BUILD=%d;' % build, html)
     if n != 1:
         sys.exit('expected exactly one window.NM_BUILD=<n>; in index.html, found %d' % n)
+    html, n = re.subn(r"window\.NM_VERSION='[^']*';", "window.NM_VERSION='%s';" % ver, html)
+    if n != 1:
+        sys.exit("expected exactly one window.NM_VERSION='..'; in index.html, found %d" % n)
     bad = [g for g in ('\u2039', '\u203a') if g in html]
     if bad:
         sys.exit('refusing: ‹ / › glyph found — use an inline SVG chevron instead')
