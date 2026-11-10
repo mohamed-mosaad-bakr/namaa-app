@@ -5189,7 +5189,7 @@ var css=document.createElement('style');css.textContent='.nmx-scrim{position:fix
 })();
 </script>
 <script>
-window.NM_BUILD=284;window.NM_VERSION='27.13';
+window.NM_BUILD=285;window.NM_VERSION='27.13';
 (function(){try{var seen=+localStorage.getItem('nm-build-seen')||0;var rem=false;try{rem=!!(window.NamaaAndroid&&NamaaAndroid.isRemote&&NamaaAndroid.isRemote());}catch(e){}if((seen&&window.NM_BUILD>seen)||(!seen&&rem)){window.addEventListener('load',function(){function whenSeen(f){if(document.visibilityState!=='hidden')return f();document.addEventListener('visibilitychange',function v(){if(document.visibilityState==='visible'){document.removeEventListener('visibilitychange',v);f();}});}whenSeen(function(){setTimeout(function(){var t=document.createElement('div');t.setAttribute('role','status');t.textContent='✓ نماء اتحدّث لنسخة '+window.NM_VERSION+' وبياناتك زي ما هي';t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:3000;background:#0A7B24;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;direction:rtl;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(t);try{localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}setTimeout(function(){t.remove();},4500);},900);});});return;}localStorage.setItem('nm-build-seen',String(window.NM_BUILD));}catch(e){}})();
 (function(){/* NM_RESUME: come back to the same tab / page / scroll after an in-place update */var r=null;try{r=JSON.parse(localStorage.getItem('nm-resume')||'null');localStorage.removeItem('nm-resume');}catch(e){}
  if(!r||Date.now()-r.at>10*60*1000)return;var tries=0;(function go(){if(!window.__nmTab||!document.querySelector('.nm-tabbar')){if(tries++<60)setTimeout(go,100);return;}
@@ -5312,14 +5312,22 @@ function snapshot(){
  var GM={worth:'أعرف صافي ثروتي',budget:'أنظّم مصاريفي',plan:'أخطط استثماري',income:'أبني دخل سلبي',zakat:'أطلّع زكاتي صح',growth:'أكبّر ثروتي',protect:'أحمي فلوسي'};
  var gl=goals.concat(pgoals).filter(function(g,i,a){return GM[g]&&a.indexOf(g)===i;}).map(function(g){return GM[g];});
  if(gl.length)o.push('أهداف المستخدم: '+gl.join('، '));
- if(L.length){o.push('== الأصول (الأكبر أولًا) ==');
-  var byId={};(d.assets||[]).forEach(function(a){byId[a.id]=a;});
-  L.slice().sort(function(x,y){return egp(d,y)-egp(d,x);}).slice(0,15).forEach(function(a){
-   var v=egp(d,a),par=a.parentId!=null?byId[a.parentId]:null;
-   var s='- '+(par?par.name+' / ':'')+(a.name||'أصل')+' ('+typeOf(a)+'): '+money(v)+(tot>0?' ('+Math.round(v/tot*100)+'% من الأصول)':'');
+ if(L.length){o.push('== كل الأصول (متجمّعة تحت الأصل الرئيسي، الأكبر أولًا) ==');
+  /* كل الأصول، مش أكبر 15 بس: عشان الأسئلة عن أصل صغير أو عن محتويات حساب (زي ثاندر) تتجاوب صح */
+  var A=d.assets||[],kids={};A.forEach(function(a){var k=a.parentId==null?'r':String(a.parentId);(kids[k]=kids[k]||[]).push(a);});
+  var memo={};function val(a){if(memo[a.id]!=null)return memo[a.id];var v=a.hasSubAssets?(kids[String(a.id)]||[]).reduce(function(t,c){return t+val(c);},0):egp(d,a);memo[a.id]=v;return v;}
+  var lines=0,MAXL=150,skipN=0,skipV=0;
+  function det(a,v){var s=(a.name||'أصل')+' ('+typeOf(a)+'): '+money(v)+(tot>0?' ('+(v/tot*100<1?'أقل من 1':Math.round(v/tot*100))+'% من الأصول)':'');
+   if(a.useShares&&Number(a.shareCount)>0)s+='، '+Number(a.shareCount)+' '+(a.isStock?'سهم':'وحدة')+(Number(a.pricePerShare)>0?' × '+Number(a.pricePerShare):'')+(a.stockSymbol?' ['+a.stockSymbol+']':'');
    if(a.hasYield){if((a.useFixedYield||a.incomeMode==='payments')&&Number(a.fixedYieldAmount)>0)s+='، عائد ثابت '+money(Number(a.fixedYieldAmount)*rate(d,a.yieldCurrency||a.currency||'EGP'))+' شهريًا';else if(Number(a.yieldRate)>0)s+='، عائد '+a.yieldRate+'% سنويًا';}
    if(a.hasPurchaseValue&&Number(a.purchaseValue)>0){var pb=Number(a.purchaseValue)*rate(d,a.currency||'EGP');s+='، اتشترى بـ '+money(pb)+'، الفرق دلوقتي '+(v-pb>=0?'+':'')+money(v-pb);}
-   o.push(s);});}
+   return s;}
+  function walk(list,depth){list.slice().sort(function(x,y){return val(y)-val(x);}).forEach(function(a){var v=val(a);
+   if(lines>=MAXL){skipN++;skipV+=v;return;}lines++;var pad=new Array(depth+1).join('  ');
+   if(a.hasSubAssets){var ch=kids[String(a.id)]||[];o.push(pad+'- '+(a.name||'مجموعة')+' (مجموعة فيها '+ch.length+' أصل): إجمالي '+money(v)+(tot>0?' ('+Math.round(v/tot*100)+'% من الأصول)':''));walk(ch,depth+1);}
+   else o.push(pad+'- '+det(a,v));});}
+  walk(kids.r||[],0);
+  if(skipN)o.push('(و'+skipN+' أصل تاني أصغر بإجمالي '+money(skipV)+'، مش مكتوبين بالتفصيل)');}
  if(lastTx.length){o.push('== آخر الحركات ==');
   lastTx.forEach(function(t){o.push('- '+String(t.d||'')+': '+(t.n||t.cn||t.cat||'حركة')+' '+(t.inc?'+':'−')+money(Math.abs(Number(t.amt)||0)));});}
  return {text:o.join('\n'),net:net,tot:tot,debts:debtsTot,pas:pas};}
