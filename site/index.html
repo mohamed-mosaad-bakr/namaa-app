@@ -970,7 +970,7 @@ var CONTACT = {
     pick.appendChild(c);chips.push(c);
   });
   function cnt(i){var n=0,k=st.done[i]||[];for(var j=0;j<3;j++)if(k[j])n++;return n;}
-  function pct(){return Math.round(st.cur*20+20*cnt(st.cur)/3);}
+  function pct(){var L=ST.length-1;if(st.cur>=L)return 100;return Math.round((st.cur+cnt(st.cur)/3)*100/L);}
   function render(anim){
     var c=st.cur,s=ST[c];
     nodes.forEach(function(b,i){
