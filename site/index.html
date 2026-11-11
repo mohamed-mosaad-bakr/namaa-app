@@ -274,6 +274,36 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .js .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
 .js .reveal.in{opacity:1;transform:none}
 
+
+/* صور التطبيق الحقيقية */
+.hero-vis{position:relative;display:flex;justify-content:center;padding-block:8px 24px}
+.device{margin:0;width:min(300px,78vw);max-width:100%;border-radius:40px;padding:10px;background:#0F1A14;box-shadow:0 30px 60px rgba(19,74,48,.22),0 0 0 1px var(--line)}
+.device img{display:block;width:100%;height:auto;aspect-ratio:600/1298;object-fit:cover;object-position:top;border-radius:31px;background:var(--surface-2)}
+.device.sm{width:min(270px,72vw)}
+.callout{position:absolute;bottom:56px;inset-inline-end:max(0px,calc(50% - 230px));display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);max-width:250px}
+.callout b{display:block;font-size:14.5px;line-height:1.4}
+.callout small{display:block;font-size:12.5px;color:var(--ink-2);line-height:1.4}
+.callout-ic{width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--green) 14%,var(--surface));color:var(--green);display:grid;place-items:center;flex:none}
+.callout-ic svg{width:20px;height:20px}
+.rows{display:flex;flex-direction:column;gap:28px}
+.row{display:grid;grid-template-columns:1fr auto;gap:48px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:40px 48px 0;overflow:hidden}
+.row.flip{grid-template-columns:auto 1fr}
+.row.flip .row-tx{order:2}
+.row-tx{min-width:0;padding-bottom:40px}
+.row-tx h3{font-size:clamp(24px,3vw,32px);font-weight:800}
+.row-tx ul{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:12px}
+.row-tx li{display:flex;gap:10px;align-items:flex-start;color:var(--ink-2);font-size:16.5px}
+.row-tx li svg{width:20px;height:20px;color:var(--green);flex:none;margin-top:4px}
+.row .device{align-self:end;border-radius:40px 40px 0 0;padding:10px 10px 0;box-shadow:0 -10px 40px rgba(19,74,48,.12);height:430px;overflow:hidden}
+.row .device img{border-radius:31px 31px 0 0;height:100%;aspect-ratio:auto}
+@media (max-width:860px){
+  .row,.row.flip{grid-template-columns:1fr;padding:28px 22px 0;gap:24px}
+  .row.flip .row-tx{order:0}
+  .row-tx{padding-bottom:0}
+  .row .device{justify-self:center;height:380px}
+  .callout{inset-inline-end:auto;inset-inline-start:0;bottom:30px}
+}
+
 /* ---------- المقاسات ---------- */
 @media (max-width:1000px){
   .why{grid-template-columns:1fr 1fr}
@@ -365,25 +395,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
       </ol>
     </div>
 
-    <div class="phone" role="img" aria-label="شكل الشاشة الرئيسية في نماء: صافي الثروة ومتقسّم لفلوسك والزيادة على الورق، والدخل السلبي">
-      <div class="screen">
-        <div class="s-top"><span class="s-brand"><i></i>نماء</span><span class="s-chip">متزامن</span></div>
-        <div class="s-card">
-          <div class="s-lbl">صافي ثروتك</div>
-          <div class="s-big"><span class="num">1,337,500</span> <small>ج.م</small></div>
-          <div class="s-split">
-            <div class="s-row"><span>فلوسك (بسعر السوق)</span><b>1,237,500</b></div>
-            <div class="s-row"><span>زيادة على الورق</span><b class="up">+100,000</b></div>
-          </div>
-        </div>
-        <div class="s-grid">
-          <div class="s-card s-mini"><span class="s-lbl">دخل سلبي</span><b class="up num">6,778</b></div>
-          <div class="s-card s-mini"><span class="s-lbl">بتضيف كل شهر</span><b class="num">5,000</b></div>
-        </div>
-        <div class="s-card">
-          <div class="s-lbl">ثروتك المتوقعة بعد 3 سنين</div>
-          <div class="s-spark"><svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 52 C40 48 70 40 100 32 S160 14 200 6 L200 60 L0 60Z" fill="var(--surface-2)"/><path d="M0 52 C40 48 70 40 100 32 S160 14 200 6" fill="none" stroke="var(--green)" stroke-width="3"/><circle cx="196" cy="7" r="4" fill="var(--gold)"/></svg></div>
-        </div>
+    <div class="hero-vis">
+      <figure class="device">
+        <img src="shots/home.webp" width="600" height="1298" alt="الشاشة الرئيسية في نماء: صافي الثروة ١,٩٠٥,٦٨٠ ج.م متقسّم لفلوسك والزيادة على الورق، والدخل السلبي ١٢,٢٢٧ ج.م في الشهر">
+      </figure>
+      <div class="callout" aria-hidden="true">
+        <span class="callout-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/></svg></span>
+        <span><b>33% من دخلك بقى سلبي</b><small>إيجار وتوزيعات وأرباح بنك</small></span>
       </div>
     </div>
   </div>
@@ -478,63 +496,46 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   </div>
 </section>
 
-<!-- ============ 6. جوه التطبيق (المعرض) ============ -->
+<!-- ============ 6. جوه التطبيق (صور حقيقية من التطبيق) ============ -->
 <section class="band" id="inside" aria-labelledby="in-t">
   <div class="wrap">
     <div class="head reveal">
       <span class="eyebrow">جوه التطبيق</span>
       <h2 class="h2" id="in-t">شوف قبل ما تبدأ</h2>
-      <p class="lead">الأرقام في الصور دي أمثلة.</p>
+      <p class="lead">صور حقيقية من نماء، والأرقام فيها أمثلة.</p>
     </div>
-    <div class="gallery">
-      <article class="shot reveal">
-        <div class="shot-view" aria-hidden="true">
-          <div class="mini"><span>Safe · وحدة التجمع</span><span class="pill">تقييم</span></div>
-          <div class="mini"><span>ذهب 24 · 19.5 جرام</span><b class="up">+13.8%</b></div>
-          <div class="mini"><span>ثاندر · السويدي</span><b class="up">+50%</b></div>
-          <div class="mini"><span>كاش البنك</span><b>200,000</b></div>
+    <div class="rows">
+      <article class="row reveal">
+        <div class="row-tx">
+          <span class="eyebrow">أصولك كلها</span>
+          <h3>كل أصل بربحه من يوم ما اشتريته</h3>
+          <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>عقار وأسهم ودهب وشهادات وعملات في مكان واحد</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>مجموعات وأصول فرعية، زي وحدات Safe أو أسهم ثاندر</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>أسعار الدهب والدولار والأسهم بتتحدّث لوحدها</span></li></ul>
         </div>
-        <div class="shot-body"><h3>أصولك كلها</h3><p>مجموعات وأصول فرعية، وكل أصل بربحه من يوم ما اشتريته.</p></div>
+        <figure class="device sm"><img src="shots/assets.webp" width="600" height="1298" loading="lazy" alt="شاشة الأصول: Safe بـ ٩٥٠,٠٠٠ ج.م وإيجار ٦,٣٠٠ في الشهر، وثاندر وذهب وشهادة"></figure>
       </article>
-      <article class="shot reveal">
-        <div class="shot-view" aria-hidden="true">
-          <div class="mini"><span>أكل وبقالة</span><b>3,250</b></div>
-          <div class="track"><i style="width:68%"></i></div>
-          <div class="mini"><span>مواصلات</span><b>900</b></div>
-          <div class="track"><i style="width:35%"></i></div>
-          <div class="mini"><span>فاضلّك الشهر ده</span><b class="up">4,850</b></div>
+      <article class="row reveal flip">
+        <div class="row-tx">
+          <span class="eyebrow">ميزانيتي</span>
+          <h3>اعرف فاضلّك كام لآخر الشهر</h3>
+          <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>دخلك والتزاماتك الثابتة وأقساط ديونك في شاشة واحدة</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>تسجّل المصروف في ثانيتين بفئة جاهزة</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>المصاريف المتكررة بتتسجّل لوحدها كل شهر</span></li></ul>
         </div>
-        <div class="shot-body"><h3>ميزانيتي</h3><p>اللي دخل واللي اتصرف، وفاضلّك كام لآخر الشهر.</p></div>
+        <figure class="device sm"><img src="shots/budget.webp" width="600" height="1298" loading="lazy" alt="شاشة ميزانيتي: فاضل معاك ١٤,٦٥٠ ج.م الشهر ده"></figure>
       </article>
-      <article class="shot reveal">
-        <div class="shot-view" aria-hidden="true">
-          <div class="bars"><i style="height:40%"></i><i style="height:55%"></i><i style="height:48%"></i><i style="height:66%"></i><i style="height:60%"></i><i style="height:78%"></i><i style="height:90%"></i></div>
+      <article class="row reveal">
+        <div class="row-tx">
+          <span class="eyebrow">دخلك بالشهر</span>
+          <h3>شوف دخلك السلبي بيكبر سنة ورا سنة</h3>
+          <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>خريطة بالشهور لكل إيجار وتوزيعات وأرباح بنك</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>تعرف أعلى شهر وإجمالي الفترة</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>تحط هدف للدخل السلبي وتتابعه</span></li></ul>
         </div>
-        <div class="shot-body"><h3>دخلك بالشهر</h3><p>خريطة بالشهور توريك إمتى الإيجار والتوزيعات بتنزل.</p></div>
+        <figure class="device sm"><img src="shots/income2.webp" width="600" height="1298" loading="lazy" alt="خريطة الدخل بالشهر من ٢٠٢٦ لـ ٢٠٣٠"></figure>
       </article>
-      <article class="shot reveal">
-        <div class="shot-view" aria-hidden="true">
-          <div class="mini"><span>قرض العربية</span><span class="pill g">فاضل 14 قسط</span></div>
-          <div class="track"><i style="width:58%"></i></div>
-          <div class="mini"><span>الجمعية</span><span class="pill">دورك في مارس</span></div>
-          <div class="track"><i style="width:40%"></i></div>
+      <article class="row reveal flip">
+        <div class="row-tx">
+          <span class="eyebrow">التحليل والتوقعات</span>
+          <h3>هتبقى فين بعد ٥ سنين؟</h3>
+          <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>توقع لثروتك على حسب نمو كل أصل وعوائده</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>تختار الفترة بدوسة: سنة أو ٣ أو ٥ أو ١٠ سنين</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>توصيات على حسب وضعك إنت</span></li></ul>
         </div>
-        <div class="shot-body"><h3>ديوني</h3><p>كل دين بأقساطه، وتاريخ آخر قسط.</p></div>
-      </article>
-      <article class="shot reveal">
-        <div class="shot-view" aria-hidden="true">
-          <div class="bubble me">أبيع الدهب عشان أسدّ القرض؟</div>
-          <div class="bubble ai">فايدة القرض أعلى من نمو الدهب عندك، فسداد جزء منه بيوفّرلك أكتر. خلّي دهب يكفي 3 شهور طوارئ.</div>
-        </div>
-        <div class="shot-body"><h3>اسأل نماء</h3><p>أسئلتك عن فلوسك، والإجابة من أرقامك.</p></div>
-      </article>
-      <article class="shot reveal">
-        <div class="shot-view" aria-hidden="true">
-          <div class="mini"><span>فترة الحساب</span><span class="pill g">36 شهر</span></div>
-          <div class="mini"><span>ثروتك المتوقعة</span><b class="up">1,907,400</b></div>
-          <div class="mini"><span>ربح متوقع (نمو + عوائد)</span><b>+569,900</b></div>
-        </div>
-        <div class="shot-body"><h3>التحليل والتوقعات</h3><p>هتبقى فين بعد سنة أو 5 أو 10، على حسب نمو كل أصل.</p></div>
+        <figure class="device sm"><img src="shots/analysis.webp" width="600" height="1298" loading="lazy" alt="شاشة التحليل: ثروتك المتوقعة في أكتوبر ٢٠٣١ هي ٤,٦٨٨,٦٤٦ ج.م"></figure>
       </article>
     </div>
   </div>
