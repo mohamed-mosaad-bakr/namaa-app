@@ -333,6 +333,59 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   .steps span{font-size:11px}
   .foot-grid{grid-template-columns:1fr}
 }
+/* ===== رحلتك: خريطة المراحل التفاعلية ===== */
+.jr{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;margin-top:32px;align-items:start}
+.jr-pick{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}
+.jr-pick button{font:inherit;font-size:14px;font-weight:600;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-height:40px;transition:background .2s,border-color .2s,color .2s}
+.jr-pick button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--on-green,#fff)}
+.jr-map{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 12px 16px;min-width:0}
+.jr-track{position:relative;height:250px}
+.jr-track svg.jr-path{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.jr-path .seg{fill:none;stroke:var(--line);stroke-width:6;stroke-linecap:round;stroke-dasharray:2 12;transition:stroke .4s}.jr-path .seg.on{stroke:var(--green);stroke-dasharray:none}
+.jr-node{position:absolute;transform:translate(50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;padding:0;font:inherit;color:var(--ink);cursor:pointer;width:84px}
+.jr-dot{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:3px solid var(--line);color:var(--ink-2);font-weight:800;font-size:18px;transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .3s,border-color .3s,color .3s;position:relative}
+.jr-dot svg{width:24px;height:24px}
+.jr-node .jr-lb{font-size:12.5px;font-weight:700;text-align:center;line-height:1.3;color:var(--ink-2);background:var(--surface);padding:1px 6px;border-radius:6px}
+.jr-node.is-done .jr-dot{background:var(--green);border-color:var(--green);color:var(--on-green,#fff)}
+.jr-node.is-cur .jr-dot{border-color:var(--gold);color:var(--gold);transform:scale(1.14);box-shadow:0 0 0 6px color-mix(in srgb,var(--gold) 18%,transparent)}
+.jr-node.is-cur .jr-lb{color:var(--ink)}
+.jr-node.is-end .jr-dot{border-color:color-mix(in srgb,var(--gold) 60%,var(--line));color:var(--gold)}
+.jr-node.is-end.is-cur .jr-dot,.jr-node.is-end.is-done .jr-dot{background:var(--gold);border-color:var(--gold);color:#fff}
+.jr-node:focus-visible{outline:none}.jr-node:focus-visible .jr-dot{outline:3px solid var(--green);outline-offset:3px}
+.jr-pin{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap;opacity:0;pointer-events:none}
+.jr-pin::after{content:"";position:absolute;bottom:-4px;left:50%;margin-left:-4px;border:4px solid transparent;border-bottom:0;border-top-color:var(--gold)}
+.jr-node.is-cur .jr-pin{opacity:1;animation:jrBob 1.8s ease-in-out infinite}
+@keyframes jrBob{50%{transform:translateX(-50%) translateY(-3px)}}
+.jr-xp{margin-top:6px;padding:0 6px}
+.jr-xp-top{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:8px}
+.jr-xp-top b{color:var(--gold)}
+.jr-bar{height:12px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.jr-bar i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .8s cubic-bezier(.4,0,.2,1)}
+[dir="rtl"] .jr-bar i{background:linear-gradient(270deg,var(--green),var(--gold))}
+.jr-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;min-width:0;position:relative;overflow:hidden}
+.jr-lvl{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;font-weight:800;color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--surface));padding:4px 10px;border-radius:999px}
+.jr-card h3{font-size:21px;font-weight:800;margin:10px 0 4px}
+.jr-goal{color:var(--ink-2);font-size:15px;margin:0 0 14px}
+.jr-q{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.jr-q button{width:100%;display:flex;align-items:flex-start;gap:12px;text-align:start;font:inherit;font-size:15px;line-height:1.5;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;transition:border-color .2s,background .2s}
+.jr-q button:hover{border-color:color-mix(in srgb,var(--green) 45%,var(--line))}
+.jr-q .bx{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;background:var(--surface);transition:background .2s,border-color .2s;margin-top:1px}
+.jr-q .bx svg{width:15px;height:15px;stroke:var(--on-green,#fff);stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .3s ease-out}
+.jr-q button[aria-pressed="true"]{background:color-mix(in srgb,var(--green) 8%,var(--surface));border-color:color-mix(in srgb,var(--green) 40%,var(--line))}
+.jr-q button[aria-pressed="true"] .bx{background:var(--green);border-color:var(--green)}
+.jr-q button[aria-pressed="true"] .bx svg{stroke-dashoffset:0}
+.jr-q small{display:block;color:var(--ink-2);font-size:13px}
+.jr-q .xp{margin-inline-start:auto;flex:none;font-size:12px;font-weight:800;color:var(--gold);align-self:center}
+.jr-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.jr-win{display:none;margin-top:14px;padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--gold) 12%,var(--surface));font-weight:700;font-size:15px}
+.jr-win.show{display:block;animation:jrPop .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes jrPop{from{opacity:0;transform:translateY(6px)}}
+.jr-cf{position:absolute;width:8px;height:12px;border-radius:2px;top:40%;left:50%;pointer-events:none;animation:jrCf 1.1s ease-out forwards}
+@keyframes jrCf{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+.jr-note{margin-top:12px;font-size:12.5px;color:var(--ink-2);text-align:center}
+@media (max-width:900px){.jr{grid-template-columns:1fr}}
+@media (max-width:520px){.jr-track{height:300px}.jr-node{width:70px}.jr-dot{width:46px;height:46px;font-size:16px}.jr-node .jr-lb{font-size:11.5px}}
+@media (prefers-reduced-motion: reduce){.jr-node.is-cur .jr-pin{animation:none}.jr-cf{display:none}}
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -351,6 +404,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     </a>
     <ul class="links" id="menu">
       <li><a href="#about">عن نماء</a></li>
+      <li><a href="#journey">رحلتك</a></li>
       <li><a href="#features">بيعمل إيه</a></li>
       <li><a href="#why">ليه نماء</a></li>
       <li><a href="#inside">جوه التطبيق</a></li>
@@ -424,6 +478,41 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     </div>
     <ul class="pls reveal"><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/></svg><span><b>ثاندر</b><small>أسهم البورصة</small></span></li><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-5h6v5"/></svg><span><b>Safe</b><small>حصص عقار</small></span></li><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1"/></svg><span><b>أمتار</b><small>حصص عقار</small></span></li><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg><span><b>فريدة</b><small>حصص عقار</small></span></li><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 10h12l2 8H4z"/><path d="M9 10l1.5-5h3L15 10"/></svg><span><b>دهب</b><small>سبايك وجنيهات</small></span></li><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M4 10h16M12 3 4 8h16z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/></svg><span><b>بنوك إسلامية</b><small>حسابات وشهادات</small></span></li><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg><span><b>كاش</b><small>بالجنيه</small></span></li><li class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M17 7.5C17 5.6 14.8 5 12 5s-5 1.2-5 3.3S9 11 12 12s5 1.8 5 3.8S14.8 19 12 19s-5-.8-5-3"/></svg><span><b>دولار</b><small>وعملات تانية</small></span></li></ul>
     <p class="pl-note">الأسامي دي ملك أصحابها، ونماء مش تابع لأي شركة منهم. إنت اللي بتكتب أصولك بنفسك.</p>
+  </div>
+</section>
+
+<!-- ============ 2c. رحلتك: من أي مرحلة للحرية المالية (تفاعلي) ============ -->
+<section class="band alt" id="journey" aria-labelledby="jr-t">
+  <div class="wrap">
+    <div class="reveal" style="text-align:center">
+      <span class="eyebrow">رحلتك</span>
+      <h2 class="h2" id="jr-t">إنت فين النهارده؟ اختار مرحلتك</h2>
+      <p class="lead" style="margin-inline:auto">من أي مكان تبدأ، نماء بيوريك الخطوة الجاية لحد ما توصل للحرية المالية. خلّص مهام مرحلتك وافتح اللي بعدها.</p>
+      <div class="jr-pick" role="group" aria-label="اختار المرحلة اللي إنت فيها" id="jr-pick"></div>
+    </div>
+    <div class="jr reveal">
+      <div class="jr-map">
+        <div class="jr-track" id="jr-track">
+          <svg class="jr-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><g id="jr-segs"></g></svg>
+        </div>
+        <div class="jr-xp">
+          <div class="jr-xp-top"><span>قربك من الحرية المالية</span><b id="jr-pct">0%</b></div>
+          <div class="jr-bar" role="progressbar" aria-label="قربك من الحرية المالية" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="jr-bar"><i></i></div>
+        </div>
+      </div>
+      <div class="jr-card" id="jr-card" aria-live="polite">
+        <span class="jr-lvl" id="jr-lvl"></span>
+        <h3 id="jr-name"></h3>
+        <p class="jr-goal" id="jr-goal"></p>
+        <ul class="jr-q" id="jr-q"></ul>
+        <div class="jr-win" id="jr-win"></div>
+        <div class="jr-foot">
+          <a class="btn btn-pri" href="https://namaa-app.pages.dev/" target="_blank" rel="noopener">ابدأ مهامك في نماء</a>
+          <button type="button" class="btn btn-sec" id="jr-next">المرحلة الجاية</button>
+        </div>
+      </div>
+    </div>
+    <p class="jr-note">المهام هنا بتتحفظ على جهازك إنت بس، علشان تكمل من مكانك لما ترجع.</p>
   </div>
 </section>
 
@@ -831,6 +920,96 @@ var CONTACT = {
     document.getElementById('ok').classList.add('show');
     form.reset();
   });
+})();
+</script>
+<script>
+/* ===== رحلتك: عدّل المراحل والمهام من هنا ===== */
+(function(){
+  var ST=[
+    {n:'مديون',g:'الهدف: تقفل ديونك وتبطّل تاخد جديد.',p:5,q:[
+      ['سجّل كل ديونك وأقساطك','في «ديون وسلف» وشوف هتخلص إمتى'],
+      ['حدّد قسط ثابت كل شهر','وابدأ بالدين الأصغر أو الأغلى فايدة'],
+      ['متاخدش دين جديد الشهر ده','ولو حصل، سجّله فورًا']]},
+    {n:'بتصرف كل اللي بييجي',g:'الهدف: يفضل معاك فلوس آخر الشهر.',p:25,q:[
+      ['اعمل ميزانية الشهر','في «ميزانيتي»: دخلك والتزاماتك الثابتة'],
+      ['سجّل مصاريفك أسبوع واحد','علشان تعرف فلوسك بتروح فين'],
+      ['حط حد لأكبر بند صرف','ونماء ينبّهك لو قرّبت منه']]},
+    {n:'بتحوّش',g:'الهدف: صندوق طوارئ، والباقي يبدأ يشتغل.',p:50,q:[
+      ['كوّن صندوق طوارئ','يغطي من 3 لـ 6 شهور مصاريف'],
+      ['ضيف تحويش شهري ثابت','على الكاش في نماء، وشوف هيوصل لكام'],
+      ['قارن بين الدهب والشهادة','في «التحليل» قبل ما تقرر']]},
+    {n:'بتستثمر',g:'الهدف: دخل سلبي بيكبر شهر ورا شهر.',p:75,q:[
+      ['سجّل أصولك كلها','دهب وأسهم وعقار وشهادات في مكان واحد'],
+      ['افصل «فلوسك» عن «على الورق»','علشان تعرف قيمتك الحقيقية النهارده'],
+      ['تابع خريطة الدخل بالشهر','وشوف الإيجار والتوزيعات والأرباح بتزيد إزاي']]},
+    {n:'الحرية المالية',g:'الهدف: دخلك السلبي يغطي مصاريفك.',p:100,q:[
+      ['قارن دخلك السلبي بمصاريفك','لما يعدّيها، شغلك بقى اختيار'],
+      ['راجع توزيع ثروتك كل شهر','علشان متبقاش معتمد على أصل واحد'],
+      ['ثبّت الخطة لـ 10 سنين','وشوف ثروتك المتوقعة في «التحليل»']]}
+  ];
+  var KEY='nm-site-journey',st={cur:0,done:{}};
+  try{var sv=JSON.parse(localStorage.getItem(KEY)||'null');if(sv&&typeof sv.cur==='number')st=sv;}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
+  var track=document.getElementById('jr-track'),pick=document.getElementById('jr-pick');
+  if(!track)return;
+  // أماكن النقط (RTL: المرحلة 1 يمين)
+  var P=[[90,72],[70,30],[50,70],[30,28],[10,62]];
+  var segs=[],SG=document.getElementById('jr-segs'),NS='http://www.w3.org/2000/svg';
+  for(var i=1;i<P.length;i++){var a=P[i-1],b=P[i],mx=(a[0]+b[0])/2,pe=document.createElementNS(NS,'path');
+    pe.setAttribute('d','M'+a[0]+' '+a[1]+' C'+mx+' '+a[1]+' '+mx+' '+b[1]+' '+b[0]+' '+b[1]);pe.setAttribute('class','seg');pe.setAttribute('vector-effect','non-scaling-stroke');SG.appendChild(pe);segs.push(pe);}
+  var CHK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+  var FLAG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 6h3a3 3 0 0 1-3 3M7 6H4a3 3 0 0 0 3 3"/></svg>';
+  var nodes=[],chips=[];
+  ST.forEach(function(s,i){
+    var b=document.createElement('button');b.type='button';b.className='jr-node'+(i===ST.length-1?' is-end':'');
+    b.style.right=(100-P[i][0])+'%';b.style.top=P[i][1]+'%';
+    b.innerHTML='<span class="jr-dot"><span class="jr-pin">إنت هنا</span><span class="jr-in"></span></span><span class="jr-lb">'+s.n+'</span>';
+    b.addEventListener('click',function(){go(i);});
+    track.appendChild(b);nodes.push(b);
+    var c=document.createElement('button');c.type='button';c.textContent=s.n;c.addEventListener('click',function(){go(i);});
+    pick.appendChild(c);chips.push(c);
+  });
+  function cnt(i){var n=0,k=st.done[i]||[];for(var j=0;j<3;j++)if(k[j])n++;return n;}
+  function pct(){return Math.round(st.cur*20+20*cnt(st.cur)/3);}
+  function render(anim){
+    var c=st.cur,s=ST[c];
+    nodes.forEach(function(b,i){
+      b.classList.toggle('is-done',i<c);b.classList.toggle('is-cur',i===c);
+      b.querySelector('.jr-in').innerHTML=i<c?CHK:(i===ST.length-1?FLAG:String(i+1));
+      b.setAttribute('aria-label','المرحلة '+(i+1)+': '+ST[i].n+(i<c?'، عدّيتها':i===c?'، إنت هنا':''));
+      b.setAttribute('aria-current',i===c?'step':'false');
+    });
+    chips.forEach(function(x,i){x.setAttribute('aria-pressed',String(i===c));});
+    segs.forEach(function(x,i){x.classList.toggle('on',i<c);});
+    var p=pct();document.getElementById('jr-pct').textContent=p+'%';
+    var bar=document.getElementById('jr-bar');bar.setAttribute('aria-valuenow',p);bar.firstChild.style.width=p+'%';
+    document.getElementById('jr-lvl').textContent='المرحلة '+(c+1)+' من '+ST.length;
+    document.getElementById('jr-name').textContent=s.n;
+    document.getElementById('jr-goal').textContent=s.g;
+    var ul=document.getElementById('jr-q');ul.innerHTML='';
+    s.q.forEach(function(q,j){
+      var li=document.createElement('li'),b=document.createElement('button');b.type='button';
+      var on=!!(st.done[c]&&st.done[c][j]);b.setAttribute('aria-pressed',String(on));
+      b.innerHTML='<span class="bx">'+CHK+'</span><span><b>'+q[0]+'</b><small>'+q[1]+'</small></span><span class="xp">+10 نقط</span>';
+      b.addEventListener('click',function(){st.done[c]=st.done[c]||[];st.done[c][j]=!st.done[c][j];save();var was=cnt(c)===3;render();if(was&&st.done[c][j])burst();});
+      li.appendChild(b);ul.appendChild(li);
+    });
+    var all=cnt(c)===3,w=document.getElementById('jr-win'),nx=document.getElementById('jr-next');
+    w.classList.toggle('show',all);
+    w.textContent=all?(c<ST.length-1?'برافو! خلصت مرحلة «'+s.n+'». المرحلة الجاية اتفتحت: «'+ST[c+1].n+'».':'وصلت! دخلك السلبي بقى بيصرف عليك. كمّل حافظ على اللي بنيته.'):'';
+    nx.hidden=c>=ST.length-1;
+    nx.className='btn '+(all?'btn-pri':'btn-sec');
+  }
+  function go(i){st.cur=i;save();render();}
+  document.getElementById('jr-next').addEventListener('click',function(){if(st.cur<ST.length-1)go(st.cur+1);});
+  function burst(){
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    var card=document.getElementById('jr-card'),cols=['var(--green)','var(--gold)','#3FA673','#E0B35A'];
+    for(var k=0;k<22;k++){var e=document.createElement('i');e.className='jr-cf';e.style.background=cols[k%4];
+      e.style.setProperty('--dx',(Math.random()*260-130)+'px');e.style.setProperty('--dy',(Math.random()*-160-20)+'px');e.style.setProperty('--r',(Math.random()*540)+'deg');
+      card.appendChild(e);setTimeout(function(x){return function(){x.remove();};}(e),1200);}
+  }
+  render();
 })();
 </script>
 </body>
