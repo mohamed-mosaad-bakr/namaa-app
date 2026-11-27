@@ -10,6 +10,7 @@ Release rules:
 - Native changes (Bridge / MainActivity) still need a new APK.
 - Never use the `‹` / `›` glyphs for arrows/chevrons — in RTL text they get bidi-mirrored and point the wrong way. Use an inline SVG chevron (`<path d="m15 18-6-6 6-6"/>` = forward/left, `m9 18 6-6-6-6` = back/right). `make_release.py` refuses to build if either glyph is in the release.
 
+Design system (tokens, icons, choice sheet rules): read `DESIGN_SYSTEM.md` before UI work.
 For architecture, modules, data keys, GA events, the release helper (`tools/release.py`) and the APK process, read `HANDOFF.md` first.
 
 Working mode (owner's standing rule): planning and execution are separate.
