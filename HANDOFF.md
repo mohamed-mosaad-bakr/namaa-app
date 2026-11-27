@@ -68,3 +68,9 @@
 - `versionCode` = رقم الـ build، و`versionName` = رقم الإصدار، واسم الملف `namaa-<version>.apk`.
 - **مفتاح التوقيع `namaa.keystore` مش في الريبو ولازم يفضل برا.** من غيره أي APK جديد مش هيتنزّل كتحديث فوق القديم. احفظه هو وكلمة سره في مكان آمن.
 - الـ Bridge فيه `NamaaAndroid.setBg(color)` و`setIcon(theme)` (أيقونات: namaa, rausch, navy, teal, plum, amber) و`openUrl`, و`share`، وغيرهم.
+
+
+## الثيمات (31.3–31.4)
+- `window.__NM_THEMES`: ثيمات بلون واحد (a/p/s/r) + ثيمات 3 ألوان فيها `bg` (خلفية الصفحة) و`pop`/`op` (الزرار الأساسي ولون الكلام عليه) و`c3` (المربع في المظهر) و`ic` (أيقونة APK موجودة بتتستخدم بدالها).
+- `laylid` (ليلي غامق) فيه `dark:1`: `window.__nmDark(true)` بيضيف `html.nm-dark` ويولّد `<style id="nm-dark-css">` بإعادة كتابة كل قواعد الـ CSS (ألوان الخلفية/الكلام/الحدود) بدالة `__nmDarkMap`، وMutationObserver بيظبط الـ inline styles وfill/stroke بتوع SVG. الخروج من الغامق بيعمل reload.
+- عنصر عايز يفضل بألوانه في الغامق: حط عليه `data-nmk`. لو قاعدة محتاجة لون مخصوص في الغامق اكتبها بـ `html.nm-dark ...` (القواعد دي مش بيتعاد كتابتها).
